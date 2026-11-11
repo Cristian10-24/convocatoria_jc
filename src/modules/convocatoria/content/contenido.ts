@@ -174,7 +174,8 @@ export const PAISES: Record<PaisSlug, Pais> = {
         f("uy", "inauguracion", "Estudiantes con gorras en la inauguración de Paysandú", "Inauguración 2026 · Paysandú", 1600, 1200),
       ],
     },
-    config: { estado: "proxima" },
+    // Formulario propio. Se activa cuando CONVOCATORIA_CONFIG pone a Uruguay en "abierta"; antes sale "muy pronto".
+    config: { estado: "proxima", acciones: { postular: { tipo: "ruta", ruta: `/inscripcion/${SEGMENTO_URL.uy}` } } },
     formularioAnterior: "https://forms.gle/Q1Dug7r2W6XbgHwe9",
   },
 };

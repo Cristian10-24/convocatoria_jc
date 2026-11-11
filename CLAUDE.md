@@ -9,7 +9,8 @@ El plan y las decisiones aprobadas están en `PLAN.md` (sección 0): no las camb
 ## Comandos
 
 ```bash
-npm run dev          # http://localhost:3000
+npm run dev          # http://localhost:3000 (necesita MONGODB_URI para inscribir)
+npm run dev:local    # igual, con MongoDB en memoria (.local-db/) y Uruguay abierto: para probar el formulario
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint .
 npm test             # vitest + mongodb-memory-server (la primera vez descarga el binario de Mongo)
@@ -53,7 +54,10 @@ Las landings vienen del diseño entregado (`_design-ref/front/`, solo como refer
 
 ## Seguridad y datos
 
-- Formularios públicos: `mismoOrigen` → tamaño (`leerCuerpo`) → antibots → Turnstile → `consumir` (rate limit) → zod.
+- Formularios públicos (de lo más barato a lo más caro): `mismoOrigen` → tamaño y forma (`leerCuerpo`) → antibots →
+  `consumir` (rate limit) → Turnstile → reglas del servicio (zod + negocio). Ver `src/app/api/inscripciones/route.ts`.
+- El estado por país (abierta, próxima, cerrada) sale de `src/shared/config/convocatoria.ts` (`CONVOCATORIA_CONFIG`); la API
+  lo vuelve a leer en cada envío.
 - Nunca subas PII ni secretos. Las semillas de demo usan datos falsos.
 - Exportaciones: siempre `celdaSegura` / `celdaCsv` (`src/shared/security/exportacion.ts`).
 - El panel aplica el alcance por país **en el servidor**, en cada consulta.

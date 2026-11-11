@@ -39,7 +39,20 @@ export default function BotonAccion({ pais, boton, accion, className, children, 
       );
     }
     case "ruta":
-      return <a {...datos} className={className} href={accion.ruta} onClick={avisar}>{children}</a>;
+      // Pasa los utm_* de la visita al formulario, para saber qué difusión trajo cada inscripción.
+      return (
+        <a
+          {...datos}
+          className={className}
+          href={accion.ruta}
+          onClick={(e) => {
+            avisar();
+            if (window.location.search) e.currentTarget.href = conUtm(accion.ruta, window.location.search);
+          }}
+        >
+          {children}
+        </a>
+      );
     case "ancla":
       return <a {...datos} className={className} href={`#${accion.id}`} onClick={avisar}>{children}</a>;
     case "evento":

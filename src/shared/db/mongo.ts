@@ -23,6 +23,8 @@ function cliente(): Promise<MongoClient> {
       // Falla rápido si Atlas no responde, en vez de colgar la función hasta su límite.
       serverSelectionTimeoutMS: 8_000,
       appName: "convocatoria-jc",
+      // Los campos opcionales sin valor no se guardan (en vez de quedar como null).
+      ignoreUndefined: true,
     }).connect();
     globalThis._convMongo = { uri, cliente: promesa };
     // Si la conexión falla, se olvida para reintentar en la próxima petición.

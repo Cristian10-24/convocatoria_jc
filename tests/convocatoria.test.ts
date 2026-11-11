@@ -51,8 +51,12 @@ describe("contenido por país", () => {
 
 describe("acciones de los botones", () => {
   it("sin configuración, postular queda pendiente (no lleva a formularios cerrados)", () => {
-    expect(resolverAccion("postular-hero", PAISES.uy.config, undefined)).toEqual(ACCIONES_POR_DEFECTO.postular);
+    for (const p of ["col", "pan", "ecu"] as const) expect(resolverAccion("postular-hero", PAISES[p].config, undefined)).toEqual(ACCIONES_POR_DEFECTO.postular);
     expect(resolverAccion("ver-ruta", undefined, undefined)).toEqual({ tipo: "ancla", id: "ruta" });
+  });
+
+  it("Uruguay lleva a su formulario propio (que la landing apaga mientras no esté abierta)", () => {
+    expect(resolverAccion("postular-hero", PAISES.uy.config, undefined)).toEqual({ tipo: "ruta", ruta: "/inscripcion/uy" });
   });
 
   it("los postular-* heredan de postular; el botón propio gana; el entorno gana al país", () => {

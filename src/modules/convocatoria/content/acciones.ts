@@ -1,44 +1,14 @@
 // Botones de la convocatoria: QUÉ hace cada botón vive aquí, no en los componentes.
-// El back puede cambiarlo sin tocar código con la variable CONVOCATORIA_CONFIG (JSON, ver docs/convocatoria/BACKEND.md).
+// Se cambia sin tocar código con la variable CONVOCATORIA_CONFIG (esquema en src/shared/config/convocatoria.ts).
 // Orden de prioridad: CONVOCATORIA_CONFIG (env) → configuración del país (contenido.ts) → valores por defecto de abajo.
-// La API de inscripción también lee CONVOCATORIA_CONFIG (estado por país) en cada envío.
-import { z } from "zod";
+// Además, mientras el país no esté "abierta", los botones de postular quedan apagados.
 import { PAISES, type PaisSlug } from "@/shared/config/paises";
+import type { Accion, ConfigPais, EstadoConvocatoria, IdBoton } from "@/shared/config/convocatoria";
 
+export { Accion, BOTONES, ConfigEntorno, ConfigPais, EstadoConvocatoria, leerConfigEntorno } from "@/shared/config/convocatoria";
+export type { IdBoton } from "@/shared/config/convocatoria";
 export const PAISES_SLUG = PAISES;
 export type { PaisSlug };
-
-/** Lo que pasa al tocar un botón. */
-export const Accion = z.discriminatedUnion("tipo", [
-  /** Va a una URL externa (p. ej. Google Forms). conUtm = agrega los utm_* con los que llegó la visita. */
-  z.object({ tipo: z.literal("enlace"), url: z.string().url().startsWith("https://"), nuevaPestana: z.boolean().optional(), conUtm: z.boolean().optional() }),
-  /** Va a otra página de esta misma app (p. ej. "/convocatoria/postular/uy" cuando exista el formulario nativo). */
-  z.object({ tipo: z.literal("ruta"), ruta: z.string().regex(/^\/[^/]/, "Debe empezar con / (ruta interna)") }),
-  /** Baja a una sección de la misma página. */
-  z.object({ tipo: z.literal("ancla"), id: z.string().regex(/^[a-z0-9-]+$/) }),
-  /** No navega: emite el evento de ventana "convocatoria:accion" con este nombre, para que el back lo maneje (abrir un modal, etc.). */
-  z.object({ tipo: z.literal("evento"), nombre: z.string().min(1).max(60) }),
-  /** Botón visible pero inactivo (convocatoria sin abrir o sin destino confirmado). */
-  z.object({ tipo: z.literal("pendiente"), texto: z.string().max(60).optional() }),
-]);
-export type Accion = z.infer<typeof Accion>;
-
-/** Botones de la página. Los "postular-*" heredan de "postular" si no tienen configuración propia. */
-export const BOTONES = ["postular", "postular-hero", "postular-requisitos", "postular-cierre", "postular-barra", "ver-ruta", "contacto"] as const;
-export type IdBoton = (typeof BOTONES)[number];
-
-export const EstadoConvocatoria = z.enum(["proxima", "abierta", "cerrada"]);
-export type EstadoConvocatoria = z.infer<typeof EstadoConvocatoria>;
-
-/** Configuración que se puede sobrescribir por país desde la variable de entorno. */
-export const ConfigPais = z.object({
-  estado: EstadoConvocatoria.optional(),
-  /** Fecha de cierre visible (AAAA-MM-DD). */
-  cierra: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  acciones: z.partialRecord(z.enum(BOTONES), Accion).optional(),
-});
-export type ConfigPais = z.infer<typeof ConfigPais>;
-export const ConfigEntorno = z.partialRecord(z.enum(PAISES_SLUG), ConfigPais);
 
 /** Lo que hace cada botón si nadie dice otra cosa. */
 export const ACCIONES_POR_DEFECTO: Record<IdBoton, Accion> = {
@@ -51,19 +21,13 @@ export const ACCIONES_POR_DEFECTO: Record<IdBoton, Accion> = {
   contacto: { tipo: "enlace", url: "https://tocaunavida.org/contactanos/", nuevaPestana: true },
 };
 const HEREDAN_DE_POSTULAR = new Set<IdBoton>(["postular-hero", "postular-requisitos", "postular-cierre", "postular-barra"]);
+const ES_POSTULAR = new Set<IdBoton>(["postular", ...HEREDAN_DE_POSTULAR]);
 
-/** Lee CONVOCATORIA_CONFIG. Si el JSON está mal, se ignora entero (y se avisa en el log) para no romper la página. */
-export function leerConfigEntorno(texto = process.env.CONVOCATORIA_CONFIG): Partial<Record<PaisSlug, ConfigPais>> {
-  if (!texto?.trim()) return {};
-  try {
-    const r = ConfigEntorno.safeParse(JSON.parse(texto));
-    if (r.success) return r.data;
-    console.error("[convocatoria] CONVOCATORIA_CONFIG no es válida; se ignora:", r.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "));
-  } catch {
-    console.error("[convocatoria] CONVOCATORIA_CONFIG no es JSON; se ignora.");
-  }
-  return {};
-}
+/** Texto del botón de postular apagado, según el estado. */
+export const TEXTO_POSTULAR_APAGADO: Record<Exclude<EstadoConvocatoria, "abierta">, string> = {
+  proxima: "Inscripciones muy pronto",
+  cerrada: "Inscripciones cerradas",
+};
 
 /** Acción final de un botón: entorno → país → por defecto (con la herencia de "postular"). */
 export function resolverAccion(id: IdBoton, delPais: ConfigPais | undefined, delEntorno: ConfigPais | undefined): Accion {
@@ -74,11 +38,18 @@ export function resolverAccion(id: IdBoton, delPais: ConfigPais | undefined, del
   return ACCIONES_POR_DEFECTO[id];
 }
 
-/** Agrega los utm_* de la visita a una URL externa (sin pisar los que ya traiga). */
+/** Con la convocatoria sin abrir (o ya cerrada), los botones de postular no llevan a ninguna parte. */
+export function segunEstado(id: IdBoton, accion: Accion, estado: EstadoConvocatoria): Accion {
+  if (estado === "abierta" || !ES_POSTULAR.has(id)) return accion;
+  return { tipo: "pendiente", texto: TEXTO_POSTULAR_APAGADO[estado] };
+}
+
+/** Agrega los utm_* de la visita a una URL (absoluta o interna) sin pisar los que ya traiga. */
 export function conUtm(url: string, busquedaActual: string): string {
-  const destino = new URL(url);
+  const interna = url.startsWith("/");
+  const destino = new URL(url, "https://interno.invalid");
   new URLSearchParams(busquedaActual).forEach((v, k) => {
     if (k.startsWith("utm_") && !destino.searchParams.has(k)) destino.searchParams.set(k, v);
   });
-  return destino.toString();
+  return interna ? `${destino.pathname}${destino.search}${destino.hash}` : destino.toString();
 }

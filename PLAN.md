@@ -1,6 +1,7 @@
 # Plan · App de inscripción Convocatoria Jóvenes creaTIvos 2027
 
-> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0 y 1 terminadas; sigue la fase 2 (inscripción).
+> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0, 1 y 2 terminadas; sigue la fase 3 (autenticación del panel).
+> El modelo de datos vigente de la inscripción está en `src/modules/inscripcion/repository.ts` (tipo `Inscripcion`) y `schema.ts` (`DatosInscripcion`).
 > Referencias de solo lectura: `_design-ref/front/` (código del front extraído del zip) y `C:\ROFÉ\PAGINAS\validation-jc`. Ningún otro proyecto se modifica.
 
 ---
@@ -16,6 +17,25 @@
 | 5 | Textos legales | Provisionales, marcados con `[PROVISIONAL]`, en archivos fáciles de reemplazar (`config/legal/<pais>.ts`, `acudiente.ts`). Se guarda la versión aceptada. |
 | 6 | Dominio y rutas | Subdominio de `tocaunavida.org` (p. ej. `convocatoria.tocaunavida.org`). `/` = selector de país. Landings en `/col`, `/panama`, `/ecu`, `/uy`; `/conv_*` redirigen (308). **Landings indexables**; formulario, confirmación y panel con `noindex`. |
 | 7 | Correo | Sin correo por ahora (solo pantalla de confirmación). La estructura queda lista: interfaz `Notificador` con implementación vacía que se puede reemplazar. **Resend sale de la fase 5.** |
+
+**Decisiones del formulario (fase 2, sobre el formulario oficial de Uruguay 2026)**
+
+| # | Tema | Decisión |
+|---|---|---|
+| F1 | Contenido | Las preguntas son las del formulario oficial (las mismas para los 4 países). La organización, las condiciones y las validaciones son las de la sección 4. |
+| F2 | Países | Se implementa completo **Uruguay**. Colombia, Panamá y Ecuador quedan listos en configuración (tipos de documento, grados, escala de notas, trato) con "Inscripciones muy pronto" hasta confirmar sus datos. |
+| F3 | Edad | Menos de 14 años **bloquea** (lo exige el texto legal). Más de 30 años se marca como alerta. Menores de 18 llenan el paso del acudiente. |
+| F4 | "¿Vives en Uruguay?" | Se quita: sede y ciudad lo resuelven (incluye Colón y Concepción del Uruguay). |
+| F5 | Identificación | Cédula (con dígito verificador), Pasaporte, Carné de residencia, DNI argentino, Otro (con texto). |
+| F6 | Número alterno | Obligatorio y distinto del WhatsApp. |
+| F7 | Promedio | Con decimales, en la escala del país (Uruguay 1–12), obligatorio para todos. |
+| F8 | Alertas | Sin internet · sin acceso a computadora · menos de 5 horas o entre 5 y 10 horas · más de 30 años · egresó hace más de 3 años · correo repetido. |
+| F9 | Condicionales | "¿Fuiste seleccionado?" solo si aplicó antes · embajador solo si el canal es "Embajador" · año de egreso solo si ya es bachiller · "Otro" pide texto. |
+| F10 | Tallas | XS, S, M, L, XL, XXL; obligatoria para todos. |
+| F11 | Poblaciones | Selección múltiple; "Ninguna de las anteriores" es excluyente. |
+| F12 | Legal | Texto adaptado a cada país (Uruguay: Ley 18.331 y URCDP) marcado `[PROVISIONAL]`; aceptar es obligatorio. |
+| F13 | Trato | El del país (Uruguay en voseo) en todo el formulario. |
+| F14 | Datos sensibles | Poblaciones, ingresos y género: solo el rol **admin** ve el detalle individual; los demás roles ven gráficas agregadas y esos campos se excluyen de su exportación. |
 
 **Ajustes técnicos aprobados**
 - Rate limit de **60 envíos / 15 min por IP** (los colegios comparten IP). Cloudflare **Turnstile activo en producción** desde el lanzamiento (en producción, sin `TURNSTILE_SECRET_KEY` el envío falla cerrado).
@@ -141,18 +161,19 @@ tests/
 
 ---
 
-## 4. Formulario (6 pasos, barra de progreso, validación por paso y en el servidor)
+## 4. Formulario (7 pasos, barra de progreso, validación por paso y en el servidor)
 
-Ruta `/inscripcion/<pais>` (país fijo, viene de su landing). Borrador en `sessionStorage`, que **se borra al confirmar**. Todo el texto y las opciones salen de `config/`.
+Ruta `/inscripcion/<segmento>` (país fijo, viene de su landing). Borrador en `sessionStorage`, que **se borra al confirmar**. Todo el texto y las opciones salen de `src/modules/inscripcion/config/`.
 
-| Paso | Campos |
+| Paso | Preguntas (número en el formulario oficial) |
 |---|---|
-| **1. Ubicación** | País (fijo) · **Sede** (automática si es única) · **Ciudad de residencia** (lista de la sede + "Otra" con texto) |
-| **2. Datos personales** | Nombres · Apellidos · Tipo de documento (según país) · Número · Fecha de nacimiento · Género |
-| **3. Contacto** | Correo + confirmación (con sugerencia de dominio) · Celular con indicativo · WhatsApp |
-| **4. Formación** | Estudiando / graduado · Grado o año de grado · Institución · Pública/Privada |
-| **5. Requisitos y motivación** | Computador · Internet · 8 h/semana · Cómo se enteró · Motivación |
-| **6. Autorización y envío** | Datos del acudiente si es menor · Autorización de datos del país (provisional) · Resumen · Enviar |
+| **1. Dónde vivís** | Sede (automática si es única) → ciudad de residencia (lista de la sede + "Otra") · Dirección (P10) |
+| **2. Datos personales** | Nombres · Apellidos · Tipo de identificación · Número · Fecha de nacimiento · Correo · WhatsApp · Número alterno (P2–P8, P11) |
+| **3. Acudiente** *(solo menores de 18)* | Nombres · Apellidos · Correo · Teléfono · Relación (P12–P16) |
+| **4. Estudios y disponibilidad** | Grado · Año de egreso (si ya es bachiller) · Promedio · Institución · Internet · Computadora · Aprendizaje en línea · Horas semanales (P17–P24) |
+| **5. Sobre vos** | Ocupación (varias) · Emprendimiento · Otras postulaciones · Aplicó antes a JC · Fue seleccionado (P25–P27, P34–P35) |
+| **6. Datos sociodemográficos** | Género · Poblaciones (varias) · Ingresos del hogar · Talla (P28–P30, P32) |
+| **7. Cierre** | Cómo se enteró · Embajador (P31, P33) · Autorización de datos (P36) · Resumen y envío |
 
 Confirmación en pantalla con nombre, país, sede y **radicado**; sin correo (estructura `Notificador` lista).
 
@@ -162,7 +183,7 @@ Confirmación en pantalla con nombre, país, sede y **radicado**; sin correo (es
 
 ## 5. Panel de administración
 - **Login** (`/admin/login`), bcrypt, cookie firmada, límite de intentos. Primer admin con `npm run admin:crear`. Roles `admin` / `coordinador` (por país) / `lector`; alcance aplicado en el servidor.
-- **Tablero:** KPIs (total, hoy, 7 días, % menores, % con alertas) · inscripciones por día (línea + acumulado) · por país · **por sede** · por ciudad · mapa de calor día × hora · edad · género · situación educativa · canal de origen/UTM · embudo de requisitos. Filtros: país, sede, ciudad, fechas.
+- **Tablero:** KPIs (total, hoy, 7 días, % menores, % con alertas) · inscripciones por día (línea + acumulado) · por país · **por sede** · por ciudad · mapa de calor día × hora · edad · género · grado/situación educativa · **horas disponibles** · **acceso a computadora e internet** · **ocupación** · **poblaciones** · **ingresos** · **talla** · **canal de difusión** y UTM · **ranking de embajadores** · embudo de requisitos. Filtros: país, sede, ciudad, fechas. Los datos sensibles (F14) solo se muestran agregados a quien no es admin.
 - **Inscritos:** tabla paginada en el servidor, búsqueda (nombre, documento, correo, radicado), filtros (país, sede, ciudad, fechas, menor de edad, **alerta**), orden, filtros en la URL.
 - **Detalle**, **exportación** Excel/CSV con los filtros activos (hoja de datos + hoja resumen, **celdas sanitizadas**, auditoría), **usuarios** (solo admin).
 

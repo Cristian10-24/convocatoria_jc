@@ -3,7 +3,8 @@
 // efectos de movimiento del panel de datos (Efectos.tsx) y piezas interactivas (Interactivos.tsx).
 import type { Metadata } from "next";
 import type { CSSProperties, ReactNode } from "react";
-import { leerConfigEntorno, resolverAccion, type EstadoConvocatoria, type IdBoton, type PaisSlug } from "@/modules/convocatoria/content/acciones";
+import { leerConfigEntorno, resolverAccion, segunEstado, type IdBoton, type PaisSlug } from "@/modules/convocatoria/content/acciones";
+import { estadoConvocatoria, type EstadoConvocatoria } from "@/shared/config/convocatoria";
 import {
   COHORTE, CONTACTO, CURSOS, INCLUYE, PAISES, comoFunciona, noIncluye, preguntas, requisitos, testimoniosPara, type Foto, type Pais,
 } from "@/modules/convocatoria/content/contenido";
@@ -95,9 +96,9 @@ export default function ConvocatoriaPagina({ pais }: { pais: PaisSlug }) {
   const p: Pais = PAISES[pais];
   const v = p.voz;
   const entorno = leerConfigEntorno()[pais];
-  const estado: EstadoConvocatoria = entorno?.estado ?? p.config.estado ?? "proxima";
-  const cierra = entorno?.cierra ?? p.config.cierra;
-  const accion = (id: IdBoton) => resolverAccion(id, p.config, entorno);
+  // Estado efectivo (con la fecha de cierre); mientras no esté "abierta", los botones de postular quedan apagados.
+  const { estado, cierra } = estadoConvocatoria(pais, { delPais: p.config });
+  const accion = (id: IdBoton) => segunEstado(id, resolverAccion(id, p.config, entorno), estado);
   const boton = (id: IdBoton, texto: ReactNode, className: string | undefined, flecha = true) => (
     <BotonAccion pais={pais} boton={id} accion={accion(id)} className={className}>
       <span className={s.botonTexto}>{texto} {flecha && <Ico d={D.flecha} />}</span>

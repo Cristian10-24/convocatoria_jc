@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dev:local": "tsx scripts/dev-local.ts"
   },
   "dependencies": {
     "framer-motion": "^12.43.0",

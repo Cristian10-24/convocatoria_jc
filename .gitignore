@@ -1,0 +1,32 @@
+# dependencias
+node_modules/
+
+# next
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# entorno (nunca subir secretos)
+.env
+.env.local
+.env.*.local
+
+# vercel
+.vercel
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# material de referencia y vista previa temporal
+_design-ref/
+_preview-vista/
+entrega-convocatoria-jc.zip
+entrega-convocatoria-jc/
+
+# configuración local del navegador de vista previa
+.claude/launch.json
+.claude/settings.local.json

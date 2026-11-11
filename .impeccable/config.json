@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "src/modules/convocatoria/components/Convocatoria.module.css"
+        ],
+        "createdAt": "2026-11-11T20:24:15.586Z",
+        "reason": "Confirmado por el usuario: transiciones pastilla->barra del encabezado pegajoso, una vez por cambio de estado (diseño entregado, 54 fps medidos)"
+      }
+    ]
+  }
+}

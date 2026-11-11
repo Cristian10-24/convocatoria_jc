@@ -29,7 +29,8 @@ entrega-convocatoria-jc/
 
 # capturas de revisión (muestran estudiantes: no se versionan) y caché del plugin de diseño
 capturas/
-.impeccable/
+.impeccable/*
+!.impeccable/config.json
 
 # configuración local del navegador de vista previa
 .claude/launch.json

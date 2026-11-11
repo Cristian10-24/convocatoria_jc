@@ -1,6 +1,6 @@
 # Plan · App de inscripción Convocatoria Jóvenes creaTIvos 2027
 
-> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fase 0 en curso.
+> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0 y 1 terminadas; sigue la fase 2 (inscripción).
 > Referencias de solo lectura: `_design-ref/front/` (código del front extraído del zip) y `C:\ROFÉ\PAGINAS\validation-jc`. Ningún otro proyecto se modifica.
 
 ---

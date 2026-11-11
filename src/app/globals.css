@@ -1,4 +1,16 @@
-/* Estilos globales mínimos. Los tokens de diseño se agregan en la fase 1. */
+/* Estilos globales mínimos: los de cada módulo viven en sus CSS Modules (p. ej. Convocatoria.module.css). */
+:root {
+  --font: var(--font-outfit), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fondo: #fdf8f4;
+  --tinta: #1d1b2c;
+}
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; }
-body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #fdf8f4; color: #1d1b2c; }
+body {
+  font-family: var(--font);
+  background: var(--fondo);
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+img { max-width: 100%; }

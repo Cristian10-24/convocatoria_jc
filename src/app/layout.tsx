@@ -1,17 +1,26 @@
-// Layout raíz. La fuente, los metadatos completos y el diseño de las landings llegan en la fase 1.
+// Layout raíz: fuente Outfit (next/font, servida desde el propio dominio, sin pedir a Google en cada visita),
+// metadatos por defecto y URL base para las imágenes al compartir (og:image absoluta).
+// Por defecto nada se indexa; las landings y el selector lo habilitan en sus propios metadatos.
 import type { Metadata, Viewport } from "next";
+import { Outfit } from "next/font/google";
+import { urlSitio } from "@/shared/config/sitio";
 import "./globals.css";
 
+const outfit = Outfit({ subsets: ["latin"], display: "swap", variable: "--font-outfit" });
+
 export const metadata: Metadata = {
-  title: "Convocatoria Jóvenes creaTIvos",
-  description: "Inscripciones a Jóvenes creaTIvos de la Fundación ROFÉ.",
+  metadataBase: new URL(urlSitio()),
+  title: { default: "Convocatoria Jóvenes creaTIvos", template: "%s" },
+  description: "Becas del 100 % para aprender desarrollo de software desde cero. Fundación ROFÉ · Toca una Vida.",
+  robots: { index: false, follow: false },
+  icons: { icon: "/logo-jc.png" },
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#e9531f" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" className={outfit.variable}>
       <body>{children}</body>
     </html>
   );

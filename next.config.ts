@@ -15,6 +15,16 @@ const NO_INDEXAR = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
 const config: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // Rutas del diseño original (/conv_*) y del selector anterior → rutas definitivas (como en WordPress).
+  async redirects() {
+    return [
+      { source: "/conv_col", destination: "/col", permanent: true },
+      { source: "/conv_pan", destination: "/panama", permanent: true },
+      { source: "/conv_ecu", destination: "/ecu", permanent: true },
+      { source: "/conv_uy", destination: "/uy", permanent: true },
+      { source: "/convocatoria", destination: "/", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: SEGURIDAD },

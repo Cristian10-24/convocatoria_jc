@@ -27,6 +27,10 @@ _preview-vista/
 entrega-convocatoria-jc.zip
 entrega-convocatoria-jc/
 
+# capturas de revisión (muestran estudiantes: no se versionan) y caché del plugin de diseño
+capturas/
+.impeccable/
+
 # configuración local del navegador de vista previa
 .claude/launch.json
 .claude/settings.local.json

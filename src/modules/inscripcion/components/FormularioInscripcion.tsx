@@ -213,7 +213,8 @@ export default function FormularioInscripcion({ pais, anio, claveTurnstile, ruta
         return unica(c, cfg.tiposDocumento.map((x) => ({ id: x.id, etiqueta: x.etiqueta })));
       case "documento": {
         const tipo = cfg.tiposDocumento.find((x) => x.id === datos.tipoDocumento);
-        return texto(c, { ayuda: tipo?.ayuda, maxLength: 30 });
+        // Solo dígitos: cualquier otro carácter se descarta al escribir o pegar.
+        return texto(c, { ayuda: tipo?.ayuda, modo: "numeric", maxLength: tipo?.regla.max ?? 20, onCambio: (x) => cambiar(c, x.replace(/\D/g, "")) });
       }
       case "fechaNacimiento": return texto(c, { tipo: "date", max: hoy, autoCompletar: "bday" });
       case "correo": {

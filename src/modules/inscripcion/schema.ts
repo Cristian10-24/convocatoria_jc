@@ -5,7 +5,6 @@
 import { z } from "zod";
 import type { PaisSlug } from "@/shared/config/paises";
 import { normalizarCorreo, correoValido } from "@/shared/validation/correo";
-import { alfanumerico, cedulaEcuador, cedulaPanama, cedulaUruguay, dniArgentina, normalizarDocumento, numerico } from "@/shared/validation/documento";
 import { edad as calcularEdad, fechaValida } from "@/shared/validation/fechas";
 import { validarCelular } from "@/shared/validation/telefono";
 import { nombrePropio, limpiarEspacios, partesNombreValidas, textoConSentido } from "@/shared/validation/textos";
@@ -94,20 +93,10 @@ export function sedeDe(cfg: ConfigPaisInscripcion, d: Borrador): string | undefi
 }
 
 // ---------- Reglas ----------
+/** El documento es un número entero: solo dígitos, con la longitud del tipo y no todos iguales (111111). */
 function documentoValido(regla: ReglaDocumento, valor: string): boolean {
-  switch (regla.tipo) {
-    case "cedula_uy": return cedulaUruguay(valor);
-    case "cedula_ec": return cedulaEcuador(valor);
-    case "cedula_pa": return cedulaPanama(valor);
-    case "dni_ar": return dniArgentina(valor);
-    case "numerico": return numerico(valor, regla.min, regla.max);
-    case "alfanumerico": return alfanumerico(valor, regla.min, regla.max);
-  }
-}
-
-/** Normaliza el documento para guardarlo y detectar duplicados (la cédula de Panamá conserva sus guiones). */
-function documentoNormalizado(regla: ReglaDocumento, valor: string): string {
-  return regla.tipo === "cedula_pa" ? valor.trim().toUpperCase().replace(/\s+/g, "") : normalizarDocumento(valor);
+  const d = valor.trim();
+  return /^\d+$/.test(d) && d.length >= regla.min && d.length <= regla.max && !/^(\d)\1+$/.test(d);
 }
 
 const opcionValida = (opciones: Opcion[], id: string) => opciones.some((o) => o.id === id);
@@ -262,7 +251,7 @@ export function revisar(cfg: ConfigPaisInscripcion, d: EntradaInscripcion, hoy: 
     datos: {
       sede: sedeCfg.id, ciudad: d.ciudad, ciudadOtra: opcional(d.ciudad === CIUDAD_OTRA, d.ciudadOtra), direccion: limpiarEspacios(d.direccion),
       nombres: nombrePropio(d.nombres), apellidos: nombrePropio(d.apellidos), tipoDocumento: tipo.id,
-      tipoDocumentoOtro: opcional(!!tipo.conTexto, d.tipoDocumentoOtro), documento: documentoNormalizado(tipo.regla, d.documento),
+      tipoDocumentoOtro: opcional(!!tipo.conTexto, d.tipoDocumentoOtro), documento: d.documento.trim(),
       fechaNacimiento: d.fechaNacimiento, edad, correo: correoN, whatsapp, telefonoAlterno: alterno, acudiente,
       grado: d.grado, anioEgreso, promedio, institucion: limpiarEspacios(d.institucion), internet: d.internet === "si",
       computadora: d.computadora, autonomia: d.autonomia, horas: d.horas,

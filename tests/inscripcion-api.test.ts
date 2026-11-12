@@ -98,7 +98,7 @@ describe("POST /api/inscripciones", () => {
   it("rechaza un documento ya inscrito (mismo país, tipo y número)", async () => {
     const datos = persona();
     expect((await enviar(datos)).status).toBe(201);
-    const otra = await enviar({ ...datos, documento: `${String(datos.documento).slice(0, 7)}-${String(datos.documento).slice(7)}`, correo: "otro@gmail.com" });
+    const otra = await enviar({ ...datos, documento: ` ${String(datos.documento)} `, correo: "otro@gmail.com" });
     expect(otra.status).toBe(409);
     expect(otra.cuerpo.error).toBe("duplicado");
   });

@@ -17,7 +17,7 @@ export function inscripcionUy(extra: Record<string, unknown> = {}): Record<strin
     nombres: "maría josé",
     apellidos: "PÉREZ gómez",
     tipoDocumento: "ci",
-    documento: "1.234.567-2",
+    documento: "12345672",
     fechaNacimiento: haceAnios(19),
     correo: "Maria.Perez@Gmail.com",
     whatsapp: "091 234 567",
@@ -53,7 +53,7 @@ export const ACUDIENTE = {
   autorizaAcudiente: true,
 };
 
-/** Cédulas uruguayas válidas (dígito verificador correcto) para generar personas distintas. */
+/** Cédulas uruguayas reales en forma (8 dígitos con verificador) para generar personas distintas. */
 export function cedulaUy(base: number): string {
   const b = String(base).padStart(7, "0");
   const pesos = [2, 9, 8, 7, 6, 3, 4];

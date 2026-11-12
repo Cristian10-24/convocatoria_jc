@@ -48,9 +48,13 @@ describe("validación del formulario de Uruguay", () => {
     expect(r.errores.aceptaDatos).toBe("Tenés que aceptar para enviar la inscripción.");
   });
 
-  it("valida la cédula uruguaya con su dígito verificador", () => {
-    expect(revisarUy(inscripcionUy({ documento: "1.234.567-3" })).errores.documento).toBeDefined();
-    expect(revisarUy(inscripcionUy({ tipoDocumento: "dni_ar", documento: "30.123.456" })).datos?.documento).toBe("30123456");
+  it("el documento es un número entero: solo dígitos, sin puntos, guiones ni dígito verificador", () => {
+    expect(revisarUy(inscripcionUy({ documento: "12345673" })).errores.documento).toBeUndefined(); // sin revisar el verificador
+    expect(revisarUy(inscripcionUy({ documento: " 4567890 " })).datos?.documento).toBe("4567890");
+    for (const malo of ["1.234.567-2", "1234567-2", "AB12345", "12345", "123456789", "11111111"])
+      expect(revisarUy(inscripcionUy({ documento: malo })).errores.documento, malo).toBe("Escribí solo el número, sin puntos, guiones ni letras.");
+    expect(revisarUy(inscripcionUy({ tipoDocumento: "dni_ar", documento: "30123456" })).datos?.documento).toBe("30123456");
+    expect(revisarUy(inscripcionUy({ tipoDocumento: "pasaporte", documento: "C1234567" })).errores.documento).toBeDefined();
   });
 
   it("la ciudad debe ser de la sede elegida, o «Otra» con texto", () => {
@@ -93,7 +97,7 @@ describe("validación del formulario de Uruguay", () => {
     expect(revisarUy(inscripcionUy({ canal: "embajador" })).errores.embajador).toBeDefined();
     expect(revisarUy(inscripcionUy({ canal: "embajador", embajador: "Juan de Salto" })).datos?.embajador).toBe("Juan de Salto");
     expect(revisarUy(inscripcionUy({ ocupacion: ["estudiante", "otro"] })).errores.ocupacionOtra).toBeDefined();
-    expect(revisarUy(inscripcionUy({ tipoDocumento: "otro", documento: "AB12345" })).errores.tipoDocumentoOtro).toBeDefined();
+    expect(revisarUy(inscripcionUy({ tipoDocumento: "otro", documento: "1234567" })).errores.tipoDocumentoOtro).toBeDefined();
     // Un campo oculto no se valida aunque traiga basura.
     expect(revisarUy(inscripcionUy({ embajador: "zzzzzz" })).errores.embajador).toBeUndefined();
     expect(revisarUy(inscripcionUy({ embajador: "Juan" })).datos?.embajador).toBeUndefined();

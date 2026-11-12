@@ -15,7 +15,7 @@ export const MENSAJES = {
   nombre: { tu: "Escribe solo letras (puedes usar tildes, espacios y guiones).", vos: "Escribí solo letras (podés usar tildes, espacios y guiones)." },
   texto: { tu: "Escribe una respuesta válida.", vos: "Escribí una respuesta válida." },
   direccion: { tu: "Escribe la dirección completa (calle y número).", vos: "Escribí la dirección completa (calle y número)." },
-  documento: "El número no es válido para ese tipo de identificación.",
+  documento: { tu: "Escribe solo el número, sin puntos, guiones ni letras.", vos: "Escribí solo el número, sin puntos, guiones ni letras." },
   fecha: { tu: "Escribe una fecha válida.", vos: "Escribí una fecha válida." },
   fechaFutura: "La fecha no puede ser posterior a hoy.",
   edadMinima: { tu: "Para inscribirte necesitas tener al menos {min} años.", vos: "Para inscribirte necesitás tener al menos {min} años." },

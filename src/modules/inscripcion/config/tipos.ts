@@ -9,14 +9,8 @@ export type TextoTrato = string | { tu: string; vos: string };
 
 export type Opcion = { id: string; etiqueta: TextoTrato };
 
-/** Reglas de validación de documentos (implementadas en src/shared/validation/documento.ts). */
-export type ReglaDocumento =
-  | { tipo: "cedula_uy" }
-  | { tipo: "cedula_ec" }
-  | { tipo: "cedula_pa" }
-  | { tipo: "dni_ar" }
-  | { tipo: "numerico"; min: number; max: number }
-  | { tipo: "alfanumerico"; min: number; max: number };
+/** El número de identificación es siempre un entero: solo dígitos, sin puntos, guiones ni letras. */
+export type ReglaDocumento = { min: number; max: number };
 
 export type TipoDocumento = { id: string; etiqueta: string; regla: ReglaDocumento; ayuda?: string; /** pide escribir cuál */ conTexto?: boolean };
 

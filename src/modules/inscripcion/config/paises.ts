@@ -6,8 +6,8 @@ import type { PaisSlug } from "@/shared/config/paises";
 import type { ConfigPaisInscripcion } from "./tipos";
 
 const EDAD = { minima: 14, alertaMayorDe: 30, mayoriaDeEdad: 18 };
-const PASAPORTE = { id: "pasaporte", etiqueta: "Pasaporte", regla: { tipo: "alfanumerico", min: 5, max: 15 } } as const;
-const OTRO_DOC = { id: "otro", etiqueta: "Otro", regla: { tipo: "alfanumerico", min: 5, max: 20 }, conTexto: true } as const;
+const PASAPORTE = { id: "pasaporte", etiqueta: "Pasaporte", regla: { min: 5, max: 15 } } as const;
+const OTRO_DOC = { id: "otro", etiqueta: "Otro", regla: { min: 5, max: 20 }, conTexto: true } as const;
 
 export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
   uy: {
@@ -32,10 +32,10 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       },
     ],
     tiposDocumento: [
-      { id: "ci", etiqueta: "Cédula de identidad", regla: { tipo: "cedula_uy" }, ayuda: "Con el dígito verificador. Ejemplo: 1.234.567-2" },
+      { id: "ci", etiqueta: "Cédula de identidad", regla: { min: 6, max: 8 } },
       PASAPORTE,
-      { id: "residencia", etiqueta: "Carné de residencia", regla: { tipo: "alfanumerico", min: 5, max: 15 } },
-      { id: "dni_ar", etiqueta: "DNI argentino", regla: { tipo: "dni_ar" }, ayuda: "Para quienes viven en Colón o Concepción del Uruguay." },
+      { id: "residencia", etiqueta: "Carné de residencia", regla: { min: 5, max: 15 } },
+      { id: "dni_ar", etiqueta: "DNI argentino", regla: { min: 7, max: 8 }, ayuda: "Para quienes viven en Colón o Concepción del Uruguay." },
       OTRO_DOC,
     ],
     grados: [
@@ -68,10 +68,10 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       },
     ],
     tiposDocumento: [
-      { id: "ti", etiqueta: "Tarjeta de identidad", regla: { tipo: "numerico", min: 10, max: 11 } },
-      { id: "cc", etiqueta: "Cédula de ciudadanía", regla: { tipo: "numerico", min: 6, max: 10 } },
-      { id: "ce", etiqueta: "Cédula de extranjería", regla: { tipo: "alfanumerico", min: 6, max: 12 } },
-      { id: "ppt", etiqueta: "Permiso por Protección Temporal (PPT)", regla: { tipo: "alfanumerico", min: 6, max: 12 } },
+      { id: "ti", etiqueta: "Tarjeta de identidad", regla: { min: 10, max: 11 } },
+      { id: "cc", etiqueta: "Cédula de ciudadanía", regla: { min: 6, max: 10 } },
+      { id: "ce", etiqueta: "Cédula de extranjería", regla: { min: 6, max: 12 } },
+      { id: "ppt", etiqueta: "Permiso por Protección Temporal (PPT)", regla: { min: 6, max: 12 } },
       PASAPORTE,
       OTRO_DOC,
     ],
@@ -97,9 +97,9 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       { id: "panama", nombre: "Ciudad de Panamá", ciudades: ["Ciudad de Panamá", "San Miguelito", "Arraiján", "La Chorrera", "Chepo", "Capira"] },
     ],
     tiposDocumento: [
-      { id: "cedula", etiqueta: "Cédula", regla: { tipo: "cedula_pa" }, ayuda: "Con guiones. Ejemplo: 8-123-4567" },
+      { id: "cedula", etiqueta: "Cédula", regla: { min: 5, max: 15 } },
       PASAPORTE,
-      { id: "residente", etiqueta: "Carné de residente", regla: { tipo: "alfanumerico", min: 5, max: 15 } },
+      { id: "residente", etiqueta: "Carné de residente", regla: { min: 5, max: 15 } },
       OTRO_DOC,
     ],
     grados: [
@@ -125,7 +125,7 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       { id: "guayaquil", nombre: "Guayaquil", ciudades: ["Guayaquil", "Durán", "Samborondón", "Daule", "Milagro"] },
     ],
     tiposDocumento: [
-      { id: "cedula", etiqueta: "Cédula de identidad", regla: { tipo: "cedula_ec" }, ayuda: "10 dígitos." },
+      { id: "cedula", etiqueta: "Cédula de identidad", regla: { min: 10, max: 10 } },
       PASAPORTE,
       OTRO_DOC,
     ],

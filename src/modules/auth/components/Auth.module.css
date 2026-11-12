@@ -1,0 +1,92 @@
+/* Login y panel provisional. Mismo lenguaje visual del sitio (Outfit, fondo durazno, naranja), sin adornos:
+   lo usan los equipos para trabajar. Primero celular. */
+.raiz {
+  --naranja: #e9531f;
+  --naranja-osc: #b83c10;
+  --borde: #ece0d6;
+  --gris: #4b4a5c;
+  --marino: #1c2a7a;
+  --rojo: #c93a2b;
+  --rojo-suave: #fdecea;
+
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.raiz :focus-visible { outline: 3px solid #1f6fb5; outline-offset: 2px; }
+
+.tarjeta {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 20px;
+  padding: 28px 22px;
+}
+.tarjetaAncha { max-width: 640px; }
+
+.marca { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.logo { width: 46px; height: 40px; object-fit: contain; }
+.titulo { margin: 0; font-size: 22px; font-weight: 800; color: var(--marino); line-height: 1.2; }
+.subtitulo { margin: 4px 0 0; font-size: 15px; color: var(--gris); }
+
+.campo { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+.campo label { font-size: 14px; font-weight: 700; }
+.campo input {
+  min-height: 52px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 16px;
+  border: 1.5px solid #d9c7b8;
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+}
+.campo input[aria-invalid="true"] { border-color: var(--rojo); }
+.errorCampo { font-size: 13px; color: var(--rojo); }
+
+.alerta {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--rojo-suave);
+  color: var(--rojo);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.boton {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--naranja);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.boton:hover { background: var(--naranja-osc); }
+.boton:disabled { opacity: .6; cursor: progress; }
+.botonSecundario {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid var(--borde);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--naranja-osc);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.botonSecundario:disabled { opacity: .6; cursor: progress; }
+
+.encabezadoPanel { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.datos { margin: 20px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 15px; }
+.datos dt { font-weight: 700; color: var(--gris); }
+.datos dd { margin: 0; }
+.nota { margin: 20px 0 0; font-size: 14px; color: var(--gris); }

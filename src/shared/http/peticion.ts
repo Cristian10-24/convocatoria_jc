@@ -16,6 +16,7 @@ export type CodigoError =
   | "verificacion"
   | "cerrada"
   | "duplicado"
+  | "credenciales"
   | "sesion"
   | "sin_permiso"
   | "no_encontrado"

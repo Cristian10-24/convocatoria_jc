@@ -1,6 +1,8 @@
 # Plan · App de inscripción Convocatoria Jóvenes creaTIvos 2027
 
-> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0, 1 y 2 terminadas; sigue la fase 3 (autenticación del panel).
+> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0, 1, 2 y 3 terminadas; sigue la fase 4 (panel).
+> Fase 3: el módulo `auth` entrega `alcanceDe()` / `filtroPais()` (permisos.ts) y `exigirPagina()` / `exigirApi()` (servidor.ts);
+> el panel recibe el `Alcance` desde la página o la ruta (un módulo no importa de otro). Roles y permisos en `auth/config/roles.ts`.
 > El modelo de datos vigente de la inscripción está en `src/modules/inscripcion/repository.ts` (tipo `Inscripcion`) y `schema.ts` (`DatosInscripcion`).
 > Referencias de solo lectura: `_design-ref/front/` (código del front extraído del zip) y `C:\ROFÉ\PAGINAS\validation-jc`. Ningún otro proyecto se modifica.
 

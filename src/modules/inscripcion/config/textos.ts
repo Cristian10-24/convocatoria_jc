@@ -16,6 +16,7 @@ export const MENSAJES = {
   texto: { tu: "Escribe una respuesta válida.", vos: "Escribí una respuesta válida." },
   direccion: { tu: "Escribe la dirección completa (calle y número).", vos: "Escribí la dirección completa (calle y número)." },
   documento: { tu: "Escribe solo el número, sin puntos, guiones ni letras.", vos: "Escribí solo el número, sin puntos, guiones ni letras." },
+  documentoAlfanumerico: { tu: "Escribe solo letras y números, sin espacios ni símbolos.", vos: "Escribí solo letras y números, sin espacios ni símbolos." },
   fecha: { tu: "Escribe una fecha válida.", vos: "Escribí una fecha válida." },
   fechaFutura: "La fecha no puede ser posterior a hoy.",
   edadMinima: { tu: "Para inscribirte necesitas tener al menos {min} años.", vos: "Para inscribirte necesitás tener al menos {min} años." },

@@ -21,7 +21,7 @@ import { plantilla, txt, UI } from "../config/textos";
 import type { IdPaso, Opcion, TextoTrato } from "../config/tipos";
 import { textoRespuesta } from "../mostrar";
 import {
-  camposVisibles, erroresDelPaso, pasosVisibles, primerPasoConErrores, revisarBorrador, sedeDe, type Borrador, type Errores,
+  camposVisibles, documentoAlEscribir, erroresDelPaso, pasosVisibles, primerPasoConErrores, revisarBorrador, sedeDe, type Borrador, type Errores,
 } from "../schema";
 import { CampoAceptar, CampoMultiple, CampoOpciones, CampoSelector, CampoTexto } from "./Campos";
 import Confirmacion from "./Confirmacion";
@@ -213,8 +213,12 @@ export default function FormularioInscripcion({ pais, anio, claveTurnstile, ruta
         return unica(c, cfg.tiposDocumento.map((x) => ({ id: x.id, etiqueta: x.etiqueta })));
       case "documento": {
         const tipo = cfg.tiposDocumento.find((x) => x.id === datos.tipoDocumento);
-        // Solo dígitos: cualquier otro carácter se descarta al escribir o pegar.
-        return texto(c, { ayuda: tipo?.ayuda, modo: "numeric", maxLength: tipo?.regla.max ?? 20, onCambio: (x) => cambiar(c, x.replace(/\D/g, "")) });
+        // Los caracteres que el formato no admite se descartan al escribir o pegar (ver documentoAlEscribir).
+        const numerico = tipo?.regla.formato !== "alfanumerico";
+        return texto(c, {
+          ayuda: tipo?.ayuda, modo: numerico ? "numeric" : "text", maxLength: tipo?.regla.max ?? 20,
+          onCambio: (x) => cambiar(c, documentoAlEscribir(tipo?.regla, x)),
+        });
       }
       case "fechaNacimiento": return texto(c, { tipo: "date", max: hoy, autoCompletar: "bday" });
       case "correo": {

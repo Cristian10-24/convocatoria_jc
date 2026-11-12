@@ -9,7 +9,7 @@ import { AUTORIZACION_ACUDIENTE, LEGAL } from "@/modules/inscripcion/config/lega
 import { CONFIG_PAISES } from "@/modules/inscripcion/config/paises";
 import { PASOS, PREGUNTAS } from "@/modules/inscripcion/config/preguntas";
 import { radicadoDe, prefijoConvocatoria } from "@/modules/inscripcion/radicado";
-import { camposVisibles, esquemaInscripcion, pasosVisibles, revisarBorrador } from "@/modules/inscripcion/schema";
+import { camposVisibles, documentoAlEscribir, esquemaInscripcion, pasosVisibles, revisarBorrador } from "@/modules/inscripcion/schema";
 import { textoRespuesta } from "@/modules/inscripcion/mostrar";
 import { conUtm, segunEstado } from "@/modules/convocatoria/content/acciones";
 import { ACUDIENTE, cedulaUy, haceAnios, inscripcionUy } from "./inscripcion-datos";
@@ -54,7 +54,24 @@ describe("validación del formulario de Uruguay", () => {
     for (const malo of ["1.234.567-2", "1234567-2", "AB12345", "12345", "123456789", "11111111"])
       expect(revisarUy(inscripcionUy({ documento: malo })).errores.documento, malo).toBe("Escribí solo el número, sin puntos, guiones ni letras.");
     expect(revisarUy(inscripcionUy({ tipoDocumento: "dni_ar", documento: "30123456" })).datos?.documento).toBe("30123456");
-    expect(revisarUy(inscripcionUy({ tipoDocumento: "pasaporte", documento: "C1234567" })).errores.documento).toBeDefined();
+    // Se guarda como texto: los ceros a la izquierda se conservan.
+    expect(revisarUy(inscripcionUy({ documento: "01234567" })).datos?.documento).toBe("01234567");
+    expect(revisarUy(inscripcionUy({ tipoDocumento: "dni_ar", documento: "AB123456" })).errores.documento).toBeDefined();
+  });
+
+  it("pasaporte y «Otro» admiten letras y números, sin espacios ni símbolos, y se guardan en mayúsculas", () => {
+    expect(revisarUy(inscripcionUy({ tipoDocumento: "pasaporte", documento: "c1234567" })).datos?.documento).toBe("C1234567");
+    expect(revisarUy(inscripcionUy({ tipoDocumento: "pasaporte", documento: "0012345" })).datos?.documento).toBe("0012345");
+    const otro = revisarUy(inscripcionUy({ tipoDocumento: "otro", tipoDocumentoOtro: "Cédula paraguaya", documento: "py45678" }));
+    expect(otro.datos).toMatchObject({ documento: "PY45678", tipoDocumentoOtro: "Cédula paraguaya" });
+    for (const malo of ["C 123456", "C-123456", "C.123456", "AAAAAAA", "C12"])
+      expect(revisarUy(inscripcionUy({ tipoDocumento: "pasaporte", documento: malo })).errores.documento, malo).toBe("Escribí solo letras y números, sin espacios ni símbolos.");
+  });
+
+  it("al escribir, el campo descarta lo que el formato no admite", () => {
+    expect(documentoAlEscribir({ formato: "numerico", min: 6, max: 8 }, "1.234.567-2")).toBe("12345672");
+    expect(documentoAlEscribir({ formato: "numerico", min: 6, max: 8 }, "0123 abc")).toBe("0123");
+    expect(documentoAlEscribir({ formato: "alfanumerico", min: 5, max: 15 }, "c-12 345.6")).toBe("C123456");
   });
 
   it("la ciudad debe ser de la sede elegida, o «Otra» con texto", () => {

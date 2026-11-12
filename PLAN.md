@@ -26,7 +26,7 @@
 | F2 | Países | Se implementa completo **Uruguay**. Colombia, Panamá y Ecuador quedan listos en configuración (tipos de documento, grados, escala de notas, trato) con "Inscripciones muy pronto" hasta confirmar sus datos. |
 | F3 | Edad | Menos de 14 años **bloquea** (lo exige el texto legal). Más de 30 años se marca como alerta. Menores de 18 llenan el paso del acudiente. |
 | F4 | "¿Vives en Uruguay?" | Se quita: sede y ciudad lo resuelven (incluye Colón y Concepción del Uruguay). |
-| F5 | Identificación | Cédula, Pasaporte, Carné de residencia, DNI argentino, Otro (con texto). El número es siempre un entero: solo dígitos, sin puntos, guiones ni dígito verificador. |
+| F5 | Identificación | Cédula, Pasaporte, Carné de residencia, DNI argentino, Otro (con texto). Cédula, DNI y carné: solo dígitos, sin puntos, guiones ni dígito verificador. Pasaporte y Otro: letras y números, sin espacios ni símbolos, en mayúsculas. Siempre se guarda como texto (conserva ceros a la izquierda). Panamá conservará su cédula con guiones y prefijos (nota en `paises.ts`). |
 | F6 | Número alterno | Obligatorio y distinto del WhatsApp. |
 | F7 | Promedio | Con decimales, en la escala del país (Uruguay 1–12), obligatorio para todos. |
 | F8 | Alertas | Sin internet · sin acceso a computadora · menos de 5 horas o entre 5 y 10 horas · más de 30 años · egresó hace más de 3 años · correo repetido. |

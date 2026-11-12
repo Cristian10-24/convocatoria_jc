@@ -6,8 +6,9 @@ import type { PaisSlug } from "@/shared/config/paises";
 import type { ConfigPaisInscripcion } from "./tipos";
 
 const EDAD = { minima: 14, alertaMayorDe: 30, mayoriaDeEdad: 18 };
-const PASAPORTE = { id: "pasaporte", etiqueta: "Pasaporte", regla: { min: 5, max: 15 } } as const;
-const OTRO_DOC = { id: "otro", etiqueta: "Otro", regla: { min: 5, max: 20 }, conTexto: true } as const;
+// Pasaporte y "Otro" admiten letras y números (se guardan en mayúsculas); los demás documentos, solo dígitos.
+const PASAPORTE = { id: "pasaporte", etiqueta: "Pasaporte", regla: { formato: "alfanumerico", min: 5, max: 15 } } as const;
+const OTRO_DOC = { id: "otro", etiqueta: "Otro", regla: { formato: "alfanumerico", min: 5, max: 20 }, conTexto: true } as const;
 
 export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
   uy: {
@@ -32,10 +33,10 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       },
     ],
     tiposDocumento: [
-      { id: "ci", etiqueta: "Cédula de identidad", regla: { min: 6, max: 8 } },
+      { id: "ci", etiqueta: "Cédula de identidad", regla: { formato: "numerico", min: 6, max: 8 } },
       PASAPORTE,
-      { id: "residencia", etiqueta: "Carné de residencia", regla: { min: 5, max: 15 } },
-      { id: "dni_ar", etiqueta: "DNI argentino", regla: { min: 7, max: 8 }, ayuda: "Para quienes viven en Colón o Concepción del Uruguay." },
+      { id: "residencia", etiqueta: "Carné de residencia", regla: { formato: "numerico", min: 5, max: 15 } },
+      { id: "dni_ar", etiqueta: "DNI argentino", regla: { formato: "numerico", min: 7, max: 8 }, ayuda: "Para quienes viven en Colón o Concepción del Uruguay." },
       OTRO_DOC,
     ],
     grados: [
@@ -68,10 +69,10 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       },
     ],
     tiposDocumento: [
-      { id: "ti", etiqueta: "Tarjeta de identidad", regla: { min: 10, max: 11 } },
-      { id: "cc", etiqueta: "Cédula de ciudadanía", regla: { min: 6, max: 10 } },
-      { id: "ce", etiqueta: "Cédula de extranjería", regla: { min: 6, max: 12 } },
-      { id: "ppt", etiqueta: "Permiso por Protección Temporal (PPT)", regla: { min: 6, max: 12 } },
+      { id: "ti", etiqueta: "Tarjeta de identidad", regla: { formato: "numerico", min: 10, max: 11 } },
+      { id: "cc", etiqueta: "Cédula de ciudadanía", regla: { formato: "numerico", min: 6, max: 10 } },
+      { id: "ce", etiqueta: "Cédula de extranjería", regla: { formato: "numerico", min: 6, max: 12 } },
+      { id: "ppt", etiqueta: "Permiso por Protección Temporal (PPT)", regla: { formato: "numerico", min: 6, max: 12 } },
       PASAPORTE,
       OTRO_DOC,
     ],
@@ -97,9 +98,12 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       { id: "panama", nombre: "Ciudad de Panamá", ciudades: ["Ciudad de Panamá", "San Miguelito", "Arraiján", "La Chorrera", "Chepo", "Capira"] },
     ],
     tiposDocumento: [
-      { id: "cedula", etiqueta: "Cédula", regla: { min: 5, max: 15 } },
+      // PENDIENTE antes de activar Panamá: su cédula NO es un número entero. Hay que conservar el formato con guiones y
+      // prefijos (8-123-4567, PE-1-234, E-8-12345, N-…, 1AV-…) con una regla propia (p. ej. formato "cedula_pa"),
+      // validarla con cedulaPanama() de src/shared/validation/documento.ts y guardarla tal cual, en mayúsculas.
+      { id: "cedula", etiqueta: "Cédula", regla: { formato: "numerico", min: 5, max: 15 } },
       PASAPORTE,
-      { id: "residente", etiqueta: "Carné de residente", regla: { min: 5, max: 15 } },
+      { id: "residente", etiqueta: "Carné de residente", regla: { formato: "numerico", min: 5, max: 15 } },
       OTRO_DOC,
     ],
     grados: [
@@ -125,7 +129,7 @@ export const CONFIG_PAISES: Record<PaisSlug, ConfigPaisInscripcion> = {
       { id: "guayaquil", nombre: "Guayaquil", ciudades: ["Guayaquil", "Durán", "Samborondón", "Daule", "Milagro"] },
     ],
     tiposDocumento: [
-      { id: "cedula", etiqueta: "Cédula de identidad", regla: { min: 10, max: 10 } },
+      { id: "cedula", etiqueta: "Cédula de identidad", regla: { formato: "numerico", min: 10, max: 10 } },
       PASAPORTE,
       OTRO_DOC,
     ],

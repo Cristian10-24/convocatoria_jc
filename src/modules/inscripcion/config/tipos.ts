@@ -9,8 +9,12 @@ export type TextoTrato = string | { tu: string; vos: string };
 
 export type Opcion = { id: string; etiqueta: TextoTrato };
 
-/** El número de identificación es siempre un entero: solo dígitos, sin puntos, guiones ni letras. */
-export type ReglaDocumento = { min: number; max: number };
+/**
+ * Formato del número de identificación. Siempre se guarda como texto (no se pierden los ceros a la izquierda).
+ * - numerico: solo dígitos, sin puntos, guiones ni letras (cédulas, DNI).
+ * - alfanumerico: letras y números, sin espacios ni símbolos; se guarda en mayúsculas (pasaporte, "Otro").
+ */
+export type ReglaDocumento = { formato: "numerico" | "alfanumerico"; min: number; max: number };
 
 export type TipoDocumento = { id: string; etiqueta: string; regla: ReglaDocumento; ayuda?: string; /** pide escribir cuál */ conTexto?: boolean };
 

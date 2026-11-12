@@ -93,10 +93,23 @@ export function sedeDe(cfg: ConfigPaisInscripcion, d: Borrador): string | undefi
 }
 
 // ---------- Reglas ----------
-/** El documento es un número entero: solo dígitos, con la longitud del tipo y no todos iguales (111111). */
-function documentoValido(regla: ReglaDocumento, valor: string): boolean {
+/** Documento tal como se guarda: texto sin espacios en los extremos y, si admite letras, en mayúsculas. */
+export function documentoNormalizado(regla: ReglaDocumento, valor: string): string {
   const d = valor.trim();
-  return /^\d+$/.test(d) && d.length >= regla.min && d.length <= regla.max && !/^(\d)\1+$/.test(d);
+  return regla.formato === "alfanumerico" ? d.toUpperCase() : d;
+}
+
+/** Lo que el campo deja escribir: descarta al vuelo los caracteres que el formato no admite. */
+export function documentoAlEscribir(regla: ReglaDocumento | undefined, valor: string): string {
+  if (regla?.formato === "alfanumerico") return valor.replace(/[^0-9A-Za-z]/g, "").toUpperCase();
+  return valor.replace(/\D/g, "");
+}
+
+/** Solo dígitos (o letras y números), con la longitud del tipo y sin repetir un único carácter (111111). */
+function documentoValido(regla: ReglaDocumento, valor: string): boolean {
+  const d = documentoNormalizado(regla, valor);
+  const forma = regla.formato === "alfanumerico" ? /^[0-9A-Z]+$/ : /^\d+$/;
+  return forma.test(d) && d.length >= regla.min && d.length <= regla.max && !/^(.)\1+$/.test(d);
 }
 
 const opcionValida = (opciones: Opcion[], id: string) => opciones.some((o) => o.id === id);
@@ -164,7 +177,8 @@ export function revisar(cfg: ConfigPaisInscripcion, d: EntradaInscripcion, hoy: 
   if (!tipo) error("tipoDocumento", m("elegir"));
   if (tipo?.conTexto) libre("tipoDocumentoOtro");
   if (vacio(d.documento)) error("documento", m("obligatorio"));
-  else if (tipo && !documentoValido(tipo.regla, d.documento)) error("documento", m("documento"));
+  else if (tipo && !documentoValido(tipo.regla, d.documento))
+    error("documento", m(tipo.regla.formato === "alfanumerico" ? "documentoAlfanumerico" : "documento"));
   let edad: number | null = null;
   if (vacio(d.fechaNacimiento)) error("fechaNacimiento", m("obligatorio"));
   else if (!fechaValida(d.fechaNacimiento) || d.fechaNacimiento < "1940-01-01") error("fechaNacimiento", m("fecha"));
@@ -251,7 +265,7 @@ export function revisar(cfg: ConfigPaisInscripcion, d: EntradaInscripcion, hoy: 
     datos: {
       sede: sedeCfg.id, ciudad: d.ciudad, ciudadOtra: opcional(d.ciudad === CIUDAD_OTRA, d.ciudadOtra), direccion: limpiarEspacios(d.direccion),
       nombres: nombrePropio(d.nombres), apellidos: nombrePropio(d.apellidos), tipoDocumento: tipo.id,
-      tipoDocumentoOtro: opcional(!!tipo.conTexto, d.tipoDocumentoOtro), documento: d.documento.trim(),
+      tipoDocumentoOtro: opcional(!!tipo.conTexto, d.tipoDocumentoOtro), documento: documentoNormalizado(tipo.regla, d.documento),
       fechaNacimiento: d.fechaNacimiento, edad, correo: correoN, whatsapp, telefonoAlterno: alterno, acudiente,
       grado: d.grado, anioEgreso, promedio, institucion: limpiarEspacios(d.institucion), internet: d.internet === "si",
       computadora: d.computadora, autonomia: d.autonomia, horas: d.horas,

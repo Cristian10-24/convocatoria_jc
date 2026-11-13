@@ -29,4 +29,8 @@ export const MENSAJES_AUTH = {
   claveLarga: "La contraseña es demasiado larga (máximo {max} bytes).",
   nombre: "Escribe el nombre completo (3 a 80 caracteres).",
   paisesCoordinador: "Un coordinador necesita al menos un país.",
+  propio: "No puedes quitarte tu propio rol de administración ni desactivarte.",
+  ultimoAdmin: "Debe quedar al menos un administrador activo.",
+  duplicado: "Ya existe un usuario con ese nombre de usuario.",
+  noEncontrado: "El usuario no existe.",
 } as const;

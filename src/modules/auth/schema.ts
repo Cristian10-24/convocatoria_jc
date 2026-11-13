@@ -57,3 +57,22 @@ export const NuevoUsuario = z
     if (v.rol === "coordinador" && v.paises.length === 0) ctx.addIssue({ code: "custom", path: ["paises"], message: M.paisesCoordinador });
   });
 export type NuevoUsuario = z.input<typeof NuevoUsuario>;
+
+/** Cambios a un usuario existente (pantalla de usuarios). El usuario (login) no se cambia. */
+export const EdicionUsuario = z
+  .object({
+    nombre: z
+      .string()
+      .transform((s) => s.replace(/\s+/g, " ").trim())
+      .pipe(z.string().min(3, M.nombre).max(80, M.nombre))
+      .optional(),
+    rol: z.enum(ROLES).optional(),
+    paises: z
+      .array(z.enum(PAISES))
+      .max(PAISES.length)
+      .transform((ps) => [...new Set(ps)])
+      .optional(),
+    activo: z.boolean().optional(),
+  })
+  .strict();
+export type EdicionUsuario = z.input<typeof EdicionUsuario>;

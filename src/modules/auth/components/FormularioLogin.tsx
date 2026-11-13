@@ -1,9 +1,11 @@
 "use client";
 // Formulario de ingreso al panel. Valida con el mismo esquema que el servidor y bloquea el doble envío.
-import { useState, type FormEvent } from "react";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
 import { TEXTOS_AUTH as T } from "../config/textos";
 import { Credenciales } from "../schema";
 import s from "./Auth.module.css";
+
+const sinSuscripcion = () => () => {};
 
 type Errores = Partial<Record<"usuario" | "clave", string>>;
 
@@ -13,6 +15,9 @@ export default function FormularioLogin() {
   const [errores, setErrores] = useState<Errores>({});
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  // Hasta que React toma el control, el botón está desactivado: así el navegador nunca envía el formulario por su
+  // cuenta (por GET pondría la contraseña en la URL y en el historial).
+  const listo = useSyncExternalStore(sinSuscripcion, () => true, () => false);
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -52,7 +57,7 @@ export default function FormularioLogin() {
   }
 
   return (
-    <form onSubmit={enviar} noValidate>
+    <form onSubmit={enviar} method="post" noValidate>
       <div className={s.campo}>
         <label htmlFor="usuario">{T.usuario}</label>
         <input
@@ -87,7 +92,7 @@ export default function FormularioLogin() {
           {mensaje}
         </p>
       )}
-      <button className={s.boton} type="submit" disabled={enviando}>
+      <button className={s.boton} type="submit" disabled={enviando || !listo}>
         {enviando ? T.entrando : T.entrar}
       </button>
     </form>

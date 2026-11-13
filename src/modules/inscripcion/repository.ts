@@ -22,6 +22,8 @@ export type Inscripcion = DatosInscripcion & {
   idempotencia?: string;
   ipHash: string;
   userAgent: string;
+  /** Solo en datos falsos de `npm run semilla:demo` (para poder borrarlos sin tocar los reales). */
+  demo?: true;
 };
 
 const db = conIndices("inscripcion", (d: Db) => {

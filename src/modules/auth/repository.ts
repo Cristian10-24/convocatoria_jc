@@ -32,7 +32,10 @@ export type AccionAuditoria =
   | "logout"
   | "revocacion"
   | "desactivacion"
-  | "usuario_creado";
+  | "usuario_creado"
+  | "usuario_editado"
+  | "clave_restablecida"
+  | "exportacion";
 
 export type EventoAuditoria = {
   accion: AccionAuditoria;
@@ -93,6 +96,25 @@ export async function subirVersion(id: ObjectId): Promise<boolean> {
 /** Desactiva y, en la misma operación, sube tokenVersion (sus sesiones se cierran aunque luego se reactive). */
 export async function desactivar(id: ObjectId): Promise<boolean> {
   const r = await (await usuarios()).updateOne({ _id: id }, { $set: { activo: false }, $inc: { tokenVersion: 1 } });
+  return r.matchedCount === 1;
+}
+
+export async function listarUsuarios(): Promise<UsuarioPublico[]> {
+  return (await usuarios()).find<UsuarioPublico>({}, SIN_HASH).sort({ activo: -1, usuario: 1 }).toArray();
+}
+
+/** Cuántos admins activos hay, sin contar `excepto` (para no dejar el panel sin administración). */
+export async function contarAdminsActivos(excepto?: ObjectId): Promise<number> {
+  return (await usuarios()).countDocuments({ rol: "admin", activo: true, ...(excepto ? { _id: { $ne: excepto } } : {}) });
+}
+
+/** Cambia datos del usuario. `cerrarSesiones` sube tokenVersion en la misma operación. */
+export async function actualizarUsuario(
+  id: ObjectId,
+  cambios: Partial<Pick<Usuario, "nombre" | "rol" | "paises" | "activo" | "passwordHash">>,
+  cerrarSesiones = false,
+): Promise<boolean> {
+  const r = await (await usuarios()).updateOne({ _id: id }, { $set: cambios, ...(cerrarSesiones ? { $inc: { tokenVersion: 1 } } : {}) });
   return r.matchedCount === 1;
 }
 

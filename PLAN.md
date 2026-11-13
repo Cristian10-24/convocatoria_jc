@@ -1,6 +1,9 @@
 # Plan · App de inscripción Convocatoria Jóvenes creaTIvos 2027
 
-> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0, 1, 2 y 3 terminadas; sigue la fase 4 (panel).
+> Estado: **plan aprobado (v2, con los ajustes del equipo)**. Fases 0 a 4 terminadas; de la fase 5 está el README con
+> la guía de Vercel/Atlas/Turnstile y el checklist. Falta: desplegar, prueba de carga contra un preview y textos legales definitivos.
+> Fase 4: el panel de inscritos (consultas, tablero, exportación) vive en `src/modules/inscripcion/panel/` porque esos datos
+> son del módulo inscripción (regla de módulos); no hay un módulo `panel` aparte. La pantalla de usuarios es del módulo `auth`.
 > Fase 3: el módulo `auth` entrega `alcanceDe()` / `filtroPais()` (permisos.ts) y `exigirPagina()` / `exigirApi()` (servidor.ts);
 > el panel recibe el `Alcance` desde la página o la ruta (un módulo no importa de otro). Roles y permisos en `auth/config/roles.ts`.
 > El modelo de datos vigente de la inscripción está en `src/modules/inscripcion/repository.ts` (tipo `Inscripcion`) y `schema.ts` (`DatosInscripcion`).

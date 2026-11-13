@@ -90,3 +90,41 @@
 .datos dt { font-weight: 700; color: var(--gris); }
 .datos dd { margin: 0; }
 .nota { margin: 20px 0 0; font-size: 14px; color: var(--gris); }
+
+/* ---------- Pantalla de usuarios (dentro del marco del panel) ---------- */
+.gestion { display: flex; flex-direction: column; gap: 14px; --naranja: #e9531f; --naranja-osc: #b83c10; --borde: #ece0d6; --gris: #4b4a5c; --marino: #1c2a7a; --rojo: #c93a2b; --rojo-suave: #fdecea; }
+.gestion :focus-visible { outline: 3px solid #1f6fb5; outline-offset: 2px; }
+.tarjetaPanel { max-width: none; padding: 16px 18px; border-radius: 16px; }
+.tituloSeccion { margin: 0 0 4px; font-size: 16px; font-weight: 800; color: var(--marino); }
+.formFila { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
+.formFila .campo, .filaUsuario .campo { margin-top: 0; min-width: 160px; flex: 1 1 160px; }
+.formFila .campo input, .formFila .campo select, .filaUsuario .campo select { min-height: 42px; font-size: 14px; }
+.campo select { min-height: 52px; padding: 0 12px; font: inherit; font-size: 16px; border: 1.5px solid #d9c7b8; border-radius: 12px; background: #fff; color: inherit; }
+.botonCompacto {
+  min-height: 42px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--naranja); color: #fff;
+  font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+}
+.botonCompacto:hover { background: var(--naranja-osc); }
+.botonCompacto:disabled { opacity: .6; cursor: progress; }
+.botonPeligro {
+  min-height: 44px; padding: 0 18px; border: 1.5px solid #f2c6c0; border-radius: 999px; background: #fff; color: var(--rojo);
+  font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.botonPeligro:hover { background: var(--rojo-suave); }
+.ayuda { display: block; margin: 8px 0 0; font-size: 13px; color: var(--gris); }
+.paises { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; border: 0; font-size: 14px; align-self: center; }
+.paises label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.paises input { width: 18px; height: 18px; accent-color: var(--naranja); }
+.oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.listaUsuarios { display: flex; flex-direction: column; gap: 10px; }
+.filaUsuario { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; }
+.filaUsuario > div:first-child { flex: 2 1 240px; }
+.filaUsuario strong { font-size: 16px; }
+.chip { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #f3ebe4; font-size: 12px; font-weight: 700; color: var(--gris); }
+.accionesUsuario { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.inactivo { background: #faf7f4; }
+.inactivo strong { color: var(--gris); }
+.avisoOk { padding: 14px 16px; border-radius: 14px; background: #e8f6ef; color: #145c3f; font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.avisoOk p, .gestion .alerta p { margin: 0; flex: 1 1 260px; }
+.gestion .alerta { margin-top: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.clave { padding: 6px 12px; border-radius: 8px; background: #fff; font-size: 16px; font-weight: 700; letter-spacing: .04em; user-select: all; }

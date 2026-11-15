@@ -13,6 +13,27 @@ export const COHORTE = {
   horasSemana: 8,
 } as const;
 
+/**
+ * Cierre de la 1.ª etapa de inscripciones si CONVOCATORIA_CONFIG no trae "cierra" (confirmado con comunicaciones).
+ * La fecha que se muestra sale de "cierra" (la misma de la cuenta regresiva), así nunca hay dos fechas distintas.
+ */
+export const CIERRE_PRIMERA_ETAPA = "2026-12-18";
+
+const fechaLarga = (iso: string) =>
+  new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
+
+/** Fechas clave que se muestran en la ruta de formación (la primera, resaltada). */
+export function fechasClave(cierra: string = CIERRE_PRIMERA_ETAPA) {
+  return [
+    { etapa: "1.ª etapa de inscripciones", fecha: `Hasta el ${fechaLarga(cierra)}` },
+    { etapa: "Inicio del programa", fecha: "Marzo de 2027" },
+    { etapa: "Cierre y graduación", fecha: "Noviembre de 2027" },
+  ];
+}
+
+/** Reparto de la modalidad (se muestra en "¿Cómo funciona?" en %). Confirmado: 80 % virtual / 20 % presencial. */
+export const MODALIDAD = { virtual: 80, presencial: 20 } as const;
+
 export type Voz = {
   convierte: string; // "Conviértete" / "Convertite"
   postulate: string; // "Postúlate" / "Postulate"
@@ -29,18 +50,24 @@ export type Voz = {
   aqui: string; // "aquí" / "acá"
   marca: string; // "Marca" / "Marcá"
   mira: string; // "Mira" / "Mirá"
+  elige: string; // "Elige" / "Elegí"
+  toca: string; // "toca" / "tocá"
+  pasa: string; // "Pasa" / "Pasá"
+  aprendes: string; // "aprendes" / "aprendés"
 };
 
 const TU: Voz = {
   convierte: "Conviértete", postulate: "Postúlate", inscribete: "Inscríbete", vas: "Vas", tienes: "tienes",
   necesitas: "Necesitas", puedes: "puedes", vives: "vives", eres: "eres", cumples: "cumples", quieres: "quieres", escribenos: "Escríbenos", aqui: "aquí", marca: "Marca", mira: "Mira",
+  elige: "Elige", toca: "toca", pasa: "Pasa", aprendes: "aprendes",
 };
 const VOS: Voz = {
   convierte: "Convertite", postulate: "Postulate", inscribete: "Inscribite", vas: "Vas", tienes: "tenés",
   necesitas: "Necesitás", puedes: "podés", vives: "vivís", eres: "sos", cumples: "cumplís", quieres: "querés", escribenos: "Escribinos", aqui: "acá", marca: "Marcá", mira: "Mirá",
+  elige: "Elegí", toca: "tocá", pasa: "Pasá", aprendes: "aprendés",
 };
 
-export type Foto = { src: string; alt: string; pie: string; ancho: number; alto: number };
+export type Foto = { src: string; alt: string; pie: string; ancho: number; alto: number; /** Punto de la foto que queda al centro cuando se recorta (object-position), p. ej. "20% 60%". */ foco?: string };
 export type Testimonio = { nombre: string; ciudad: string; pais: PaisSlug; anio: number; youtubeId: string; /** Como lo nombra la Fundación: "Joven creaTIva" / "Joven creaTIvo". */ rotulo: string };
 
 export type Pais = {
@@ -61,7 +88,8 @@ export type Pais = {
   grados: string;
   /** Colores de la bandera, solo para el distintivo (no se usan emojis: Windows no los dibuja). */
   bandera: [string, string, string];
-  fotos: { hero: Foto; galeria: Foto[] };
+  /** galeria[0] va en "¿Cómo funciona?" y la última en el cierre. Monitores: en la ruta (vacío = esa parte no sale). */
+  fotos: { hero: Foto; galeria: Foto[]; monitores: Foto[] };
   /** Estado y botones por defecto del país (el back puede sobrescribirlos con CONVOCATORIA_CONFIG). */
   config: ConfigPais;
   /** Formulario de la convocatoria anterior (cerrado). Solo como referencia para el back; no se usa en botones. */
@@ -98,6 +126,7 @@ export const PAISES: Record<PaisSlug, Pais> = {
         f("col", "inauguracion", "Estudiantes y equipo en la tarima de la inauguración de Jóvenes creaTIvos 2026 en Cali", "Inauguración 2026 · Cali", 1600, 1200),
         f("col", "visita-2", "Estudiantes recorriendo las instalaciones de PriceSmart en Barranquilla", "Visita a PriceSmart · Barranquilla", 1600, 902),
       ],
+      monitores: [],
     },
     config: { estado: "proxima" },
     formularioAnterior: "https://forms.gle/5gCnUUFWbhTsBpBG6",
@@ -123,6 +152,7 @@ export const PAISES: Record<PaisSlug, Pais> = {
         f("pan", "exterior", "Estudiantes con la camiseta de Jóvenes creaTIvos al aire libre", "Sesión presencial al aire libre", 1600, 1200),
         f("pan", "inauguracion", "Estudiantes con gorras naranjas en el auditorio de la inauguración", "Inauguración 2026", 1600, 1067),
       ],
+      monitores: [],
     },
     config: { estado: "proxima" },
     formularioAnterior: "https://forms.gle/5Kzc5UJe4HUSzBBd9",
@@ -148,6 +178,7 @@ export const PAISES: Record<PaisSlug, Pais> = {
         f("ecu", "comunidad", "Jóvenes creaTIvos posando en grupo en Quito", "Comunidad JC · Quito", 1600, 1200),
         f("ecu", "inauguracion", "Cuatro estudiantes sonriendo en una sesión presencial en Guayaquil", "Sesión presencial · Guayaquil", 1600, 1200),
       ],
+      monitores: [],
     },
     config: { estado: "proxima" },
     formularioAnterior: "https://forms.gle/ohoPQ9hS44yfNs1N8",
@@ -164,14 +195,19 @@ export const PAISES: Record<PaisSlug, Pais> = {
     grados: "Estar en 5.° o 6.° de liceo, o haber egresado del bachillerato hace máximo 3 años.",
     bandera: ["#FFFFFF", "#0038A8", "#FCD116"],
     fotos: {
-      hero: f("uy", "hero", "Foto grupal de la inauguración de Jóvenes creaTIvos 2026 en Colonia", "Inauguración 2026 · Colonia", 1600, 1200),
+      hero: f("uy", "hero-2", "Grupo de Jóvenes creaTIvos celebrando en la primera sesión presencial en Colonia", "Primera sesión presencial · Colonia", 1600, 1200),
       galeria: [
-        f("uy", "taller", "Estudiantes resolviendo un reto práctico en equipo en Paysandú", "Reto en equipo · Paysandú", 1600, 900),
-        f("uy", "comunidad", "Jóvenes creaTIvos posando juntos en Colonia", "Comunidad JC · Colonia", 1600, 900),
+        // foco: la torre de fideos que arman los dos muchachos queda al centro del recuadro de "Cómo funciona".
+        { ...f("uy", "taller", "Estudiantes resolviendo un reto práctico en equipo en Paysandú", "Reto en equipo · Paysandú", 1600, 900), foco: "22% 60%" },
+        f("uy", "reto", "Estudiantes con gorras naranjas resolviendo un reto en equipo en Paysandú", "Reto en equipo · Paysandú", 1600, 900),
         f("uy", "visita", "Estudiantes en la visita a Sofka en Paysandú", "Visita a Sofka · Paysandú", 1600, 738),
-        f("uy", "taller-2", "Estudiantes trabajando con sus computadoras en Colonia", "Sesión presencial · Colonia", 1600, 900),
+        f("uy", "equipo", "Estudiantes trabajando juntos en una mesa durante una sesión en Colonia", "Trabajo en equipo · Colonia", 1600, 900),
         f("uy", "aula", "Estudiantes programando en Paysandú", "Clase práctica · Paysandú", 1600, 738),
         f("uy", "inauguracion", "Estudiantes con gorras en la inauguración de Paysandú", "Inauguración 2026 · Paysandú", 1600, 1200),
+      ],
+      monitores: [
+        f("uy", "monitor-1", "Monitor explicando a estudiantes en la sala de computadoras en Paysandú", "Monitor en clase · Paysandú", 1600, 738),
+        f("uy", "monitor-2", "Monitor tomándose una selfie con el grupo en Colonia", "Con el monitor · Colonia", 1600, 900),
       ],
     },
     // Formulario propio. Se activa cuando CONVOCATORIA_CONFIG pone a Uruguay en "abierta"; antes sale "muy pronto".
@@ -198,17 +234,27 @@ export function testimoniosPara(pais: PaisSlug): Testimonio[] {
 }
 
 export const CURSOS = [
-  { n: 1, titulo: "Habilidades esenciales", semanas: 3, temas: ["Liderazgo", "Trabajo en equipo", "Comunicación efectiva", "Resolución de conflictos"] },
-  { n: 2, titulo: "Emprendimiento", semanas: 3, temas: ["Ideación", "Modelo CANVAS", "Validación"] },
-  { n: 3, titulo: "Desarrollo de software", semanas: 23, temas: ["PSeInt", "HTML", "CSS", "JavaScript", "Git", "React"] },
+  { n: 1, titulo: "Habilidades esenciales", semanas: 3, lema: "Confianza para liderar y comunicar", temas: ["Liderazgo", "Trabajo en equipo", "Comunicación efectiva", "Resolución de conflictos"] },
+  { n: 2, titulo: "Emprendimiento", semanas: 3, lema: "De una idea a un proyecto", temas: ["Ideación", "Modelo CANVAS", "Validación"] },
+  { n: 3, titulo: "Desarrollo de software", semanas: 23, lema: "Páginas y apps de verdad", temas: ["PSeInt", "HTML", "CSS", "JavaScript", "Git", "React"] },
+] as const;
+
+/** Intereses para la ruta: al tocar uno se voltea la tarjeta del curso que lo trabaja. */
+export const INTERESES = [
+  { texto: "Hablar en público sin nervios", curso: 1 },
+  { texto: "Liderar un equipo", curso: 1 },
+  { texto: "Tener mi propio negocio", curso: 2 },
+  { texto: "Sacar adelante una idea", curso: 2 },
+  { texto: "Crear páginas web", curso: 3 },
+  { texto: "Programar mis propias apps", curso: 3 },
 ] as const;
 
 export function comoFunciona(p: Pais) {
   const v = p.voz;
   return [
-    { titulo: "Mayoritariamente virtual", texto: `Rutas de formación en línea, parecidas a las de plataformas como Platzi, con sesiones en Zoom para reforzar lo que ${v.vas.toLowerCase()} aprendiendo.` },
-    { titulo: "Encuentros presenciales cada mes", texto: `Sesiones prácticas en ${p.sedes.length > 1 ? "tu ciudad" : p.sedes[0]} y visitas a empresas de tecnología.` },
-    { titulo: "Apoyo en salud mental", texto: `${v.tienes[0]!.toUpperCase()}${v.tienes.slice(1)} acompañamiento para cuidar tu bienestar durante todo el programa.` },
+    { titulo: `${MODALIDAD.virtual} % virtual`, texto: `Rutas de formación en línea, parecidas a las de plataformas como Platzi, con sesiones en Zoom para reforzar lo que ${v.vas.toLowerCase()} aprendiendo.` },
+    { titulo: `${MODALIDAD.presencial} % presencial`, texto: `Un encuentro práctico cada mes en ${p.sedes.length > 1 ? "tu ciudad" : p.sedes[0]} y visitas a empresas de tecnología.` },
+    { titulo: "Apoyo y acompañamiento", texto: `${v.tienes[0]!.toUpperCase()}${v.tienes.slice(1)} apoyo cercano del equipo para cuidar tu bienestar durante todo el programa.` },
     { titulo: "Charlas complementarias", texto: "Temas actuales del mundo tecnológico, más allá del curso." },
   ];
 }

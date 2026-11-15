@@ -101,7 +101,8 @@ export default function ConvocatoriaPagina({ pais }: { pais: PaisSlug }) {
   const { estado, cierra } = estadoConvocatoria(pais, { delPais: p.config });
   const accion = (id: IdBoton) => segunEstado(id, resolverAccion(id, p.config, entorno), estado);
   const boton = (id: IdBoton, texto: ReactNode, className: string | undefined, flecha = true) => (
-    <BotonAccion pais={pais} boton={id} accion={accion(id)} className={className}>
+    // Con la convocatoria cerrada, los de postular quedan grises ("muy pronto" va en naranja con halo).
+    <BotonAccion pais={pais} boton={id} accion={accion(id)} className={estado === "cerrada" && id.startsWith("postular") ? `${className ?? ""} ${s.botonCerrado}` : className}>
       <span className={s.botonTexto}>{texto} {flecha && <Ico d={D.flecha} />}</span>
     </BotonAccion>
   );

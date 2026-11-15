@@ -164,13 +164,28 @@
 }
 .raiz [data-pendiente]:active { transform: none; }
 /* Botones de postular aún sin formulario ("Inscripciones muy pronto"): siguen sin navegar, pero en naranja y con
-   halo para que se vean desde el primer momento (antes eran grises y pasaban desapercibidos). */
+   halo para que se vean desde el primer momento (antes eran grises y pasaban desapercibidos).
+   El halo es un ::after detrás del botón que crece y se desvanece con transform/opacity (lo hace la GPU):
+   animar box-shadow repintaría el botón en cada cuadro. --halo-x/--halo-y: cuánto crece (unos 18 px por lado). */
 .raiz .boton[data-pendiente] {
+  --halo-x: 1.1; --halo-y: 1.62;
   background: linear-gradient(135deg, var(--cv-naranja), #ff8a3d); color: #fff; border-color: transparent;
-  box-shadow: 0 6px 0 var(--cv-naranja-osc); animation: halo 2.2s ease-out infinite;
+  box-shadow: 0 6px 0 var(--cv-naranja-osc); animation: none;
 }
+.raiz .boton[data-pendiente]::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: rgba(233, 83, 31, .55); will-change: transform, opacity; animation: halo 2.2s ease-out infinite;
+}
+/* El halo va detrás del botón: su contenedor aísla la capa para que no quede tapado por el fondo de la sección o de la barra. */
+.raiz :has(> .boton[data-pendiente]) { isolation: isolate; }
+/* "Inscripciones cerradas": gris y quieto, como cualquier botón sin destino (no invita a tocar). */
+.raiz .boton.botonCerrado[data-pendiente] {
+  background: #efe4dc; color: var(--cv-gris); box-shadow: none; animation: respirar 3s ease-in-out infinite;
+}
+.raiz .boton.botonCerrado[data-pendiente]::after { content: none; }
 /* "Postúlate" del inicio: grande y con halo naranja que late para que sea lo primero que se ve. */
-.botonHero { min-height: 70px; font-size: 24px; letter-spacing: .01em; border-radius: 20px; animation: halo 2.2s ease-out infinite; }
+.raiz .botonHero[data-pendiente] { --halo-y: 1.52; }
+.botonHero { min-height: 70px; font-size: 24px; letter-spacing: .01em; border-radius: 20px; }
 .botonHero .botonTexto svg { width: 26px; height: 26px; }
 .botonGrande { max-width: 420px; margin: 0 auto; min-height: 64px; font-size: 21px; }
 
@@ -478,7 +493,7 @@
 .pegajosoTexto > span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--cv-gris); overflow: hidden; text-overflow: ellipsis; }
 .pegajosoBoton { flex: 1; display: flex; justify-content: center; min-width: 0; }
 .pegajosoBoton > * { width: 100%; }
-.botonBarra { min-height: 58px; font-size: 21px; padding: 0 26px; border-radius: 999px; box-shadow: 0 5px 0 var(--cv-naranja-osc); white-space: nowrap; animation: halo 2.2s ease-out infinite; }
+.botonBarra { min-height: 58px; font-size: 21px; padding: 0 26px; border-radius: 999px; box-shadow: 0 5px 0 var(--cv-naranja-osc); white-space: nowrap; }
 /* Espacio para que la barra no tape el pie de página. */
 .pie { padding-bottom: 110px; }
 
@@ -504,7 +519,7 @@
 @keyframes metalBrillo { 0%, 55% { left: -40%; } 85%, 100% { left: 110%; } }
 @keyframes ondear { 0%, 100% { transform: perspective(60px) rotateY(0deg) skewY(0deg); } 50% { transform: perspective(60px) rotateY(-9deg) skewY(-1.5deg); } }
 @keyframes kenBurnsComo { from { transform: scale(1.04) translate3d(1.5%, 1%, 0); } to { transform: scale(1.16) translate3d(-2%, -2%, 0); } }
-@keyframes halo { 0% { box-shadow: 0 6px 0 var(--cv-naranja-osc), 0 0 0 0 rgba(233, 83, 31, .55); } 70%, 100% { box-shadow: 0 6px 0 var(--cv-naranja-osc), 0 0 0 18px rgba(233, 83, 31, 0); } }
+@keyframes halo { 0% { transform: scale(1); opacity: 1; } 70%, 100% { transform: scale(var(--halo-x, 1.1), var(--halo-y, 1.6)); opacity: 0; } }
 @keyframes llamar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 @keyframes girarAro { to { transform: rotate(360deg); } }
 @keyframes pliegues { from { transform: translateX(0); } to { transform: translateX(-50%); } }

@@ -14,15 +14,54 @@ const Flecha = ({ d }: { d: string }) => (
 );
 
 // ---------- Ruta de formación ----------
-type Curso = { n: number; titulo: string; semanas: number; temas: readonly string[] };
+type Curso = { n: number; titulo: string; semanas: number; lema: string; temas: readonly string[] };
+type Interes = { texto: string; curso: number };
 
-/** Línea de tiempo proporcional a las semanas + tarjetas. Pasar el mouse (o el foco) por una resalta la otra. */
-export function RutaInteractiva({ cursos }: { cursos: readonly Curso[] }) {
+/**
+ * Intereses + línea de tiempo proporcional a las semanas + tarjetas que se voltean.
+ * Cara frontal: número y nombre del curso. Reverso: qué se aprende. Se voltea al pasar el mouse,
+ * al tocarla (celular), con el foco del teclado, o al elegir un interés que ese curso trabaja.
+ */
+export function RutaInteractiva({ cursos, intereses = [], textos }: {
+  cursos: readonly Curso[];
+  intereses?: readonly Interes[];
+  textos: { intereses: string; voltear: string };
+}) {
   const [activo, setActivo] = useState<number | null>(null);
+  const [volteadas, setVolteadas] = useState<Set<number>>(() => new Set());
+  const [interes, setInteres] = useState<string | null>(null);
+  const punteroRef = useRef(false);
   const reducido = useReducedMotion();
   const total = cursos.reduce((a, c) => a + c.semanas, 0);
+  const elegido = intereses.find((i) => i.texto === interes)?.curso ?? null;
+  const alternar = (n: number) => setVolteadas((v) => { const x = new Set(v); if (x.has(n)) x.delete(n); else x.add(n); return x; });
+  const elegirInteres = (i: Interes) => {
+    const nuevo = interes === i.texto ? null : i.texto;
+    setInteres(nuevo);
+    setActivo(nuevo ? i.curso : null);
+    if (nuevo) setTimeout(() => document.getElementById(`curso-${i.curso}`)?.scrollIntoView({ behavior: reducido ? "auto" : "smooth", block: "nearest" }), 60);
+  };
   return (
-    <div className={s.ruta} onMouseLeave={() => setActivo(null)}>
+    <div className={s.ruta} onMouseLeave={() => setActivo(elegido)}>
+      {intereses.length > 0 && (
+        <div className={s.intereses}>
+          <p className={s.interesesPista}>{textos.intereses}</p>
+          <div className={s.interesesLista} role="group" aria-label="Intereses">
+            {intereses.map((i) => (
+              <m.button
+                type="button"
+                key={i.texto}
+                className={`${s.interes} ${s[`interes${i.curso}`]} ${interes === i.texto ? s.interesSi : ""}`}
+                aria-pressed={interes === i.texto}
+                whileTap={reducido ? undefined : { scale: 0.94 }}
+                onClick={() => elegirInteres(i)}
+              >
+                {i.texto}
+              </m.button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className={s.linea}>
         {cursos.map((c, i) => (
           <m.button
@@ -44,35 +83,50 @@ export function RutaInteractiva({ cursos }: { cursos: readonly Curso[] }) {
         ))}
       </div>
       <ol className={s.cursos}>
-        {cursos.map((c, i) => (
-          <m.li
-            id={`curso-${c.n}`}
-            key={c.n}
-            className={`${s.curso} ${s[`curso${c.n}`]} ${activo === c.n ? s.cursoActivo : ""} ${activo !== null && activo !== c.n ? s.cursoApagado : ""}`}
-            initial={reducido ? false : { opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-            transition={{ duration: 0.6, delay: i * 0.12, ease: SUAVE }}
-            whileHover={reducido ? undefined : { y: -6 }}
-            onMouseEnter={() => setActivo(c.n)}
-            tabIndex={0}
-            onFocus={() => setActivo(c.n)}
-            onBlur={() => setActivo(null)}
-          >
-            <div className={s.cursoCabeza}>
-              <span className={s.cursoNum}>{c.n}</span>
-              <span className={s.cursoSemanas}>{c.semanas} semanas</span>
-            </div>
-            <h3 className={s.cursoTitulo}>{c.titulo}</h3>
-            <ul className={s.temas}>
-              {c.temas.map((t, j) => (
-                <m.li key={t} initial={reducido ? false : { opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.12 + j * 0.05 }}>
-                  {t}
-                </m.li>
-              ))}
-            </ul>
-          </m.li>
-        ))}
+        {cursos.map((c, i) => {
+          const vuelta = volteadas.has(c.n) || activo === c.n || elegido === c.n;
+          return (
+            <m.li
+              id={`curso-${c.n}`}
+              key={c.n}
+              className={`${s.curso} ${s[`curso${c.n}`]} ${vuelta ? s.cursoVuelta : ""} ${activo === c.n || elegido === c.n ? s.cursoActivo : ""} ${elegido !== null && elegido !== c.n ? s.cursoApagado : ""}`}
+              initial={reducido ? false : { opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+              transition={{ duration: 0.6, delay: i * 0.12, ease: SUAVE }}
+            >
+              <button
+                type="button"
+                className={s.cursoGiro}
+                aria-pressed={vuelta}
+                aria-label={`${c.titulo}, ${c.semanas} semanas. ${vuelta ? `Temas: ${c.temas.join(", ")}` : textos.voltear}`}
+                // Mouse: se voltea al pasar. Toque: solo el clic la voltea (sin hover ni foco pegado). Teclado: el foco la voltea.
+                onPointerEnter={(e) => { if (e.pointerType === "mouse") setActivo(c.n); }}
+                onPointerLeave={(e) => { if (e.pointerType === "mouse") setActivo(elegido); }}
+                onPointerDown={() => { punteroRef.current = true; }}
+                onFocus={() => { if (!punteroRef.current) setActivo(c.n); punteroRef.current = false; }}
+                onBlur={() => setActivo(elegido)}
+                onClick={() => alternar(c.n)}
+              >
+                <span className={`${s.cursoCara} ${s.cursoFrente}`} aria-hidden>
+                  <span className={s.cursoCabeza}>
+                    <span className={s.cursoNum}>{c.n}</span>
+                    <span className={s.cursoSemanas}>{c.semanas} semanas</span>
+                  </span>
+                  <span className={s.cursoTitulo}>{c.titulo}</span>
+                  <span className={s.cursoLema}>{c.lema}</span>
+                  <span className={s.cursoVoltear}>{textos.voltear} ↻</span>
+                </span>
+                <span className={`${s.cursoCara} ${s.cursoReverso}`} aria-hidden>
+                  <span className={s.cursoReversoTitulo}>{c.titulo}</span>
+                  <span className={s.temas}>
+                    {c.temas.map((t) => <span key={t} className={s.tema}>{t}</span>)}
+                  </span>
+                </span>
+              </button>
+            </m.li>
+          );
+        })}
       </ol>
     </div>
   );

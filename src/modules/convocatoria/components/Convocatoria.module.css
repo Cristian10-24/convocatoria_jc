@@ -112,8 +112,8 @@
   transition: transform .25s, box-shadow .25s;
 }
 .datos li:hover { transform: translateY(-4px); box-shadow: 0 10px 22px rgba(184, 60, 16, .1); }
-.datos strong { font-size: 18px; font-weight: 900; color: var(--cv-naranja-osc); font-variant-numeric: tabular-nums; }
-.datos span { font-size: 13px; color: var(--cv-gris); line-height: 1.3; }
+.datos strong { font-size: 22px; font-weight: 900; color: var(--cv-naranja-osc); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.datos span { font-size: 16px; font-weight: 600; color: var(--cv-gris); line-height: 1.3; }
 
 .heroFoto { position: relative; margin: 0; border-radius: 26px; transform-style: preserve-3d; }
 .heroImg { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 26px; box-shadow: 0 18px 40px rgba(28, 42, 122, .2); background: var(--cv-durazno); }
@@ -163,6 +163,15 @@
   background: #efe4dc; color: var(--cv-gris); box-shadow: none; border-color: #e3d3c6; cursor: default; animation: respirar 3s ease-in-out infinite;
 }
 .raiz [data-pendiente]:active { transform: none; }
+/* Botones de postular aún sin formulario ("Inscripciones muy pronto"): siguen sin navegar, pero en naranja y con
+   halo para que se vean desde el primer momento (antes eran grises y pasaban desapercibidos). */
+.raiz .boton[data-pendiente] {
+  background: linear-gradient(135deg, var(--cv-naranja), #ff8a3d); color: #fff; border-color: transparent;
+  box-shadow: 0 6px 0 var(--cv-naranja-osc); animation: halo 2.2s ease-out infinite;
+}
+/* "Postúlate" del inicio: grande y con halo naranja que late para que sea lo primero que se ve. */
+.botonHero { min-height: 70px; font-size: 24px; letter-spacing: .01em; border-radius: 20px; animation: halo 2.2s ease-out infinite; }
+.botonHero .botonTexto svg { width: 26px; height: 26px; }
 .botonGrande { max-width: 420px; margin: 0 auto; min-height: 64px; font-size: 21px; }
 
 /* ---------- Secciones ---------- */
@@ -187,26 +196,83 @@
 .tramo3 { background: linear-gradient(90deg, var(--cv-naranja), #ff8a3d); color: #fff; }
 .tramoActivo { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--cv-tinta); }
 .cursos { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-.curso {
-  position: relative; background: #fff; border: 1px solid var(--cv-borde); border-radius: 22px; padding: 18px; overflow: hidden; outline: none;
-  transition: opacity .25s, box-shadow .25s, border-color .25s;
+
+/* Fechas clave (la 1.ª etapa resaltada) */
+.fechas { list-style: none; margin: 22px 0 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 10px; }
+.fechas li { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 16px; background: #fff; border: 1px solid var(--cv-borde); border-left: 6px solid var(--cv-azul-claro); }
+.fechas li.fechaDestacada { background: var(--cv-sol-suave); border-left-color: var(--cv-naranja); box-shadow: 0 10px 24px rgba(184, 60, 16, .12); }
+.fechaEtapa { font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--cv-gris); }
+.fechaDestacada .fechaEtapa { color: var(--cv-naranja-osc); }
+.fechaValor { font-size: 19px; font-weight: 900; color: var(--cv-tinta); }
+
+/* Intereses: chips que voltean la tarjeta del curso relacionado */
+.intereses { margin: 22px 0 16px; }
+.interesesPista { margin: 0 0 10px; font-size: 16px; font-weight: 800; color: var(--cv-tinta); }
+.interesesLista { display: flex; flex-wrap: wrap; gap: 8px; }
+.interes {
+  min-height: 44px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--cv-borde); background: #fff; color: var(--cv-tinta);
+  font: 700 15px var(--font); cursor: pointer; transition: background .2s, border-color .2s, transform .2s, box-shadow .2s;
 }
-.curso::after { content: ""; position: absolute; right: -24px; top: -24px; width: 90px; height: 90px; border-radius: 50%; opacity: .5; transition: transform .5s var(--suave); }
-.cursoActivo::after { transform: scale(1.6); }
-.curso1::after { background: var(--cv-sol); }
-.curso2::after { background: var(--cv-azul-claro); }
-.curso3::after { background: var(--cv-naranja); }
-.cursoActivo { border-color: var(--cv-naranja); box-shadow: 0 16px 34px rgba(184, 60, 16, .14); }
-.cursoApagado { opacity: .55; }
-.curso:focus-visible { outline: 3px solid var(--cv-azul); outline-offset: 3px; }
+.interes:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(28, 42, 122, .1); }
+.interes1:hover, .interes1.interesSi { border-color: var(--cv-sol); }
+.interes2:hover, .interes2.interesSi { border-color: var(--cv-azul-claro); }
+.interes3:hover, .interes3.interesSi { border-color: var(--cv-naranja); }
+.interes1.interesSi { background: var(--cv-sol); color: var(--cv-marino); }
+.interes2.interesSi { background: var(--cv-azul-claro); color: #0e1550; }
+.interes3.interesSi { background: var(--cv-naranja); color: #fff; }
+
+/* Tarjeta de curso que se voltea: frente = nombre principal; reverso = temas. Ambas caras en la misma celda de grid,
+   así la tarjeta toma la altura de la cara más alta. */
+.curso {
+  position: relative; perspective: 1100px; outline: none; transition: opacity .25s;
+}
+.cursoGiro {
+  position: relative; display: grid; width: 100%; height: 100%; min-height: 210px; padding: 0; border: 0; background: none; text-align: left;
+  font: inherit; color: inherit; cursor: pointer; transform-style: preserve-3d; transition: transform .7s var(--suave);
+}
+.cursoVuelta .cursoGiro { transform: rotateY(180deg); }
+.cursoCara {
+  grid-area: 1 / 1; position: relative; display: flex; flex-direction: column; padding: 20px; border-radius: 22px; overflow: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden; border: 1px solid var(--cv-borde); background: #fff;
+  transition: box-shadow .25s, border-color .25s;
+}
+.cursoReverso { transform: rotateY(180deg); justify-content: center; }
+.curso1 .cursoReverso { background: var(--cv-sol); color: var(--cv-marino); border-color: var(--cv-sol); }
+.curso2 .cursoReverso { background: var(--cv-azul-claro); color: #0e1550; border-color: var(--cv-azul-claro); }
+.curso3 .cursoReverso { background: linear-gradient(135deg, var(--cv-naranja), #ff8a3d); color: #fff; border-color: var(--cv-naranja); }
+.cursoGiro:focus-visible { outline: 3px solid var(--cv-azul); outline-offset: 4px; border-radius: 22px; }
+.cursoFrente::after { content: ""; position: absolute; right: -24px; top: -24px; width: 90px; height: 90px; border-radius: 50%; opacity: .5; transition: transform .5s var(--suave); }
+.cursoActivo .cursoFrente::after { transform: scale(1.6); }
+.curso1 .cursoFrente::after { background: var(--cv-sol); }
+.curso2 .cursoFrente::after { background: var(--cv-azul-claro); }
+.curso3 .cursoFrente::after { background: var(--cv-naranja); }
+.cursoActivo .cursoCara { box-shadow: 0 16px 34px rgba(184, 60, 16, .16); }
+.cursoLema { position: relative; z-index: 1; margin-top: 6px; font-size: 16px; font-weight: 600; color: var(--cv-gris); }
+.cursoVoltear { position: relative; z-index: 1; margin-top: auto; padding-top: 14px; font-size: 14px; font-weight: 800; color: var(--cv-naranja-osc); }
+.cursoReversoTitulo { font-size: 20px; font-weight: 900; }
+.tema { padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, .85); color: var(--cv-tinta); font-size: 14px; font-weight: 800; }
+
+/* Monitores en la ruta */
+.monitores { margin-top: 34px; }
+.monitoresTitulo { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -.01em; }
+.monitoresSub { margin: 6px 0 0; font-size: 16px; line-height: 1.5; color: var(--cv-gris); max-width: 680px; }
+.monitoresFotos { margin-top: 16px; display: grid; grid-template-columns: 1fr; gap: 14px; }
+.monitorFoto { position: relative; border-radius: 22px; overflow: hidden; background: var(--cv-durazno); height: 260px; }
+.monitorImg { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--suave); }
+.monitorFoto:hover .monitorImg { transform: scale(1.05); }
+.monitorPie {
+  position: absolute; left: 12px; bottom: 12px; padding: 7px 13px; border-radius: 999px; background: #fff; color: var(--cv-tinta);
+  font-size: 13px; font-weight: 800; box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+}
+.cursoApagado { opacity: .5; }
 .cursoCabeza { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; }
 .cursoNum { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
 .curso1 .cursoNum { background: var(--cv-sol); color: var(--cv-marino); }
 .curso2 .cursoNum { background: var(--cv-azul-claro); color: #0e1550; }
 .curso3 .cursoNum { background: var(--cv-naranja); color: #fff; }
 .cursoSemanas { font-size: 14px; font-weight: 700; color: var(--cv-gris); }
-.cursoTitulo { position: relative; z-index: 1; margin: 12px 0 0; font-size: 22px; font-weight: 900; }
-.temas { position: relative; z-index: 1; list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.cursoTitulo { position: relative; z-index: 1; margin: 14px 0 0; font-size: 26px; line-height: 1.1; font-weight: 900; letter-spacing: -.01em; }
+.temas { position: relative; z-index: 1; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
 .temas li { padding: 5px 10px; border-radius: 999px; background: var(--cv-fondo); border: 1px solid var(--cv-borde); font-size: 13px; font-weight: 700; }
 
 /* ---------- Cómo funciona (bloque marino) ---------- */
@@ -220,6 +286,12 @@
 .icono1 { background: var(--cv-sol); color: var(--cv-marino); }
 .icono2 { background: var(--cv-azul-claro); color: #0e1550; }
 .comoTitulo { font-size: 17px; font-weight: 800; }
+.reparto { margin-top: 20px; }
+.repartoBarra { display: flex; height: 40px; border-radius: 999px; overflow: hidden; background: rgba(255, 255, 255, .12); }
+.repartoBarra i { display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.repartoVirtual { background: var(--cv-sol); color: var(--cv-marino); }
+.repartoPresencial { background: var(--cv-naranja); color: #fff; }
+.repartoLeyenda { margin-top: 6px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--cv-marino-texto); }
 .comoDesc { margin-top: 2px; font-size: 15px; line-height: 1.45; color: var(--cv-marino-texto); }
 .comoFoto { position: relative; overflow: hidden; height: 260px; }
 .comoImg { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -386,41 +458,29 @@
 .pieEnlace { font: inherit; background: none; border: 0; padding: 0; color: var(--cv-naranja-osc); text-decoration: underline; cursor: pointer; }
 .raiz .pieEnlace[data-pendiente] { background: none; }
 
-/* ---------- "Postúlate" que sigue el scroll → encabezado fijo (EncabezadoPegajoso.tsx) ----------
-   oculto: arriba fuera de pantalla · pastilla: botón flotante centrado · barra: se estira a todo el ancho.
-   Se anima max-width/top/radio solo durante el cambio de estado (no en cada cuadro de scroll). */
+/* ---------- "Postúlate" fijo abajo (EncabezadoPegajoso.tsx) ----------
+   Aparece cuando el botón del inicio sale de pantalla y se queda hasta el final: siempre en el campo visual.
+   Sin backdrop-filter (desenfocar durante el scroll es caro en celular). */
 .pegajoso {
-  position: fixed; z-index: 30; top: 12px; left: 50%; width: calc(100% - 24px); max-width: 300px;
-  transform: translate(-50%, 0); opacity: 1;
-  transition: max-width .6s var(--suave), top .45s var(--suave), transform .45s var(--suave), opacity .3s;
+  position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; transform: translateY(0); opacity: 1;
+  transition: transform .45s var(--suave), opacity .3s;
 }
-.pegajosoOculto { transform: translate(-50%, -150%); opacity: 0; pointer-events: none; }
-.pegajosoBarra { top: 0; width: 100%; max-width: 100%; }
+.pegajosoOculto { transform: translateY(120%); opacity: 0; pointer-events: none; }
 .pegajosoInterior {
-  display: flex; align-items: center; justify-content: center; gap: 12px; padding: 6px; background: #fff;
-  border: 1px solid var(--cv-borde); border-radius: 999px; box-shadow: 0 14px 30px rgba(28, 42, 122, .2);
-  transition: border-radius .6s var(--suave), padding .6s var(--suave), box-shadow .4s;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff;
+  border-top: 3px solid var(--cv-naranja); border-radius: 22px 22px 0 0; box-shadow: 0 -12px 30px rgba(28, 42, 122, .18);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); padding-left: max(12px, calc((100% - 1136px) / 2)); padding-right: max(12px, calc((100% - 1136px) / 2));
 }
-.pegajosoBarra .pegajosoInterior {
-  justify-content: space-between; border-radius: 0 0 22px 22px; border-top: 0;
-  padding: 8px max(16px, calc((100% - 1136px) / 2)); box-shadow: 0 10px 26px rgba(28, 42, 122, .12);
-}
-/* La marca solo existe en modo barra: crece de ancho 0 a su tamaño. */
-.pegajosoMarca {
-  display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
-  transition: max-width .6s var(--suave), opacity .3s .15s;
-}
-.pegajosoBarra .pegajosoMarca { max-width: 640px; opacity: 1; }
+.pegajosoMarca { display: none; align-items: center; gap: 10px; min-width: 0; white-space: nowrap; }
 .pegajosoLogo { width: 40px; height: 35px; object-fit: contain; flex: none; }
-.pegajosoTexto { display: none; flex-direction: column; line-height: 1.25; min-width: 0; }
+.pegajosoTexto { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
 .pegajosoTexto strong { font-size: 15px; font-weight: 900; }
 .pegajosoTexto > span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--cv-gris); overflow: hidden; text-overflow: ellipsis; }
-.pegajosoBoton { flex: 1; display: flex; justify-content: flex-end; min-width: 0; }
-.pegajosoPastilla .pegajosoBoton { justify-content: center; }
+.pegajosoBoton { flex: 1; display: flex; justify-content: center; min-width: 0; }
 .pegajosoBoton > * { width: 100%; }
-.pegajosoBarra .pegajosoBoton > * { width: auto; }
-.botonBarra { min-height: 46px; font-size: 16px; padding: 0 18px; border-radius: 999px; box-shadow: 0 4px 0 var(--cv-naranja-osc); white-space: nowrap; }
-.pegajosoPastilla .botonBarra { animation: llamar 2.4s ease-in-out infinite; }
+.botonBarra { min-height: 58px; font-size: 21px; padding: 0 26px; border-radius: 999px; box-shadow: 0 5px 0 var(--cv-naranja-osc); white-space: nowrap; animation: halo 2.2s ease-out infinite; }
+/* Espacio para que la barra no tape el pie de página. */
+.pie { padding-bottom: 110px; }
 
 /* ---------- Selector de país (/convocatoria) ---------- */
 .selectorGrid { position: relative; margin-top: 24px; display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -444,6 +504,7 @@
 @keyframes metalBrillo { 0%, 55% { left: -40%; } 85%, 100% { left: 110%; } }
 @keyframes ondear { 0%, 100% { transform: perspective(60px) rotateY(0deg) skewY(0deg); } 50% { transform: perspective(60px) rotateY(-9deg) skewY(-1.5deg); } }
 @keyframes kenBurnsComo { from { transform: scale(1.04) translate3d(1.5%, 1%, 0); } to { transform: scale(1.16) translate3d(-2%, -2%, 0); } }
+@keyframes halo { 0% { box-shadow: 0 6px 0 var(--cv-naranja-osc), 0 0 0 0 rgba(233, 83, 31, .55); } 70%, 100% { box-shadow: 0 6px 0 var(--cv-naranja-osc), 0 0 0 18px rgba(233, 83, 31, 0); } }
 @keyframes llamar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 @keyframes girarAro { to { transform: rotate(360deg); } }
 @keyframes pliegues { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -456,8 +517,11 @@
 @keyframes kenBurns { from { transform: scale(1); } to { transform: scale(1.12) translate(-2%, -2%); } }
 
 @media (min-width: 600px) {
-  .pegajosoTexto { display: flex; }
-  .botonBarra { font-size: 17px; padding: 0 22px; }
+  .pegajosoMarca { display: flex; }
+  .pegajosoBoton { flex: none; }
+  .pegajosoBoton > * { width: auto; min-width: 280px; }
+  .fechas { grid-template-columns: repeat(3, 1fr); }
+  .monitoresFotos { grid-template-columns: 1fr 1fr; }
   .ctas { flex-direction: row; }
   .ctas > * { width: auto; }
   .galeria { grid-template-columns: repeat(3, 1fr); }
@@ -478,11 +542,17 @@
   .h2 { font-size: 38px; }
   .seccion { padding-top: 88px; }
   .cursos { flex-direction: row; }
-  .curso { flex: 1; padding: 22px; }
+  .curso { flex: 1; }
   .curso3 { flex: 1.25; }
+  .cursoGiro { min-height: 250px; }
+  .cursoCara { padding: 24px; }
+  .monitorFoto { height: 320px; }
+  .datos strong { font-size: 26px; }
+  .datos span { font-size: 17px; }
   .como { flex-direction: row; margin-top: 88px; }
-  .comoTexto { flex: 1.2; padding: 44px; }
-  .comoFoto { flex: 1; height: auto; min-height: 100%; }
+  .comoTexto { flex: 1.3; padding: 44px; }
+  /* Foto corrida a la derecha: deja aire entre el texto y la imagen. */
+  .comoFoto { flex: .9; height: auto; min-height: 100%; margin: 22px 22px 22px 32px; border-radius: 20px; }
   .fotoRevVelo { background: linear-gradient(90deg, var(--cv-marino) 0%, rgba(28, 42, 122, 0) 24%); }
   .fotoRevPie { left: 24px; bottom: 24px; }
   .galeria { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 210px; }

@@ -6,7 +6,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { leerConfigEntorno, resolverAccion, segunEstado, type IdBoton, type PaisSlug } from "@/modules/convocatoria/content/acciones";
 import { estadoConvocatoria, type EstadoConvocatoria } from "@/shared/config/convocatoria";
 import {
-  COHORTE, CONTACTO, CURSOS, INCLUYE, PAISES, comoFunciona, noIncluye, preguntas, requisitos, testimoniosPara, type Foto, type Pais,
+  COHORTE, CONTACTO, CURSOS, INCLUYE, INTERESES, MODALIDAD, PAISES, comoFunciona, fechasClave, noIncluye, preguntas, requisitos, testimoniosPara, type Foto, type Pais,
 } from "@/modules/convocatoria/content/contenido";
 import Bandera from "./Bandera";
 import BotonAccion from "./BotonAccion";
@@ -55,6 +55,7 @@ function Imagen({ foto, className, carga = "lazy", sizes }: { foto: Foto; classN
       sizes={sizes}
       width={foto.ancho}
       height={foto.alto}
+      style={foto.foco ? { objectPosition: foto.foco } : undefined}
       alt={foto.alt}
       loading={carga}
       fetchPriority={carga === "eager" ? "high" : undefined}
@@ -100,7 +101,8 @@ export default function ConvocatoriaPagina({ pais }: { pais: PaisSlug }) {
   const { estado, cierra } = estadoConvocatoria(pais, { delPais: p.config });
   const accion = (id: IdBoton) => segunEstado(id, resolverAccion(id, p.config, entorno), estado);
   const boton = (id: IdBoton, texto: ReactNode, className: string | undefined, flecha = true) => (
-    <BotonAccion pais={pais} boton={id} accion={accion(id)} className={className}>
+    // Con la convocatoria cerrada, los de postular quedan grises ("muy pronto" va en naranja con halo).
+    <BotonAccion pais={pais} boton={id} accion={accion(id)} className={estado === "cerrada" && id.startsWith("postular") ? `${className ?? ""} ${s.botonCerrado}` : className}>
       <span className={s.botonTexto}>{texto} {flecha && <Ico d={D.flecha} />}</span>
     </BotonAccion>
   );
@@ -153,23 +155,21 @@ export default function ConvocatoriaPagina({ pais }: { pais: PaisSlug }) {
                 </Aparecer>
               )}
               <Aparecer retraso={0.8}>
+                {/* Solo "Postulate": "Ver la ruta" se retiró (reforma 2026-11-12). El id ver-ruta sigue en el esquema. */}
                 <div id="cta-hero" className={s.ctas}>
-                  {boton("postular-hero", `¡${v.postulate}!`, `${s.boton} ${s.botonMetal}`)}
-                  {boton("ver-ruta", "Ver la ruta", s.botonSecundario, false)}
+                  {boton("postular-hero", `¡${v.postulate}!`, `${s.boton} ${s.botonHero} ${s.botonMetal}`)}
                 </div>
               </Aparecer>
               <Escalonado as="ul" className={s.datos}>
-                <ItemEscalonado as="li"><strong><Contador hasta={100} sufijo=" %" /></strong><span>becado</span></ItemEscalonado>
-                <ItemEscalonado as="li"><strong><Contador hasta={COHORTE.meses} sufijo=" meses" /></strong><span>{COHORTE.horasSemana} h por semana</span></ItemEscalonado>
-                <ItemEscalonado as="li"><strong><Contador hasta={CURSOS.length} sufijo=" cursos" /></strong><span>virtual + presencial</span></ItemEscalonado>
+                <ItemEscalonado as="li"><strong><Contador hasta={COHORTE.meses} sufijo=" meses" /></strong><span>de {COHORTE.inicio.split(" ")[0]} a {COHORTE.fin.split(" ")[0]}</span></ItemEscalonado>
+                <ItemEscalonado as="li"><strong><Contador hasta={COHORTE.horasSemana} sufijo=" h" /></strong><span>por semana</span></ItemEscalonado>
+                <ItemEscalonado as="li"><strong>Modalidad</strong><span>virtual + presencial</span></ItemEscalonado>
               </Escalonado>
             </div>
 
             <FotoTilt className={s.heroFoto}>
               <Imagen foto={p.fotos.hero} className={s.heroImg} carga="eager" sizes="(min-width: 960px) 560px, 100vw" />
               <span className={s.heroPie}>{p.fotos.hero.pie}</span>
-              <span className={`${s.flotante} ${s.flotante1}`} aria-hidden><Ico d={D.codigo} t={18} /> PSeInt → React</span>
-              <span className={`${s.flotante} ${s.flotante2}`} aria-hidden><Bandera pais={pais} tamano="m" /> {p.sedes.length > 2 ? `${p.sedes.slice(0, 2).join(", ")} y más` : lista(p.sedes)}</span>
             </FotoTilt>
           </section>
         </div>
@@ -179,14 +179,53 @@ export default function ConvocatoriaPagina({ pais }: { pais: PaisSlug }) {
         {/* ---------- Ruta de formación ---------- */}
         <section id="ruta" className={s.seccion} aria-labelledby="ruta-titulo">
           <Encabezado id="ruta-titulo" etiqueta="Ruta de formación" titulo="Tres cursos, un mismo camino"
-            sub={`${COHORTE.meses} meses en orden: primero las habilidades, después el emprendimiento y por último el desarrollo de software. ${pais === "uy" ? "Tocá" : "Toca"} un tramo de la línea para ir a ese curso.`} />
-          <RutaInteractiva cursos={CURSOS} />
+            sub={`${COHORTE.meses} meses en orden: primero las habilidades, después el emprendimiento y por último el desarrollo de software. ${v.pasa} el mouse o ${v.toca} una tarjeta para darle la vuelta.`} />
+          <Aparecer>
+            <ol className={s.fechas} aria-label="Fechas clave">
+              {fechasClave(cierra).map((f, i) => (
+                <li key={f.etapa} className={i === 0 ? s.fechaDestacada : undefined}>
+                  <span className={s.fechaEtapa}>{f.etapa}</span>
+                  <strong className={s.fechaValor}>{f.fecha}</strong>
+                </li>
+              ))}
+            </ol>
+          </Aparecer>
+          <RutaInteractiva
+            cursos={CURSOS}
+            intereses={INTERESES}
+            textos={{ intereses: `¿Qué te gustaría lograr? ${v.elige} lo que más te llame:`, voltear: `${mayus(v.toca)} para ver qué ${v.aprendes}` }}
+          />
+          {p.fotos.monitores.length > 0 && (
+            <div className={s.monitores}>
+              <Aparecer>
+                <h3 className={s.monitoresTitulo}>Monitores que te acompañan en cada etapa</h3>
+                <p className={s.monitoresSub}>En las sesiones virtuales y en los encuentros presenciales {v.tienes} monitores que resuelven dudas y te guían paso a paso.</p>
+              </Aparecer>
+              <Escalonado className={s.monitoresFotos}>
+                {p.fotos.monitores.map((m) => (
+                  <ItemEscalonado key={m.src} className={s.monitorFoto}>
+                    <Imagen foto={m} className={s.monitorImg} sizes="(min-width: 960px) 560px, 100vw" />
+                    <span className={s.monitorPie}>{m.pie}</span>
+                  </ItemEscalonado>
+                ))}
+              </Escalonado>
+            </div>
+          )}
         </section>
 
         {/* ---------- Cómo funciona ---------- */}
         <Aparecer as="section" className={s.como} desde="zoom">
           <div className={s.comoTexto}>
             <Encabezado id="como-titulo" etiqueta="¿Cómo funciona?" titulo={`${COHORTE.meses} meses que combinan lo virtual y lo presencial`} claro />
+            <Aparecer retraso={0.2}>
+              <div className={s.reparto} role="img" aria-label={`${MODALIDAD.virtual} % virtual y ${MODALIDAD.presencial} % presencial`}>
+                <div className={s.repartoBarra} aria-hidden>
+                  <i className={s.repartoVirtual} style={{ width: `${MODALIDAD.virtual}%` }}><Contador hasta={MODALIDAD.virtual} sufijo=" %" /></i>
+                  <i className={s.repartoPresencial} style={{ width: `${MODALIDAD.presencial}%` }}><Contador hasta={MODALIDAD.presencial} sufijo=" %" /></i>
+                </div>
+                <div className={s.repartoLeyenda} aria-hidden><span>Virtual</span><span>Presencial</span></div>
+              </div>
+            </Aparecer>
             <Escalonado as="ul" className={s.comoLista}>
               {comoFunciona(p).map((c, i) => (
                 <ItemEscalonado as="li" key={c.titulo} className={s.comoItem}>
@@ -219,10 +258,6 @@ export default function ConvocatoriaPagina({ pais }: { pais: PaisSlug }) {
                 listo: `¡${mayus(v.cumples)} con todo! Ya ${v.puedes} postularte.`,
               }}
             >
-              <div className={s.sedes}>
-                <Ico d={D.pin} t={18} />
-                <span>Encuentros presenciales en <strong>{lista(p.sedes)}</strong></span>
-              </div>
               {boton("postular-requisitos", "Sí, quiero postularme", s.boton)}
             </ChecklistRequisitos>
           </Aparecer>

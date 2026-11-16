@@ -7,8 +7,10 @@
 import {
   m, useInView, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform, type Variants,
 } from "framer-motion";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import s from "./Convocatoria.module.css";
+
+const sinSuscripcion = () => () => {};
 
 const SUAVE = [0.22, 1, 0.36, 1] as const;
 
@@ -133,7 +135,10 @@ export function Trazos({ className, cantidad = 14 }: { className?: string; canti
 
 /** Foto que se inclina en 3D siguiendo el mouse (solo con puntero fino; en celular queda quieta). */
 export function FotoTilt({ children, className }: { children: ReactNode; className?: string }) {
-  const reducido = useReducedMotion();
+  // En el servidor no se sabe si hay "reducir movimiento": la primera pintura del navegador usa la versión animada
+  // (igual que el HTML del servidor) y recién después de hidratar se cambia a la quieta. Así no hay aviso de hidratación.
+  const hidratado = useSyncExternalStore(sinSuscripcion, () => true, () => false);
+  const reducido = useReducedMotion() && hidratado;
   const mx = useMotionValue(0.5), my = useMotionValue(0.5);
   const rx = useSpring(useTransform(my, [0, 1], [7, -7]), { stiffness: 150, damping: 18 });
   const ry = useSpring(useTransform(mx, [0, 1], [-9, 9]), { stiffness: 150, damping: 18 });

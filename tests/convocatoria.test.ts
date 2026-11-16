@@ -20,7 +20,7 @@ describe("contenido por país", () => {
 
   it("todas las fotos existen en public/ en las dos resoluciones", () => {
     for (const p of Object.values(PAISES)) {
-      for (const foto of [p.fotos.hero, ...p.fotos.galeria]) {
+      for (const foto of [p.fotos.hero, ...p.fotos.galeria, ...p.fotos.monitores]) {
         for (const suf of [".webp", "-800.webp"]) {
           expect(existsSync(path.join(process.cwd(), "public", `${foto.src}${suf}`)), `${foto.src}${suf}`).toBe(true);
         }

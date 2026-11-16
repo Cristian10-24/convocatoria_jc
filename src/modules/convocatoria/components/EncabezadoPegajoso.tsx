@@ -1,29 +1,24 @@
 "use client";
 
-// "Postúlate" que acompaña el scroll y se convierte en encabezado fijo:
-//   1. Mientras el botón del inicio (#cta-hero) se ve, no aparece nada.
-//   2. Cuando ese botón sale de pantalla, baja una PASTILLA "Postúlate" arriba al centro (te sigue).
-//   3. Al seguir bajando (umbral), la pastilla se ESTIRA y se vuelve una barra fija con logo, país y el botón.
-// La transformación es CSS (clases .pegajoso / .pegajosoPastilla / .pegajosoBarra). Con movimiento reducido cambia sin animar.
+// "Postúlate" fijo ABAJO de la pantalla (pedido de coordinación 2026-11-12: que esté siempre en el campo visual).
+//   1. Mientras el botón del inicio (#cta-hero) se ve, no aparece nada (no se duplica el botón).
+//   2. En cuanto ese botón sale de pantalla, sube desde abajo una barra fija con logo, país y un botón grande que late.
+//   La barra se queda visible hasta el final de la página (el pie tiene espacio extra para que no lo tape).
+// La animación es CSS (clases .pegajoso / .pegajosoOculto). Con movimiento reducido cambia sin animar.
 // Escucha el scroll con requestAnimationFrame (una lectura por cuadro, pasiva) para no frenar la página.
+// El nombre del archivo se conserva para no tocar importaciones; ya no es un encabezado sino una barra inferior.
 import { useEffect, useState, type ReactNode } from "react";
 import s from "./Convocatoria.module.css";
 
-type Estado = "oculto" | "pastilla" | "barra";
-
-/** Distancia extra (px) que hay que bajar después de perder de vista el botón del inicio para que la pastilla se vuelva barra. */
-const UMBRAL_BARRA = 260;
-
 export default function EncabezadoPegajoso({ marca, boton }: { marca: ReactNode; boton: ReactNode }) {
-  const [estado, setEstado] = useState<Estado>("oculto");
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const cta = document.getElementById("cta-hero");
     let pendiente = false;
     const calcular = () => {
       pendiente = false;
-      const fondo = cta ? cta.getBoundingClientRect().bottom : 0;
-      setEstado(fondo > 0 ? "oculto" : fondo > -UMBRAL_BARRA ? "pastilla" : "barra");
+      setVisible(cta ? cta.getBoundingClientRect().bottom <= 0 : true);
     };
     const alScroll = () => {
       if (!pendiente) { pendiente = true; requestAnimationFrame(calcular); }
@@ -34,9 +29,8 @@ export default function EncabezadoPegajoso({ marca, boton }: { marca: ReactNode;
     return () => { window.removeEventListener("scroll", alScroll); window.removeEventListener("resize", alScroll); };
   }, []);
 
-  const clase = estado === "barra" ? s.pegajosoBarra : estado === "pastilla" ? s.pegajosoPastilla : s.pegajosoOculto;
   return (
-    <div className={`${s.pegajoso} ${clase}`} aria-hidden={estado === "oculto"} inert={estado === "oculto"}>
+    <div className={`${s.pegajoso} ${visible ? "" : s.pegajosoOculto}`} aria-hidden={!visible} inert={!visible}>
       <div className={s.pegajosoInterior}>
         <div className={s.pegajosoMarca}>{marca}</div>
         <div className={s.pegajosoBoton}>{boton}</div>

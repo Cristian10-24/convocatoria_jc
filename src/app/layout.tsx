@@ -6,7 +6,8 @@ import { Outfit } from "next/font/google";
 import { urlSitio } from "@/shared/config/sitio";
 import "./globals.css";
 
-const outfit = Outfit({ subsets: ["latin"], display: "swap", variable: "--font-outfit" });
+// Pesos 400 a 800, como el diseño de las landings (reforma 2026-11-12): lo que pide 900 se dibuja en 800.
+const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap", variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(urlSitio()),

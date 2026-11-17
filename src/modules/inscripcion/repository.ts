@@ -8,6 +8,9 @@ import type { DatosInscripcion } from "./schema";
 
 export const COLECCION = "insc_inscripciones";
 
+/** Qué aceptó la persona: clave del consentimiento, respuesta, versión del texto y fecha. No se modifica después. */
+export type Consentimiento = { clave: string; respuesta: boolean; version: string; fecha: Date };
+
 export type Inscripcion = DatosInscripcion & {
   _id: ObjectId;
   radicado: string;
@@ -16,8 +19,12 @@ export type Inscripcion = DatosInscripcion & {
   alertas: Alerta[];
   versionAutorizacion: string;
   versionAutorizacionAcudiente?: string;
+  /** Consentimientos con versión y fecha. Las inscripciones anteriores al rediseño no lo traen: se deducen de versionAutorizacion. */
+  consentimientos?: Consentimiento[];
+  /** 1 = formulario anterior (una casilla); 2 = formulario 2027. */
+  formato?: 1 | 2;
   creadoEn: Date;
-  origen: { utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_term?: string };
+  origen: { utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_term?: string; fbclid?: string; origen?: string; ubicacion?: string };
   /** Clave que manda el navegador por cada intento de envío: reintentar el mismo envío no duplica. */
   idempotencia?: string;
   ipHash: string;

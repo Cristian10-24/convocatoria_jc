@@ -98,6 +98,34 @@ export const CANALES: Opcion[] = [
   { id: "otro", etiqueta: "Otro" },
 ];
 
+/** Opción común de los datos sensibles: nadie está obligado a responderlos. */
+export const PREFIERO_NO: Opcion = { id: "prefiero_no", etiqueta: "Prefiero no responder" };
+
+// ---------- Opciones de las preguntas que solo tienen algunos países ----------
+const lista = (pares: Array<[string, string]>): Opcion[] => pares.map(([id, etiqueta]) => ({ id, etiqueta }));
+
+export const CONDICIONES_LABORALES: Opcion[] = lista([
+  ["completo_contrato", "Trabajo a tiempo completo con un contrato formal de trabajo"],
+  ["parcial_contrato", "Trabajo a tiempo parcial con un contrato formal de trabajo"],
+  ["completo_sin", "Trabajo a tiempo completo SIN contrato laboral ni prestaciones sociales"],
+  ["parcial_sin", "Trabajo a tiempo parcial SIN contrato laboral ni prestaciones sociales"],
+]);
+export const VIVIENDA: Opcion[] = lista([
+  ["propia", "Propia"], ["arrendada", "Arrendada"], ["familiar", "Familiar"], ["compartida", "Compartida (diferentes familias en una misma vivienda)"], ["otro", "Otro"],
+]);
+export const ESTRATO: Opcion[] = lista(["1", "2", "3", "4", "5", "6"].map((n) => [n, n]));
+export const NUCLEO: Opcion[] = lista([...["1", "2", "3", "4", "5", "6"].map((n): [string, string] => [n, n]), ["7mas", "7 o más"]]);
+export const ELEMENTOS: Opcion[] = lista([
+  ["nevera", "Nevera"], ["estufa", "Estufa"], ["lavadora", "Lavadora"], ["horno", "Horno"], ["tv", "TV"], ["sonido", "Equipo de sonido"],
+  ["carro", "Carro"], ["moto", "Moto"], ["bicicleta", "Bicicleta"],
+]);
+export const SERVICIOS: Opcion[] = lista([
+  ["energia", "Energía"], ["agua", "Agua"], ["gas", "Gas"], ["alcantarillado", "Alcantarillado"], ["basuras", "Recolección de basuras"],
+  ["pavimentado", "Acceso pavimentado"], ["no_pavimentado", "Acceso no pavimentado"],
+]);
+export const CONOCIMIENTO: Opcion[] = lista([["ninguno", "Ninguno"], ["basico", "Básico"], ["medio", "Medio"], ["avanzado", "Avanzado"]]);
+export const INGLES: Opcion[] = lista([["ninguno", "No hablo inglés"], ["principiante", "Principiante"], ["intermedio", "Intermedio"], ["avanzado", "Avanzado"], ["nativo", "Nativo"]]);
+
 // ---------- Preguntas (etiqueta y ayuda) ----------
 type Texto = { etiqueta: TextoTrato; ayuda?: TextoTrato; placeholder?: string };
 
@@ -149,6 +177,18 @@ export const PREGUNTAS = {
   canal: { etiqueta: { tu: "¿Cómo te enteraste de esta convocatoria?", vos: "¿Cómo te enteraste de esta convocatoria?" } },
   canalOtro: { etiqueta: "¿Cuál?" },
   embajador: { etiqueta: { tu: "¿Recuerdas el nombre o código del embajador que te compartió la inscripción?", vos: "¿Te acordás del nombre o código del embajador que te compartió la inscripción?" }, ayuda: { tu: "Si no lo recuerdas, danos algún dato para identificarlo (ciudad o teléfono).", vos: "Si no te acordás, danos algún dato para identificarlo (ciudad o teléfono)." } },
+  sedeCercana: { etiqueta: "¿A qué sede podrías asistir a los encuentros presenciales?", ayuda: { tu: "Elige la más cercana: hay un encuentro presencial al mes.", vos: "Elegí la más cercana: hay un encuentro presencial al mes." } },
+  laboral: { etiqueta: "Si estás trabajando, ¿cuáles son tus condiciones laborales?" },
+  vivienda: { etiqueta: { tu: "Tipo de tenencia de la vivienda en la que vives", vos: "Tipo de tenencia de la vivienda en la que vivís" } },
+  estrato: { etiqueta: "Estrato" },
+  nucleo: { etiqueta: "¿Cuántas personas conforman tu núcleo familiar?" },
+  elementos: { etiqueta: { tu: "Elementos que tienes en tu hogar", vos: "Elementos que tenés en tu hogar" }, ayuda: { tu: "Puedes seleccionar varios.", vos: "Podés seleccionar varios." } },
+  servicios: { etiqueta: "Servicios con los que cuenta tu hogar", ayuda: { tu: "Puedes escoger varios.", vos: "Podés escoger varios." } },
+  conocimiento: { etiqueta: "Nivel de conocimiento en desarrollo de software", ayuda: "Esta pregunta NO te descarta. Solo queremos ubicarte en la ruta correcta." },
+  lenguajes: { etiqueta: { tu: "Lenguajes de programación que manejas", vos: "Lenguajes de programación que manejás" }, placeholder: "Por ejemplo: Python, JavaScript" },
+  ingles: { etiqueta: "Nivel de inglés" },
+  aceptaPrivacidad: { etiqueta: "Leí y acepto la Política de privacidad" },
+  autorizaDatos: { etiqueta: "Autorizo el tratamiento de mis datos personales" },
   aceptaDatos: { etiqueta: "He leído y acepto los Términos y Políticas de Protección de Datos de la Fundación ROFÉ" },
   autorizaAcudiente: { etiqueta: "Como padre, madre, acudiente o tutor, autorizo la inscripción y el tratamiento de los datos de la persona menor de edad" },
 } satisfies Record<string, Texto>;

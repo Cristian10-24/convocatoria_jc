@@ -42,6 +42,12 @@ export async function POST(req: Request): Promise<NextResponse> {
     });
     if (!r.ok) {
       if (r.error === "datos_invalidos") return errorJson(400, "datos_invalidos", { errores: r.errores, paso: r.paso });
+      // País apagado o con su formulario caído: 503 solo para ese país; el navegador conserva lo escrito.
+      if (r.error === "mantenimiento" || r.error === "no_disponible") {
+        const res = errorJson(503, r.error);
+        res.headers.set("Retry-After", "300");
+        return res;
+      }
       return errorJson(409, r.error);
     }
     const cuerpoOk: RespuestaExito = { radicado: r.radicado, nombres: r.nombres, yaExistia: r.yaExistia };

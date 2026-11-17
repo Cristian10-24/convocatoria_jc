@@ -22,7 +22,7 @@ import type { IdPaso, Opcion, TextoTrato } from "../config/tipos";
 import { textoRespuesta } from "../mostrar";
 import {
   camposVisibles, documentoAlEscribir, erroresDelPaso, pasosVisibles, primerPasoConErrores, revisarBorrador, sedeDe, type Borrador, type Errores,
-} from "../schema";
+} from "../esquemaAnterior";
 import { CampoAceptar, CampoMultiple, CampoOpciones, CampoSelector, CampoTexto } from "./Campos";
 import Confirmacion from "./Confirmacion";
 import Turnstile, { type ControlTurnstile } from "./Turnstile";
@@ -173,7 +173,7 @@ export default function FormularioInscripcion({ pais, anio, claveTurnstile, ruta
 
   // ---------- Render de cada campo ----------
   const op = (lista: Opcion[]) => lista.map((o) => ({ id: o.id, etiqueta: t(o.etiqueta) }));
-  const v = (c: IdCampo) => (datos[c] as string | undefined) ?? "";
+  const v = (c: IdCampo) => ((datos as Record<string, unknown>)[c] as string | undefined) ?? "";
   const pregunta = (c: IdCampo) => PREGUNTAS[c] as { etiqueta: TextoTrato; ayuda?: TextoTrato; placeholder?: string };
   const base = (c: IdCampo) => {
     const p = pregunta(c);
@@ -186,7 +186,7 @@ export default function FormularioInscripcion({ pais, anio, claveTurnstile, ruta
     <CampoOpciones key={c} {...base(c)} valor={v(c)} onCambio={(x) => cambiar(c, x)} opciones={op(lista)} enFila={enFila} />
   );
   const multiple = (c: IdCampo, lista: Opcion[], excluyente?: string) => (
-    <CampoMultiple key={c} {...base(c)} valor={(datos[c] as string[] | undefined) ?? []} onCambio={(x) => cambiar(c, x)} opciones={op(lista)} excluyente={excluyente} />
+    <CampoMultiple key={c} {...base(c)} valor={((datos as Record<string, unknown>)[c] as string[] | undefined) ?? []} onCambio={(x) => cambiar(c, x)} opciones={op(lista)} excluyente={excluyente} />
   );
   const prefijo = `+${TELEFONOS[cfg.telefono].indicativo}`;
   const telefono = (c: IdCampo, autoCompletar?: string) =>

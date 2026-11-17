@@ -15,6 +15,8 @@ export type CodigoError =
   | "bot"
   | "verificacion"
   | "cerrada"
+  | "mantenimiento"
+  | "no_disponible"
   | "duplicado"
   | "credenciales"
   | "sesion"

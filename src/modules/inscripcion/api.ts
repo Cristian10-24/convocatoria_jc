@@ -15,13 +15,14 @@ export const SobreEnvio = z.object({
   iniciadoEn: z.number().optional(),
   turnstile: z.string().max(2048).optional(),
   idempotencia: z.uuid().optional(),
-  origen: z.object({ utm_source: utm, utm_medium: utm, utm_campaign: utm, utm_content: utm, utm_term: utm }).optional(),
+  // UTM y fbclid con los que llegó la visita, y desde dónde abrió el formulario (plan de medición).
+  origen: z.object({ utm_source: utm, utm_medium: utm, utm_campaign: utm, utm_content: utm, utm_term: utm, fbclid: z.string().max(300).optional(), origen: z.string().max(40).optional(), ubicacion: z.string().max(40).optional() }).optional(),
 });
 export type SobreEnvio = z.infer<typeof SobreEnvio>;
 
 export type RespuestaExito = { radicado: string; nombres: string; yaExistia: boolean };
 export type RespuestaError = {
-  error: "muy_grande" | "datos_invalidos" | "origen" | "limite" | "bot" | "verificacion" | "cerrada" | "duplicado" | "interno";
+  error: "muy_grande" | "datos_invalidos" | "origen" | "limite" | "bot" | "verificacion" | "cerrada" | "mantenimiento" | "no_disponible" | "duplicado" | "interno";
   errores?: Record<string, string>;
   paso?: string;
 };

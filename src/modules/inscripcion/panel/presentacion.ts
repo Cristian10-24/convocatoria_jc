@@ -117,7 +117,7 @@ export function columnasExportacion(verSensibles: boolean): Columna[] {
     { titulo: "Acudiente: relación", ancho: 14, valor: (d) => valorCampo(d, "acudienteRelacion") },
     pregunta("grado", 16),
     { titulo: etiquetaPregunta("anioEgreso"), ancho: 10, valor: (d) => d.anioEgreso ?? "" },
-    { titulo: etiquetaPregunta("promedio"), ancho: 10, valor: (d) => d.promedio },
+    { titulo: etiquetaPregunta("promedio"), ancho: 10, valor: (d) => d.promedio ?? "" },
     pregunta("institucion", 28),
     pregunta("internet", 10),
     pregunta("computadora", 30),

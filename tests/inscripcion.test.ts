@@ -5,8 +5,7 @@ import { PAISES } from "@/shared/config/paises";
 import { estadoConvocatoria } from "@/shared/config/convocatoria";
 import { hoyIso } from "@/shared/validation/fechas";
 import { calcularAlertas } from "@/modules/inscripcion/alertas";
-import { AUTORIZACION_ACUDIENTE, LEGAL } from "@/modules/inscripcion/config/legal";
-import { CONFIG_PAISES } from "@/modules/inscripcion/config/paises";
+import { CONFIG_PAISES, DEFINICIONES } from "@/modules/inscripcion/config/paises";
 import { PASOS, PREGUNTAS } from "@/modules/inscripcion/config/preguntas";
 import { radicadoDe, prefijoConvocatoria } from "@/modules/inscripcion/radicado";
 import { camposVisibles, documentoAlEscribir, esquemaInscripcion, pasosVisibles, revisarBorrador } from "@/modules/inscripcion/schema";
@@ -15,12 +14,14 @@ import { conUtm } from "@/modules/convocatoria/content/acciones";
 import { ACUDIENTE, cedulaUy, haceAnios, inscripcionUy } from "./inscripcion-datos";
 
 const hoy = hoyIso();
-const uy = CONFIG_PAISES.uy;
-const revisarUy = (d: Record<string, unknown>) => revisarBorrador("uy", d, hoy);
+// Los datos de prueba de Uruguay usan el formato anterior (una casilla): es el que ya está en producción.
+const uyDef = DEFINICIONES.uy;
+const uy = uyDef.config;
+const revisarUy = (d: Record<string, unknown>) => revisarBorrador(uyDef, d, hoy, 1);
 
 describe("validación del formulario de Uruguay", () => {
   it("acepta una inscripción válida y la normaliza", () => {
-    const r = esquemaInscripcion("uy", hoy).safeParse(inscripcionUy());
+    const r = esquemaInscripcion(uyDef, hoy, 1).safeParse(inscripcionUy());
     expect(r.success).toBe(true);
     if (!r.success) return;
     expect(r.data).toMatchObject({
@@ -93,8 +94,8 @@ describe("validación del formulario de Uruguay", () => {
     expect(conAcudiente.errores).toEqual({});
     expect(conAcudiente.datos?.acudiente).toMatchObject({ nombres: "Laura", relacion: "madre", telefono: "+59898111222" });
     expect(conAcudiente.datos?.autorizaAcudiente).toBe(true);
-    expect(pasosVisibles(uy, menor, hoy).map((p) => p.id)).toContain("acudiente");
-    expect(pasosVisibles(uy, inscripcionUy(), hoy).map((p) => p.id)).not.toContain("acudiente");
+    expect(pasosVisibles(uyDef, menor, hoy).map((p) => p.id)).toContain("acudiente");
+    expect(pasosVisibles(uyDef, inscripcionUy(), hoy).map((p) => p.id)).not.toContain("acudiente");
   });
 
   it("el número alterno debe ser distinto del WhatsApp", () => {
@@ -129,7 +130,7 @@ describe("validación del formulario de Uruguay", () => {
 
   it("rechaza opciones inexistentes y descarta campos desconocidos", () => {
     expect(revisarUy(inscripcionUy({ talla: "xxxl" })).errores.talla).toBeDefined();
-    const r = esquemaInscripcion("uy", hoy).safeParse(inscripcionUy({ esAdmin: true, $where: "1" }));
+    const r = esquemaInscripcion(uyDef, hoy, 1).safeParse(inscripcionUy({ esAdmin: true, $where: "1" }));
     expect(r.success && "esAdmin" in r.data).toBe(false);
   });
 
@@ -138,10 +139,10 @@ describe("validación del formulario de Uruguay", () => {
   });
 
   it("muestra solo los campos que aplican", () => {
-    const visibles = camposVisibles(uy, inscripcionUy(), hoy);
+    const visibles = camposVisibles(uyDef, inscripcionUy(), hoy, 1);
     expect(visibles.has("sede")).toBe(true); // Uruguay tiene 2 sedes
     expect(visibles.has("anioEgreso")).toBe(false);
-    expect(camposVisibles(CONFIG_PAISES.pan, {}, hoy).has("sede")).toBe(false); // Panamá: una sola sede
+    expect(camposVisibles(DEFINICIONES.pan, { sede: "__otra__" }, hoy).has("sedeCercana")).toBe(false); // Panamá: una sola sede, no se pregunta cuál
   });
 
   it("texto legible para el resumen", () => {
@@ -187,21 +188,18 @@ describe("radicado", () => {
 });
 
 describe("configuración por país", () => {
-  it("Uruguay habilitado; Colombia, Panamá y Ecuador preparados pero apagados", () => {
-    expect(uy.habilitado).toBe(true);
-    for (const p of ["col", "pan", "ecu"] as const) {
-      const c = CONFIG_PAISES[p];
-      expect(c.habilitado).toBe(false);
-      expect(c.pendienteDeConfirmar).toBeTruthy();
-      expect(c.trato).toBe("tu");
-    }
+  it("los 4 países tienen su formulario listo; lo que abre o cierra cada uno es CONVOCATORIA_CONFIG", () => {
+    expect(uy.trato).toBe("vos");
+    for (const p of PAISES) expect(CONFIG_PAISES[p].habilitado).toBe(true);
+    for (const p of ["col", "pan", "ecu"] as const) expect(CONFIG_PAISES[p].trato).toBe("tu");
   });
 
   it("cada país tiene sedes con ciudades, documentos, grados con «egresado» y escala de notas", () => {
     for (const p of PAISES) {
       const c = CONFIG_PAISES[p];
       expect(c.sedes.length).toBeGreaterThan(0);
-      expect(c.sedes.every((s) => s.ciudades.length > 0)).toBe(true);
+      // Solo Uruguay elige la ciudad de una lista por sede; en los demás la residencia se escribe.
+      if (DEFINICIONES[p].reglas.ubicacion === "lista") expect(c.sedes.every((s) => s.ciudades.length > 0)).toBe(true);
       expect(c.tiposDocumento.length).toBeGreaterThan(1);
       expect(c.grados.some((g) => g.id === "egresado")).toBe(true);
       expect(c.escalaNotas.max).toBeGreaterThan(c.escalaNotas.min);
@@ -215,11 +213,11 @@ describe("configuración por país", () => {
   });
 
   it("los textos legales son provisionales, marcados y con versión única", () => {
-    const versiones = PAISES.map((p) => LEGAL[p].version);
-    expect(new Set(versiones).size).toBe(versiones.length);
-    expect(PAISES.every((p) => LEGAL[p].provisional)).toBe(true);
-    expect(LEGAL.uy.parrafos.join(" ")).toContain("18.331");
-    expect(AUTORIZACION_ACUDIENTE.provisional).toBe(true);
+    const versiones = PAISES.map((p) => DEFINICIONES[p].legal.consentimientos.find((c) => c.clave === "datos")!.version);
+    expect(new Set(versiones).size).toBe(PAISES.length);
+    expect(PAISES.every((p) => DEFINICIONES[p].legal.provisional)).toBe(true);
+    expect(DEFINICIONES.uy.legal.parrafos.join(" ")).toContain("18.331");
+    expect(DEFINICIONES.uy.legal.versionAnterior).toBe("uy-2027-provisional-1"); // la que ya tienen las inscripciones de producción
   });
 
   it("cada campo de cada paso tiene su pregunta", () => {

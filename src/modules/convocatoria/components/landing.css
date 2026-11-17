@@ -7,7 +7,9 @@
 .jcm .g { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); column-gap: 24px; row-gap: 24px }
 .jcm .ac { color: hsl(31.8 92.7% 40%) }
 .jcm .osc .ac, .jcm .ac-o { color: hsl(31.8 92.7% 56.9%) }
-.jcm .nav { position: sticky; top: 0; z-index: 30; background: hsl(0 0% 100%); border-bottom: 1px solid hsl(231.9 22.4% 90.4%) }
+/* Menú del sitio (todas las landings, también Uruguay 2027): NO queda fijo; está arriba al cargar y se va con el
+   scroll. `relative` mantiene anclado a él el menú del celular. Lo único fijo al bajar es la barra de abajo. */
+.jcm .nav { position: relative; z-index: 30; background: hsl(0 0% 100%); border-bottom: 1px solid hsl(231.9 22.4% 90.4%) }
 .jcm .nav-in { height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 24px }
 .jcm .marca { display: flex; align-items: center; gap: 14px; text-decoration: none; color: hsl(231.9 77.1% 20.6%); min-width: 0 }
 .jcm .marca img { display: block; width: 63px; height: 56px; object-fit: contain; flex: none }
@@ -303,7 +305,7 @@
 /* "Inscribirme" en la principal baja a la franja de países: desplazamiento suave y sin quedar bajo el menú fijo. */
 html:has(.jcm) { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html:has(.jcm) { scroll-behavior: auto; } }
-.jcm #paises { scroll-margin-top: 96px; }
+.jcm #paises { scroll-margin-top: 16px; }
 
 /* Pie del sitio (todas las landings). Las columnas iban en style (inline) y le ganaban a las reglas de celular: se
    montaban unas sobre otras. Escritorio: botón + Programa, Legal y Redes en fila. Tablet (640–1024 px): botón arriba y

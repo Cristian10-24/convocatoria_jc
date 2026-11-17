@@ -443,9 +443,7 @@
 /* Desplazamiento suave para los enlaces internos (#requisitos, #acerca…), salvo con "reducir movimiento". */
 html:has(.uy27) { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html:has(.uy27) { scroll-behavior: auto; } }
-/* En Uruguay el menú del sitio NO queda fijo: está arriba al cargar y se va con el scroll (en todos los anchos).
-   Lo único fijo al bajar es la barra "¡Postulate!" de abajo. `relative` mantiene el menú del celular anclado a él. */
-.jcm.uy27-pagina > .nav { position: relative; top: auto; }
+/* El menú del sitio no queda fijo: la regla está en una sola parte, components/landing.css (.jcm .nav). */
 /* Sin menú fijo, al saltar a una sección basta un margen chico. */
 .uy27 [id] { scroll-margin-top: 16px; }
 /* El pie del sitio deja lugar al botón "Postulate" fijo de abajo. */

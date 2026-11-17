@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { PAISES } from "@/shared/config/paises";
 import { MENSAJES_AUTH as M } from "./config/textos";
-import { ROLES } from "./config/roles";
+import { conPaises, ROLES } from "./config/roles";
 
 /** bcrypt solo usa los primeros 72 bytes: más largo se rechaza en vez de recortarse en silencio. */
 export const CLAVE_MAX_BYTES = 72;
@@ -82,7 +82,7 @@ export const NuevoUsuario = z
   })
   .strict()
   .superRefine((v, ctx) => {
-    if (v.rol === "coordinador" && v.paises.length === 0) ctx.addIssue({ code: "custom", path: ["paises"], message: M.paisesCoordinador });
+    if (conPaises(v.rol) && v.paises.length === 0) ctx.addIssue({ code: "custom", path: ["paises"], message: M.paisesCoordinador });
   });
 export type NuevoUsuario = z.input<typeof NuevoUsuario>;
 

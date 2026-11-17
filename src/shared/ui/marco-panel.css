@@ -15,6 +15,12 @@
 .marco-usuario b { font-size: 14px; font-weight: 600; }
 .marco-contenido { padding-top: 32px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 24px; }
 
+/* Encabezado de cada página del panel (título, subtítulo y acciones) */
+.ad .t-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.ad .t-cab > div { display: flex; flex-direction: column; gap: 6px; }
+.ad .t-cab h1 { margin: 0; font-size: 36px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.ad .t-cab p { margin: 0; font-size: 15px; color: var(--texto-suave); }
+
 /* Estados del panel (loading.tsx y error.tsx; diseño AdminEstados) */
 .ad .carga .sk { display: block; }
 .ad .carga { display: flex; flex-direction: column; gap: 16px; }
@@ -32,4 +38,5 @@
   .marco-usuario { width: 100%; justify-content: space-between; }
   .marco-usuario > span { align-items: flex-start; }
   .marco-contenido { padding-top: 20px; }
+  .ad .t-cab h1 { font-size: 30px; }
 }

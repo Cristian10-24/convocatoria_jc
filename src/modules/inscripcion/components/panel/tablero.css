@@ -1,9 +1,5 @@
 /* Tablero del panel (diseño 2027: Admin, AdminTableroMovil, AdminCoordTablero). Usa el sistema `.ad`.
    Las gráficas son HTML y SVG sin librerías: listas con barras finas, barras apiladas, mapa de calor y la serie diaria. */
-.ad .t-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
-.ad .t-cab > div { display: flex; flex-direction: column; gap: 6px; }
-.ad .t-cab h1 { margin: 0; font-size: 36px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
-.ad .t-cab p { margin: 0; font-size: 15px; color: var(--texto-suave); }
 .ad .t-filtros { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
 .ad .t-filtros .f-pais { flex: 1 1 340px; }
 .ad .t-filtros .f-corto { flex: 1 1 160px; }
@@ -88,6 +84,5 @@
 .ad .ranking li > span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 760px) {
-  .ad .t-cab h1 { font-size: 30px; }
   .ad .kpi strong { font-size: 34px; }
 }

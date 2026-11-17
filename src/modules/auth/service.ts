@@ -2,12 +2,12 @@
 // alta de usuarios. Todo lo que cambia sesiones queda en auth_auditoria.
 import "server-only";
 import { createHash, randomBytes, randomInt } from "node:crypto";
-import { ObjectId } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 import { notificador } from "@/shared/notificaciones/notificador";
 import { hashIp } from "@/shared/security/hash";
 import { consumir } from "@/shared/security/rateLimit";
 import type { PaisSlug } from "@/shared/config/paises";
-import type { Rol } from "./config/roles";
+import { conPaises, type Rol } from "./config/roles";
 import { MAX_INTENTOS, MINUTOS_BLOQUEO, MINUTOS_ENLACE, RUTA_RESTABLECER } from "./config/acceso";
 import { MENSAJES_AUTH } from "./config/textos";
 import { compararClave, hashearClave } from "./password";
@@ -193,21 +193,26 @@ export async function editarUsuario(id: string, entrada: unknown, actor: Usuario
   const cambios = r.data;
   const rol = cambios.rol ?? u.rol;
   const activo = cambios.activo ?? u.activo;
-  const paises = rol === "coordinador" ? (cambios.paises ?? u.paises ?? []) : [];
-  if (rol === "coordinador" && paises.length === 0) return { ok: false, error: "datos_invalidos", errores: { paises: MENSAJES_AUTH.paisesCoordinador } };
+  const paises = conPaises(rol) ? (cambios.paises ?? u.paises ?? []) : [];
+  if (conPaises(rol) && paises.length === 0) return { ok: false, error: "datos_invalidos", errores: { paises: MENSAJES_AUTH.paisesCoordinador } };
 
   const pierdeAdmin = u.rol === "admin" && u.activo && (rol !== "admin" || !activo);
   if (pierdeAdmin && u._id.toHexString() === actor.id) return { ok: false, error: "propio" };
   if (pierdeAdmin && (await contarAdminsActivos(u._id)) === 0) return { ok: false, error: "ultimo_admin" };
 
   const seDesactiva = u.activo && !activo;
-  await actualizarUsuario(u._id, { ...(cambios.nombre ? { nombre: cambios.nombre } : {}), rol, paises, activo }, seDesactiva);
+  try {
+    await actualizarUsuario(u._id, { ...(cambios.nombre ? { nombre: cambios.nombre } : {}), ...(cambios.correo ? { correo: cambios.correo } : {}), rol, paises, activo }, seDesactiva);
+  } catch (e) {
+    if (e instanceof MongoServerError && e.code === 11000) return { ok: false, error: "datos_invalidos", errores: { correo: MENSAJES_AUTH.duplicado } };
+    throw e;
+  }
   await registrarAuditoria({
     accion: seDesactiva ? "desactivacion" : "usuario_editado",
     usuario: u.usuario,
     usuarioId: u._id,
     por: actor.usuario,
-    detalle: `rol=${rol}; paises=${paises.join(",") || "-"}; activo=${activo}`,
+    detalle: `rol=${rol}; paises=${paises.join(",") || "-"}; activo=${activo}${cambios.correo ? `; correo=${cambios.correo}` : ""}`,
   });
   return { ok: true };
 }
@@ -236,12 +241,22 @@ export async function registrarExportacion(actor: UsuarioSesion, detalle: string
   await registrarAuditoria({ accion: "exportacion", usuario: actor.usuario, usuarioId: new ObjectId(actor.id), detalle: detalle.slice(0, 500), ipHash: hashIp(ip) });
 }
 
+/** Si llega el correo sin usuario, el usuario (identificador interno) sale de la parte antes de la "@". */
+function conUsuarioDelCorreo(entrada: unknown): unknown {
+  if (!entrada || typeof entrada !== "object") return entrada;
+  const e = entrada as Record<string, unknown>;
+  if (e.usuario || typeof e.correo !== "string") return entrada;
+  const local = e.correo.trim().toLowerCase().split("@")[0] ?? "";
+  const usuario = local.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9._-]/g, "").slice(0, 40);
+  return { ...e, usuario };
+}
+
 /**
  * Alta de usuario. Valida con el mismo esquema que la pantalla de usuarios. `claveTemporal`: la contraseña la eligió
  * otra persona (alta desde el panel), así que al primer ingreso hay que cambiarla.
  */
 export async function crearUsuario(entrada: unknown, por: string, { claveTemporal = false } = {}): Promise<ResultadoAlta> {
-  const r = NuevoUsuario.safeParse(entrada);
+  const r = NuevoUsuario.safeParse(conUsuarioDelCorreo(entrada));
   if (!r.success) {
     const errores: Record<string, string> = {};
     for (const i of r.error.issues) errores[i.path.join(".") || "_"] ??= i.message;
@@ -253,8 +268,8 @@ export async function crearUsuario(entrada: unknown, por: string, { claveTempora
     ...(d.correo ? { correo: d.correo } : {}),
     nombre: d.nombre,
     rol: d.rol,
-    // Solo el coordinador usa la lista; para los demás se guarda vacía y no confunde.
-    paises: d.rol === "coordinador" ? d.paises : [],
+    // Solo Coordinación y Consulta usan la lista; para administración se guarda vacía y no confunde.
+    paises: conPaises(d.rol) ? d.paises : [],
     activo: true,
     passwordHash: await hashearClave(d.clave),
     tokenVersion: 0,

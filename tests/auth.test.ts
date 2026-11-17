@@ -309,8 +309,9 @@ describe("permisos y alcance", () => {
     expect(alcanceDe({ rol: "coordinador", paises: ["uy", "xx", "uy"] }).paises).toEqual(["uy"]);
   });
 
-  it("lector ve todos los países pero sin detalle sensible; admin ve todo", () => {
-    expect(alcanceDe({ rol: "lector", paises: [] })).toEqual({ paises: [...PAISES], verSensibles: false });
+  it("Consulta ve solo sus países y sin detalle sensible (con la lista vacía, nada); admin ve todo", () => {
+    expect(alcanceDe({ rol: "lector", paises: ["pan", "uy"] })).toEqual({ paises: ["pan", "uy"], verSensibles: false });
+    expect(alcanceDe({ rol: "lector", paises: [] })).toEqual({ paises: [], verSensibles: false });
     expect(alcanceDe({ rol: "admin", paises: [] })).toEqual({ paises: [...PAISES], verSensibles: true });
     expect(puede("lector", "ver_detalle_sensible")).toBe(false);
     expect(puede("coordinador", "ver_detalle_sensible")).toBe(false);
@@ -334,7 +335,9 @@ describe("alta de usuarios", () => {
     expect(sinPais).toMatchObject({ ok: false, error: "datos_invalidos", errores: { paises: expect.any(String) } });
 
     const { usuario } = await usuarioNuevo();
-    expect(await crearUsuario({ usuario, nombre: "Otra Persona", rol: "lector", clave: CLAVE }, "pruebas")).toEqual({ ok: false, error: "duplicado" });
+    expect(await crearUsuario({ usuario, nombre: "Otra Persona", rol: "lector", paises: ["uy"], clave: CLAVE }, "pruebas")).toEqual({ ok: false, error: "duplicado" });
+    const consultaSinPais = await crearUsuario({ usuario: "consulta.sin.pais", nombre: "Consulta", rol: "lector", paises: [], clave: CLAVE }, "pruebas");
+    expect(consultaSinPais).toMatchObject({ ok: false, error: "datos_invalidos", errores: { paises: expect.any(String) } });
 
     const doc = await (await usuarios()).findOne({ usuario });
     expect(doc?.passwordHash).toMatch(/^\$2[aby]\$12\$/);

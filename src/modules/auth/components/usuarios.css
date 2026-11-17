@@ -1,0 +1,24 @@
+/* Pantalla de usuarios (diseño 2027: AdminUsuarios). Columna centrada más angosta que el resto del panel. */
+.ad .u-pagina { width: 100%; max-width: 1056px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.ad .u-caja { display: flex; flex-direction: column; gap: 18px; }
+.ad .u-nuevo { display: flex; flex-direction: column; gap: 18px; }
+.ad .u-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
+.ad .u-paises { display: flex; flex-wrap: wrap; gap: 8px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.ad .u-paises .op.seg { min-height: 44px; padding: 8px 14px; font-size: 15px; }
+.ad .u-paises .op.seg.is-sel { padding: 7px 13px; }
+.ad .u-pie { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.ad .u-pie .ayuda { margin: 0; max-width: 64ch; }
+.ad .u-cab { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 24px; }
+.ad .u-quien { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ad .u-quien h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ad .u-quien p { margin: 0; font-size: 14px; color: var(--texto-suave); overflow-wrap: anywhere; }
+.ad .u-acciones { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.ad .u-permisos { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.ad .u-rol { flex: 0 1 240px; }
+.ad .u-correo { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; padding-top: 16px; border-top: 1px solid var(--borde-tenue); }
+.ad .u-correo .campo { flex: 1 1 280px; }
+.ad .u-fila.inactivo { background: var(--neutro-claro); }
+.ad .u-aviso { justify-content: space-between; }
+.ad .u-aviso p { margin: 0; }
+.ad .u-clave { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px !important; }
+.ad .u-clave code { font: 600 17px/1 ui-monospace, Consolas, monospace; padding: 10px 14px; border-radius: 10px; background: var(--blanco); border: 1px solid var(--borde); user-select: all; }

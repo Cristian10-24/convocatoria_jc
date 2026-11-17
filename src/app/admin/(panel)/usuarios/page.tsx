@@ -7,10 +7,12 @@ export default async function Page() {
   const u = await exigirPagina("gestionar_usuarios");
   const usuarios = await listarUsuarios();
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <div>
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "#1c2a7a" }}>Usuarios</h1>
-        <p style={{ margin: "4px 0 0", fontSize: 14, color: "#4b4a5c" }}>Quién puede entrar al panel y qué ve cada uno.</p>
+    <div className="u-pagina">
+      <div className="t-cab">
+        <div>
+          <h1>Usuarios</h1>
+          <p>Quién puede entrar al panel y qué ve cada uno. Solo administración ve esta sección.</p>
+        </div>
       </div>
       <GestionUsuarios usuarios={usuarios} yo={u.id} />
     </div>

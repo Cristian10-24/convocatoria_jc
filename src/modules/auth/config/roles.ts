@@ -27,8 +27,13 @@ export const PERMISOS_POR_ROL: Record<Rol, readonly Permiso[]> = {
 export const ALCANCE_POR_ROL: Record<Rol, "todos" | "asignados"> = {
   admin: "todos",
   coordinador: "asignados",
-  lector: "todos",
+  // Decisión de la fase 0 (diseño AdminUsuarios): Consulta también ve solo sus países.
+  lector: "asignados",
 };
+
+/** Roles que necesitan al menos un país asignado. */
+export const ROLES_CON_PAISES: readonly Rol[] = ["coordinador", "lector"];
+export const conPaises = (rol: Rol): boolean => ROLES_CON_PAISES.includes(rol);
 
 export const NOMBRE_ROL: Record<Rol, string> = {
   admin: "Administración",

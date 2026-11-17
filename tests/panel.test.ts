@@ -285,7 +285,7 @@ describe("gestión de usuarios", () => {
 
   it("un admin no puede quitarse su propio rol ni desactivarse", async () => {
     const yo = await nuevo("admin");
-    expect(await editarUsuario(yo.id, { rol: "lector" }, yo)).toEqual({ ok: false, error: "propio" });
+    expect(await editarUsuario(yo.id, { rol: "lector", paises: ["uy"] }, yo)).toEqual({ ok: false, error: "propio" });
     expect(await editarUsuario(yo.id, { activo: false }, yo)).toEqual({ ok: false, error: "propio" });
   });
 

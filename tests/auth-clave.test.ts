@@ -10,9 +10,9 @@ import { POST as cambiar } from "@/app/api/auth/clave/route";
 import { POST as olvide } from "@/app/api/auth/olvide/route";
 import { POST as restablecer } from "@/app/api/auth/restablecer/route";
 import { MINUTOS_ENLACE } from "@/modules/auth/config/acceso";
-import { COL_RESTABLECER } from "@/modules/auth/repository";
+import { COL_RESTABLECER, COL_USUARIOS } from "@/modules/auth/repository";
 import { CambioClave } from "@/modules/auth/schema";
-import { claveConEnlace, crearUsuario, restablecerClave, solicitarEnlace, verificarSesion } from "@/modules/auth/service";
+import { claveConEnlace, crearUsuario, editarUsuario, restablecerClave, solicitarEnlace, verificarSesion } from "@/modules/auth/service";
 import { exigirApi } from "@/modules/auth/servidor";
 
 const enviados = vi.hoisted(() => [] as EventoRestablecer[]);
@@ -38,7 +38,7 @@ const galleta = (res: Response) => /jc_sesion=[^;]*/.exec(res.headers.get("set-c
 async function nuevo(claveTemporal: boolean) {
   const i = n++;
   const correo = `persona.${i}@tocaunavida.org`;
-  const r = await crearUsuario({ usuario: `persona.clave${i}`, correo, nombre: "Persona Prueba", rol: "lector", clave: CLAVE }, "pruebas", { claveTemporal });
+  const r = await crearUsuario({ usuario: `persona.clave${i}`, correo, nombre: "Persona Prueba", rol: "lector", paises: ["uy"], clave: CLAVE }, "pruebas", { claveTemporal });
   if (!r.ok) throw new Error(JSON.stringify(r));
   return { correo, id: r.id.toHexString() };
 }
@@ -63,7 +63,26 @@ describe("ingreso con correo", () => {
 
   it("el correo es único", async () => {
     const { correo } = await nuevo(false);
-    expect(await crearUsuario({ usuario: `otra.persona${n++}`, correo, nombre: "Otra Persona", rol: "lector", clave: CLAVE }, "pruebas")).toEqual({ ok: false, error: "duplicado" });
+    expect(await crearUsuario({ usuario: `otra.persona${n++}`, correo, nombre: "Otra Persona", rol: "lector", paises: ["uy"], clave: CLAVE }, "pruebas")).toEqual({ ok: false, error: "duplicado" });
+  });
+
+  it("alta solo con el correo: el usuario interno sale de la parte antes de la @", async () => {
+    const r = await crearUsuario({ correo: "Maria.Nunez@TocaUnaVida.org", nombre: "María Núñez", rol: "admin", clave: CLAVE }, "pruebas");
+    expect(r.ok).toBe(true);
+    expect(await (await getDb()).collection(COL_USUARIOS).findOne({ correo: "maria.nunez@tocaunavida.org" })).toMatchObject({ usuario: "maria.nunez" });
+  });
+
+  it("a un usuario anterior (sin correo) se le asigna el correo y desde entonces entra con él", async () => {
+    const r = await crearUsuario({ usuario: `anterior${n++}`, nombre: "Usuario Anterior", rol: "admin", clave: CLAVE }, "pruebas");
+    if (!r.ok) throw new Error("no se creó");
+    const id = r.id.toHexString();
+    const actor = { id: "000000000000000000000000", usuario: "admin", nombre: "Admin", rol: "admin" as const, paises: [], debeCambiarClave: false };
+    const correo = `anterior.${n++}@tocaunavida.org`;
+    expect(await editarUsuario(id, { correo }, actor)).toEqual({ ok: true });
+    expect((await login(peticion("/api/auth/login", { usuario: correo, clave: CLAVE }))).status).toBe(200);
+    // Un correo que ya usa otra persona no se acepta.
+    const otro = await nuevo(false);
+    expect(await editarUsuario(id, { correo: otro.correo }, actor)).toMatchObject({ ok: false, error: "datos_invalidos", errores: { correo: expect.any(String) } });
   });
 });
 

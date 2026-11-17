@@ -5,6 +5,11 @@ import nextTs from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    // Las fotos ya vienen en dos tamaños (800 y 1600 px, en webp) y se sirven con srcset: no hace falta next/image,
+    // que además cobra por optimización en Vercel.
+    rules: { "@next/next/no-img-element": "off" },
+  },
   globalIgnores([
     ".next/**",
     "out/**",

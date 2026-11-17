@@ -1,97 +1,147 @@
-// Landings de convocatoria: contenido completo por país, voseo en Uruguay, fotos existentes y botones configurables.
+// Landings 2027: contenido por país, voseo en Uruguay, fotos existentes, configuración por país (aislada),
+// destino de los botones, redirecciones de las URL anteriores y cabeceras de indexación.
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { ACCIONES_POR_DEFECTO, PAISES_SLUG, conUtm, leerConfigEntorno, resolverAccion } from "@/modules/convocatoria/content/acciones";
-import { SEGMENTO_URL } from "@/shared/config/paises";
-import { COHORTE, PAISES, preguntas, requisitos, testimoniosPara } from "@/modules/convocatoria/content/contenido";
+import { conUtm, destinoInscripcion, rutaFormulario } from "@/modules/convocatoria/content/acciones";
+import { ACERCA, BENEFICIOS, COHORTE, IMPACTO, ORDEN_PAISES, PAISES, comoFunciona, diapositivas, galeria, requisitos, rutas, testimoniosPara } from "@/modules/convocatoria/content/contenido";
+import { estadoConvocatoria, leerConfigEntorno } from "@/shared/config/convocatoria";
+import { PAISES as SLUGS, SEGMENTO_URL } from "@/shared/config/paises";
 
 describe("contenido por país", () => {
-  it("los 4 países tienen datos completos y rutas /col, /panama, /ecu, /uy", () => {
-    for (const slug of PAISES_SLUG) {
+  it("los 4 países tienen datos completos y rutas /colombia, /ecuador, /panama, /uruguay", () => {
+    expect(ORDEN_PAISES.map((s) => PAISES[s].ruta)).toEqual(["/colombia", "/ecuador", "/panama", "/uruguay"]);
+    for (const slug of SLUGS) {
       const p = PAISES[slug];
       expect(p.slug).toBe(slug);
       expect(p.ruta).toBe(`/${SEGMENTO_URL[slug]}`);
-      expect(p.sedes.length).toBeGreaterThan(0);
-      expect(p.fotos.galeria.length).toBeGreaterThanOrEqual(6);
-      expect(requisitos(p)).toHaveLength(4);
+      expect(requisitos(p)).toHaveLength(5);
+      expect(galeria(p)).toHaveLength(7);
+      expect(diapositivas(p, "abierta")).toHaveLength(2);
     }
+    expect(diapositivas(null, "abierta")).toHaveLength(4);
+    expect(galeria(null)).toHaveLength(8);
   });
 
-  it("todas las fotos existen en public/ en las dos resoluciones", () => {
-    for (const p of Object.values(PAISES)) {
-      for (const foto of [p.fotos.hero, ...p.fotos.galeria, ...p.fotos.monitores]) {
-        for (const suf of [".webp", "-800.webp"]) {
-          expect(existsSync(path.join(process.cwd(), "public", `${foto.src}${suf}`)), `${foto.src}${suf}`).toBe(true);
-        }
-        expect(foto.alt.length).toBeGreaterThan(10);
-      }
+  it("todas las fotos existen en public/ en las dos resoluciones y las de la galería llevan texto alternativo", () => {
+    const fotos = [IMPACTO.foto, ACERCA.foto, BENEFICIOS.visitas.foto, ...rutas(PAISES.col.voz).map((r) => r.foto)];
+    for (const p of [null, ...SLUGS.map((s) => PAISES[s])]) {
+      fotos.push(...diapositivas(p, "abierta").map((d) => d.foto), ...galeria(p).map((g) => g.foto), ...comoFunciona(p).map((c) => c.foto));
+      for (const g of galeria(p)) expect(g.foto.alt.length, g.foto.src).toBeGreaterThan(10);
+    }
+    for (const f of fotos) {
+      for (const src of [f.src, f.src800]) expect(existsSync(path.join(process.cwd(), "public", src)), src).toBe(true);
+      expect(f.ancho).toBeGreaterThan(0);
     }
   });
 
   it("Uruguay en voseo y el resto en tuteo", () => {
-    expect(PAISES.uy.voz.convierte).toBe("Convertite");
-    expect(PAISES.uy.voz.postulate).toBe("Postulate");
-    for (const s of ["col", "pan", "ecu"] as const) expect(PAISES[s].voz.convierte).toBe("Conviértete");
-    const faqUy = preguntas(PAISES.uy).map((f) => f.q + f.a).join(" ");
-    expect(faqUy).toContain("Necesitás");
-    expect(faqUy).not.toMatch(/\bnecesitas\b/i);
+    expect(PAISES.uy.voz.aprende).toBe("Aprendé a programar ");
+    expect(PAISES.uy.voz.todo).toContain("Cumplís");
+    for (const s of ["col", "pan", "ecu"] as const) expect(PAISES[s].voz.aprende).toBe("Aprende a programar ");
+    expect(comoFunciona(PAISES.uy)[2]?.texto).toMatch(/^Tenés /);
+    expect(comoFunciona(PAISES.col)[2]?.texto).toMatch(/^Tienes /);
   });
 
-  it("la cohorte convocada es posterior a 2026 y aparece en las preguntas", () => {
-    expect(COHORTE.anio).toBeGreaterThan(2026);
-    expect(preguntas(PAISES.col).find((f) => f.q.includes("dura"))?.a).toContain(COHORTE.inicio);
+  it("la cohorte convocada es 2027 y las rutas suman 3 + 3 + 23 semanas", () => {
+    expect(COHORTE.anio).toBe(2027);
+    expect(rutas(PAISES.col.voz).map((r) => r.semanas)).toEqual([3, 3, 23]);
   });
 
-  it("los testimonios del país salen primero", () => {
-    expect(testimoniosPara("ecu").slice(0, 2).every((t) => t.pais === "ecu")).toBe(true);
-    expect(testimoniosPara("pan")).toHaveLength(8);
+  it("cada landing de país muestra solo sus testimonios; Panamá queda con uno pendiente", () => {
+    expect(testimoniosPara(PAISES.ecu).every((t) => t.pais === "ecu")).toBe(true);
+    expect(testimoniosPara(null)).toHaveLength(8);
+    expect(testimoniosPara(PAISES.pan)).toHaveLength(1);
+  });
+
+  it("Panamá usa pan-reto en lugar de la foto pan-visita, que no existe", () => {
+    expect(galeria(PAISES.pan).some((g) => g.foto.id === "pan-reto")).toBe(true);
   });
 });
 
-describe("acciones de los botones", () => {
-  it("sin configuración, postular queda pendiente (no lleva a formularios cerrados)", () => {
-    for (const p of ["col", "pan", "ecu"] as const) expect(resolverAccion("postular-hero", PAISES[p].config, undefined)).toEqual(ACCIONES_POR_DEFECTO.postular);
-    expect(resolverAccion("ver-ruta", undefined, undefined)).toEqual({ tipo: "ancla", id: "ruta" });
+describe("CONVOCATORIA_CONFIG", () => {
+  it("el valor de producción de Uruguay sigue funcionando igual", () => {
+    const config = leerConfigEntorno('{"uy":{"estado":"abierta","cierra":"2026-12-18"}}');
+    expect(config).toEqual({ uy: { estado: "abierta", cierra: "2026-12-18" } });
+    const antes = new Date("2026-11-17T12:00:00-05:00").getTime();
+    const despues = new Date("2026-12-19T00:00:01-05:00").getTime();
+    expect(estadoConvocatoria("uy", { entorno: config, ahora: antes })).toEqual({ estado: "abierta", cierra: "2026-12-18" });
+    expect(estadoConvocatoria("uy", { entorno: config, ahora: despues }).estado).toBe("cerrada");
+    for (const p of ["col", "pan", "ecu"] as const) expect(estadoConvocatoria(p, { entorno: config, ahora: antes }).estado).toBe("proxima");
   });
 
-  it("Uruguay lleva a su formulario propio (que la landing apaga mientras no esté abierta)", () => {
-    expect(resolverAccion("postular-hero", PAISES.uy.config, undefined)).toEqual({ tipo: "ruta", ruta: "/inscripcion/uy" });
-  });
-
-  it("los postular-* heredan de postular; el botón propio gana; el entorno gana al país", () => {
-    const pais = { acciones: { postular: { tipo: "ruta" as const, ruta: "/inscripcion/uy" } } };
-    const entorno = { acciones: { "postular-barra": { tipo: "evento" as const, nombre: "abrir-formulario" } } };
-    expect(resolverAccion("postular-cierre", pais, entorno)).toEqual(pais.acciones.postular);
-    expect(resolverAccion("postular-barra", pais, entorno)).toEqual(entorno.acciones["postular-barra"]);
-  });
-
-  it("lee CONVOCATORIA_CONFIG y descarta un JSON inválido sin romper", () => {
-    const ok = leerConfigEntorno(JSON.stringify({ uy: { estado: "abierta", cierra: "2027-01-31", acciones: { postular: { tipo: "enlace", url: "https://forms.gle/abc", conUtm: true } } } }));
-    expect(ok.uy?.estado).toBe("abierta");
+  it("la entrada inválida de un país lo deja en muy pronto y no afecta a los demás", () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(leerConfigEntorno("{no es json")).toEqual({});
-    expect(leerConfigEntorno(JSON.stringify({ uy: { acciones: { postular: { tipo: "enlace", url: "http://inseguro.com" } } } }))).toEqual({});
-    expect(leerConfigEntorno(JSON.stringify({ xx: {} }))).toEqual({});
-    expect(err).toHaveBeenCalled();
+    const config = leerConfigEntorno(JSON.stringify({
+      uy: { estado: "abierta", cierra: "2026-12-18" },
+      col: { estado: "abierrta" },
+      ecu: { estado: "abierta", acciones: { postular: { tipo: "enlace", url: "http://inseguro.com" } } },
+      xx: { estado: "abierta" },
+    }));
+    expect(config.uy).toEqual({ estado: "abierta", cierra: "2026-12-18" });
+    expect(config.col).toEqual({ estado: "proxima" });
+    expect(config.ecu).toEqual({ estado: "proxima" });
+    expect(Object.keys(config).sort()).toEqual(["col", "ecu", "uy"]);
+    expect(err).toHaveBeenCalledTimes(3);
+    expect(err.mock.calls.flat().join(" ")).toContain('"col"');
     err.mockRestore();
   });
 
-  it("conUtm agrega los utm_* de la visita sin pisar los del destino", () => {
-    const url = conUtm("https://forms.gle/abc?utm_source=web", "?utm_source=wa&utm_campaign=jc27&otra=1");
+  it("un texto que no es JSON (o no es un objeto) se ignora entero sin romper", () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(leerConfigEntorno("{no es json")).toEqual({});
+    expect(leerConfigEntorno('["uy"]')).toEqual({});
+    expect(leerConfigEntorno("")).toEqual({});
+    expect(err).toHaveBeenCalledTimes(2);
+    err.mockRestore();
+  });
+
+  it("mantenimiento apaga solo a ese país", () => {
+    const config = leerConfigEntorno(JSON.stringify({ uy: { estado: "mantenimiento" }, col: { estado: "abierta" } }));
+    expect(estadoConvocatoria("uy", { entorno: config }).estado).toBe("mantenimiento");
+    expect(estadoConvocatoria("col", { entorno: config }).estado).toBe("abierta");
+    expect(estadoConvocatoria("pan", { entorno: config }).estado).toBe("proxima");
+  });
+});
+
+describe("botones de inscripción", () => {
+  it("llevan al formulario del país (o al paso 0) en pestaña nueva, con origen y ubicación", () => {
+    expect(rutaFormulario("uy")).toBe("/inscripcion/uruguay");
+    expect(rutaFormulario(null)).toBe("/inscripcion");
+    expect(destinoInscripcion("uy", "hero_slide_1")).toEqual({ href: "/inscripcion/uruguay?origen=landing_pais&ubicacion=hero_slide_1", nuevaPestana: true });
+    expect(destinoInscripcion(null, "nav").href).toBe("/inscripcion?origen=landing_principal&ubicacion=nav");
+  });
+
+  it("CONVOCATORIA_CONFIG puede cambiar el destino de un país con acciones.postular", () => {
+    expect(destinoInscripcion("col", "nav", { acciones: { postular: { tipo: "enlace", url: "https://forms.gle/abc" } } })).toEqual({ href: "https://forms.gle/abc", nuevaPestana: true });
+    expect(destinoInscripcion("col", "nav", { acciones: { postular: { tipo: "ruta", ruta: "/otra" } } }).href).toBe("/otra?origen=landing_pais&ubicacion=nav");
+  });
+
+  it("conUtm agrega los utm_* y el fbclid de la visita sin pisar los del destino", () => {
+    const url = conUtm("https://forms.gle/abc?utm_source=web", "?utm_source=wa&utm_campaign=jc27&fbclid=x1&otra=1");
     expect(url).toContain("utm_source=web");
     expect(url).toContain("utm_campaign=jc27");
+    expect(url).toContain("fbclid=x1");
     expect(url).not.toContain("otra=1");
   });
 });
 
 describe("rutas y SEO", () => {
-  it("las rutas /conv_* y /convocatoria redirigen de forma permanente a las nuevas", async () => {
+  it("las URL anteriores redirigen de forma permanente y en un solo salto a las nuevas", async () => {
     const { default: config } = await import("../next.config");
     const redirecciones = await config.redirects!();
-    const mapa = Object.fromEntries(redirecciones.map((r) => [r.source, r.destination]));
-    expect(mapa).toMatchObject({ "/conv_col": "/col", "/conv_pan": "/panama", "/conv_ecu": "/ecu", "/conv_uy": "/uy", "/convocatoria": "/" });
+    const mapa: Record<string, string | undefined> = Object.fromEntries(redirecciones.map((r) => [r.source, r.destination]));
+    expect(mapa).toMatchObject({
+      "/uy": "/uruguay", "/col": "/colombia", "/ecu": "/ecuador",
+      "/conv_col": "/colombia", "/conv_pan": "/panama", "/conv_ecu": "/ecuador", "/conv_uy": "/uruguay", "/convocatoria": "/",
+      "/inscripcion/uy": "/inscripcion/uruguay", "/inscripcion/col": "/inscripcion/colombia", "/inscripcion/ecu": "/inscripcion/ecuador",
+    });
     expect(redirecciones.every((r) => "permanent" in r && r.permanent)).toBe(true);
+    // Sin cadenas: ningún destino es, a su vez, origen de otra redirección.
+    for (const r of redirecciones) expect(mapa[r.destination], r.destination).toBeUndefined();
+    // Todos los destinos son rutas vigentes.
+    const vigentes = new Set(["/", ...SLUGS.flatMap((s) => [`/${SEGMENTO_URL[s]}`, `/inscripcion/${SEGMENTO_URL[s]}`])]);
+    for (const r of redirecciones) expect(vigentes.has(r.destination), r.destination).toBe(true);
   });
 
   it("formulario, panel y API llevan noindex; las landings no", async () => {

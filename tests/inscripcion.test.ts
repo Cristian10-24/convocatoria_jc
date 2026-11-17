@@ -11,7 +11,7 @@ import { PASOS, PREGUNTAS } from "@/modules/inscripcion/config/preguntas";
 import { radicadoDe, prefijoConvocatoria } from "@/modules/inscripcion/radicado";
 import { camposVisibles, documentoAlEscribir, esquemaInscripcion, pasosVisibles, revisarBorrador } from "@/modules/inscripcion/schema";
 import { textoRespuesta } from "@/modules/inscripcion/mostrar";
-import { conUtm, segunEstado } from "@/modules/convocatoria/content/acciones";
+import { conUtm } from "@/modules/convocatoria/content/acciones";
 import { ACUDIENTE, cedulaUy, haceAnios, inscripcionUy } from "./inscripcion-datos";
 
 const hoy = hoyIso();
@@ -234,14 +234,6 @@ describe("estado de la convocatoria y botones de la landing", () => {
     const ahora = new Date("2027-02-20T12:00:00Z").getTime();
     expect(estadoConvocatoria("uy", { entorno: { uy: { estado: "abierta", cierra: "2027-02-15" } }, ahora }).estado).toBe("cerrada");
     expect(estadoConvocatoria("uy", { entorno: { uy: { estado: "abierta", cierra: "2027-02-25" } }, ahora }).estado).toBe("abierta");
-  });
-
-  it("los botones de postular quedan apagados hasta que abre", () => {
-    const ruta = { tipo: "ruta" as const, ruta: "/inscripcion/uy" };
-    expect(segunEstado("postular-hero", ruta, "proxima")).toEqual({ tipo: "pendiente", texto: "Inscripciones muy pronto" });
-    expect(segunEstado("postular-cierre", ruta, "cerrada")).toEqual({ tipo: "pendiente", texto: "Inscripciones cerradas" });
-    expect(segunEstado("postular-barra", ruta, "abierta")).toEqual(ruta);
-    expect(segunEstado("ver-ruta", { tipo: "ancla", id: "ruta" }, "proxima")).toEqual({ tipo: "ancla", id: "ruta" });
   });
 
   it("pasa los utm_* también a rutas internas", () => {

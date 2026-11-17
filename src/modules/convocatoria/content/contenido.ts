@@ -1,295 +1,270 @@
-// Contenido de las landings de convocatoria. Lo común está una sola vez; lo que cambia por país, en PAISES.
-// Cada texto que depende del trato (tú / vos) sale de `voz`, para que Uruguay quede en voseo sin duplicar la página.
-// Fuente: landings de tocaunavida.org (2026) adaptadas a la cohorte siguiente. Ver PLAN.md y CLAUDE.md.
+// Contenido de las landings 2027 (principal y por país). Los textos son los del lienzo de Claude Design; los
+// componentes solo los dibujan. Lo que depende del trato (tú / vos) sale de `voz`: Uruguay va en voseo.
+// Lo que la Fundación aún no confirma va marcado con `pendiente` y se muestra resaltado (ver MOSTRAR_PENDIENTES).
 import { SEGMENTO_URL, type PaisSlug } from "@/shared/config/paises";
-import type { ConfigPais } from "./acciones";
 
-/** Cohorte a la que se convoca. Cambiar aquí actualiza las 4 páginas. */
-export const COHORTE = {
-  anio: 2027,
-  inicio: "marzo de 2027",
-  fin: "noviembre de 2027",
-  meses: 8,
-  horasSemana: 8,
-} as const;
+/** Cohorte a la que se convoca. */
+export const COHORTE = { anio: 2027, inicio: "Marzo de 2027", fin: "Noviembre de 2027", horasSemana: 8 } as const;
 
-/**
- * Cierre de la 1.ª etapa de inscripciones si CONVOCATORIA_CONFIG no trae "cierra" (confirmado con comunicaciones).
- * La fecha que se muestra sale de "cierra" (la misma de la cuenta regresiva), así nunca hay dos fechas distintas.
- */
+/** Cierre de la 1.ª etapa si CONVOCATORIA_CONFIG no trae "cierra". Con "cierra" en la configuración, manda esa. */
 export const CIERRE_PRIMERA_ETAPA = "2026-12-18";
 
-const fechaLarga = (iso: string) =>
+/**
+ * Muestra los datos pendientes tal como los marca el diseño ([CITA], [LOGO ALIADO], [ENLACES DE REDES]...).
+ * Antes de publicar: completar los datos o poner esto en false para ocultar lo que siga pendiente.
+ */
+export const MOSTRAR_PENDIENTES = true;
+
+export const fechaLarga = (iso: string) =>
   new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 
-/** Fechas clave que se muestran en la ruta de formación (la primera, resaltada). */
-export function fechasClave(cierra: string = CIERRE_PRIMERA_ETAPA) {
+// ---------- Trato ----------
+export type Voz = {
+  aprende: string; convierte: string; habilidades: string; necesitas: string; avisame: string; marca: string;
+  cumples: string; pasa: string; elige: string; todo: string; quiero: string; tienes: string;
+};
+const HABILIDADES = "tus competencias personales, aprendiendo a trabajar en equipo, liderar con confianza y resolver conflictos.";
+const TU: Voz = {
+  aprende: "Aprende a programar ", convierte: "Convierte tu idea en ", habilidades: `Fortalece ${HABILIDADES}`, necesitas: "¿Qué necesitas ",
+  avisame: "Avísame", marca: "Marca", cumples: "cumples", pasa: "Pasa", elige: "elige", todo: "¡Cumples con todo! Ya puedes inscribirte.",
+  quiero: "Sí, quiero inscribirme", tienes: "Tienes",
+};
+const VOS: Voz = {
+  aprende: "Aprendé a programar ", convierte: "Convertí tu idea en ", habilidades: `Fortalecé ${HABILIDADES}`, necesitas: "¿Qué necesitás ",
+  avisame: "Avisame", marca: "Marcá", cumples: "cumplís", pasa: "Pasá", elige: "elegí", todo: "¡Cumplís con todo! Ya podés inscribirte.",
+  quiero: "Sí, quiero inscribirme", tienes: "Tenés",
+};
+
+// ---------- Fotos ----------
+/** Ancho y alto reales de cada foto de public/convocatoria (para reservar el espacio y que la página no salte). */
+const MEDIDAS = {
+  "col-aula-2": [1280, 960], "col-aula": [1600, 900], "col-codigo": [1600, 1200], "col-comunidad": [1600, 1200], "col-grupo": [1600, 1200],
+  "col-hero-2": [1600, 1200], "col-hero": [1600, 1200], "col-monitor-1": [1600, 1198], "col-monitor-2": [1600, 900], "col-taller": [1600, 1200],
+  "col-visita": [1600, 1200], "ecu-aula-2": [1600, 1200], "ecu-aula": [1600, 1200], "ecu-codigo": [1600, 1200], "ecu-comunidad": [1600, 1200],
+  "ecu-hero-2": [1600, 1200], "ecu-hero": [1600, 1067], "ecu-monitor-1": [1600, 1200], "ecu-monitor-2": [1600, 1200], "ecu-proyecto": [1600, 1200],
+  "ecu-taller": [1600, 1200], "ecu-visita-2": [1280, 874], "ecu-visita": [1600, 1200], "pan-aula-2": [1600, 709], "pan-aula": [1600, 709],
+  "pan-comunidad": [1280, 960], "pan-hero-2": [1600, 1067], "pan-hero": [1600, 1067], "pan-inauguracion": [1600, 1067], "pan-monitor-1": [1600, 709],
+  "pan-monitor-2": [1600, 2133], "pan-reto": [1600, 2133], "pan-taller": [1600, 1200], "uy-aula-2": [1600, 900], "uy-aula": [1600, 738],
+  "uy-comunidad": [1600, 900], "uy-hero-2": [1600, 1200], "uy-hero": [1600, 1200], "uy-monitor-1": [1600, 738], "uy-monitor-2": [1600, 900],
+  "uy-taller": [1600, 900], "uy-visita": [1600, 738],
+} as const satisfies Record<string, readonly [number, number]>;
+export type IdFoto = keyof typeof MEDIDAS;
+
+export type Foto = { id: IdFoto; src: string; src800: string; ancho: number; alto: number; alt: string; /** object-position */ pos?: string };
+
+export function foto(id: IdFoto, alt: string, pos?: string): Foto {
+  const corte = id.indexOf("-");
+  const base = `/convocatoria/${id.slice(0, corte)}/${id.slice(corte + 1)}`;
+  return { id, src: `${base}.webp`, src800: `${base}-800.webp`, ancho: MEDIDAS[id][0], alto: MEDIDAS[id][1], alt, pos };
+}
+
+// ---------- Países ----------
+export type PaisLanding = {
+  slug: PaisSlug;
+  nombre: string;
+  /** Prefijo de sus fotos: col, ecu, pan, uy. */
+  pre: "col" | "ecu" | "pan" | "uy";
+  ruta: string;
+  voz: Voz;
+  lugar: string;
+  ciudades: string;
+  grado: string;
+  gradoCorto: string;
+  edad: string;
+  equipo: "computador" | "computadora";
+  /** Pie de la foto de la actividad fuera del aula y la foto que la ilustra. */
+  visita: string;
+  fotoVisita: IdFoto;
+};
+
+const p = (slug: PaisSlug, datos: Omit<PaisLanding, "slug" | "ruta">): PaisLanding => ({ slug, ruta: `/${SEGMENTO_URL[slug]}`, ...datos });
+
+export const PAISES: Record<PaisSlug, PaisLanding> = {
+  col: p("col", {
+    nombre: "Colombia", pre: "col", voz: TU, lugar: "Vivir en Colombia",
+    ciudades: "Se priorizan Barranquilla, Bogotá D.C., Cali, Cartagena de Indias, Medellín y el Valle de Aburrá.",
+    grado: "Estar en 10.° u 11.°, o ser bachiller.", gradoCorto: "10.° y 11.°, o bachiller", edad: "En 2026 fue de 14 a 25 años.",
+    equipo: "computador", visita: "Visita a Sofka", fotoVisita: "col-visita",
+  }),
+  ecu: p("ecu", {
+    nombre: "Ecuador", pre: "ecu", voz: TU, lugar: "Vivir en Ecuador", ciudades: "Se priorizan Quito, Guayaquil y poblaciones cercanas.",
+    grado: "Estar en 2.° o 3.° de bachillerato, o ser bachiller.", gradoCorto: "2.° y 3.° de bachillerato, o bachiller", edad: "En 2026 fue de 14 a 25 años.",
+    equipo: "computadora", visita: "Visita a Sofka", fotoVisita: "ecu-visita",
+  }),
+  pan: p("pan", {
+    nombre: "Panamá", pre: "pan", voz: TU, lugar: "Vivir en Panamá", ciudades: "Se prioriza Ciudad de Panamá y alrededores (Provincia de Panamá).",
+    grado: "Estar en 11.° o 12.°, o ser bachiller (egresado reciente).", gradoCorto: "11.° y 12.°, o bachiller", edad: "En 2026 fue de 14 a 30 años.",
+    // El diseño pide "pan-visita", que no existe en el paquete: se usa pan-reto (decisión de la fase 0).
+    equipo: "computadora", visita: "Reto en equipo", fotoVisita: "pan-reto",
+  }),
+  uy: p("uy", {
+    nombre: "Uruguay", pre: "uy", voz: VOS, lugar: "Vivir en Uruguay", ciudades: "Se priorizan Colonia y Paysandú.",
+    grado: "Estar en 5.° o 6.° de liceo, o ser bachiller.", gradoCorto: "5.° y 6.° de liceo, o bachiller", edad: "En 2026 fue de 14 a 30 años.",
+    equipo: "computadora", visita: "Visita pedagógica", fotoVisita: "uy-visita",
+  }),
+};
+
+/** Orden en que aparecen los países en la franja y en los requisitos. */
+export const ORDEN_PAISES: PaisSlug[] = ["col", "ecu", "pan", "uy"];
+
+export type EstadoLanding = "abierta" | "pronto" | "cerrada";
+
+// ---------- Hero ----------
+export type Diapositiva = { foto: Foto; a: string; b: string; c: string; sub: string };
+
+export function diapositivas(pais: PaisLanding | null, estado: EstadoLanding): Diapositiva[] {
+  if (!pais) {
+    return [
+      { foto: foto("ecu-hero", "", "center 30%"), a: "Formando talento en ", b: "las TIC", c: "", sub: "Inscripciones 2027 abiertas." },
+      { foto: foto("col-codigo", "", "center 40%"), a: TU.aprende, b: "desde cero", c: "", sub: "Beca del 100 %." },
+      { foto: foto("col-hero", "", "center 45%"), a: "", b: "+2.300 jóvenes", c: " en 4 países ya lo vivieron", sub: "Colombia, Ecuador, Panamá y Uruguay." },
+      { foto: foto("col-taller", "", "center 35%"), a: TU.convierte, b: "un proyecto real", c: "", sub: "Ruta Emprender." },
+    ];
+  }
+  const sub =
+    estado === "pronto" ? `Muy pronto abrimos las inscripciones en ${pais.nombre}.`
+    : estado === "cerrada" ? `La primera etapa de inscripciones en ${pais.nombre} ya cerró.`
+    : "Formando talento en las TIC, con beca del 100 %.";
   return [
-    { etapa: "1.ª etapa de inscripciones", fecha: `Hasta el ${fechaLarga(cierra)}` },
-    { etapa: "Inicio del programa", fecha: "Marzo de 2027" },
-    { etapa: "Cierre y graduación", fecha: "Noviembre de 2027" },
+    { foto: foto(`${pais.pre}-hero`, "", "center 40%"), a: "Inscripciones 2027 · ", b: pais.nombre, c: "", sub },
+    { foto: foto(`${pais.pre}-hero-2`, "", "center 45%"), a: pais.voz.aprende, b: "desde cero", c: "", sub: "Beca del 100 %, con mentoría y acompañamiento continuo." },
   ];
 }
 
-/** Reparto de la modalidad (se muestra en "¿Cómo funciona?" en %). Confirmado: 80 % virtual / 20 % presencial. */
-export const MODALIDAD = { virtual: 80, presencial: 20 } as const;
-
-export type Voz = {
-  convierte: string; // "Conviértete" / "Convertite"
-  postulate: string; // "Postúlate" / "Postulate"
-  inscribete: string;
-  vas: string; // "Vas" (igual en ambos, se deja por claridad)
-  tienes: string;
-  necesitas: string;
-  puedes: string;
-  vives: string;
-  eres: string;
-  cumples: string;
-  quieres: string;
-  escribenos: string;
-  aqui: string; // "aquí" / "acá"
-  marca: string; // "Marca" / "Marcá"
-  mira: string; // "Mira" / "Mirá"
-  elige: string; // "Elige" / "Elegí"
-  toca: string; // "toca" / "tocá"
-  pasa: string; // "Pasa" / "Pasá"
-  aprendes: string; // "aprendes" / "aprendés"
+// ---------- Impacto y rutas ----------
+export const IMPACTO = {
+  texto: "Jóvenes creaTIvos es una iniciativa de alto impacto dedicada a cerrar la brecha digital en América Latina, preparando a la próxima generación de desarrolladores, emprendedores y líderes digitales en la región.",
+  foto: foto("col-grupo", "Grupo de jóvenes creaTIvos de Colombia con camisetas y gorras del programa"),
+  jovenes: 2300,
+  paises: 4,
 };
 
-const TU: Voz = {
-  convierte: "Conviértete", postulate: "Postúlate", inscribete: "Inscríbete", vas: "Vas", tienes: "tienes",
-  necesitas: "Necesitas", puedes: "puedes", vives: "vives", eres: "eres", cumples: "cumples", quieres: "quieres", escribenos: "Escríbenos", aqui: "aquí", marca: "Marca", mira: "Mira",
-  elige: "Elige", toca: "toca", pasa: "Pasa", aprendes: "aprendes",
-};
-const VOS: Voz = {
-  convierte: "Convertite", postulate: "Postulate", inscribete: "Inscribite", vas: "Vas", tienes: "tenés",
-  necesitas: "Necesitás", puedes: "podés", vives: "vivís", eres: "sos", cumples: "cumplís", quieres: "querés", escribenos: "Escribinos", aqui: "acá", marca: "Marcá", mira: "Mirá",
-  elige: "Elegí", toca: "tocá", pasa: "Pasá", aprendes: "aprendés",
-};
-
-export type Foto = { src: string; alt: string; pie: string; ancho: number; alto: number; /** Punto de la foto que queda al centro cuando se recorta (object-position), p. ej. "20% 60%". */ foco?: string };
-export type Testimonio = { nombre: string; ciudad: string; pais: PaisSlug; anio: number; youtubeId: string; /** Como lo nombra la Fundación: "Joven creaTIva" / "Joven creaTIvo". */ rotulo: string };
-
-export type Pais = {
-  slug: PaisSlug;
-  nombre: string;
-  /** Ruta pública de la landing. */
-  ruta: string;
-  /** Gentilicio/expresión corta para el hero ("en Colombia"). */
-  en: string;
-  voz: Voz;
-  /** Palabra local para el equipo de cómputo. */
-  equipo: string;
-  /** Requisito de residencia, ya redactado. */
-  dondeVivir: string;
-  /** Ciudades con encuentros presenciales (chips). */
-  sedes: string[];
-  /** Requisito de grados, ya redactado en la terminología local. */
-  grados: string;
-  /** Colores de la bandera, solo para el distintivo (no se usan emojis: Windows no los dibuja). */
-  bandera: [string, string, string];
-  /** galeria[0] va en "¿Cómo funciona?" y la última en el cierre. Monitores: en la ruta (vacío = esa parte no sale). */
-  fotos: { hero: Foto; galeria: Foto[]; monitores: Foto[] };
-  /** Estado y botones por defecto del país (el back puede sobrescribirlos con CONVOCATORIA_CONFIG). */
-  config: ConfigPais;
-  /** Formulario de la convocatoria anterior (cerrado). Solo como referencia para el back; no se usa en botones. */
-  formularioAnterior: string;
-};
-
-const f = (pais: PaisSlug, archivo: string, alt: string, pie: string, ancho: number, alto: number): Foto => ({
-  src: `/convocatoria/${pais}/${archivo}`,
-  alt,
-  pie,
-  ancho,
-  alto,
-});
-
-export const PAISES: Record<PaisSlug, Pais> = {
-  col: {
-    slug: "col",
-    nombre: "Colombia",
-    ruta: `/${SEGMENTO_URL.col}`,
-    en: "en Colombia",
-    voz: TU,
-    equipo: "computador",
-    dondeVivir: "Vivir en Barranquilla, Bogotá, Cali, Cartagena o Medellín (incluido el Valle de Aburrá).",
-    sedes: ["Barranquilla", "Bogotá", "Cali", "Cartagena", "Medellín"],
-    grados: "Estar en grado 10° u 11°, o haberte graduado como bachiller hace máximo 3 años.",
-    bandera: ["#FCD116", "#003893", "#CE1126"],
-    fotos: {
-      hero: f("col", "hero", "Grupo de Jóvenes creaTIvos con camisetas blancas y gorras naranjas en una sesión presencial en Cartagena", "Sesión presencial · Cartagena 2026", 1600, 1200),
-      galeria: [
-        f("col", "aula", "Estudiantes programando en una sala de computadores en Barranquilla", "Clase práctica · Barranquilla", 1600, 900),
-        f("col", "taller", "Estudiantes presentando sus ideas en carteleras durante un taller en Bogotá", "Taller de emprendimiento · Bogotá", 1600, 1200),
-        f("col", "visita", "Grupo de estudiantes en la visita pedagógica a la empresa Sofka en Bogotá", "Visita a Sofka · Bogotá", 1600, 1200),
-        f("col", "comunidad", "Jóvenes creaTIvos posando juntos en Cartagena", "Comunidad JC · Cartagena", 1600, 1200),
-        f("col", "inauguracion", "Estudiantes y equipo en la tarima de la inauguración de Jóvenes creaTIvos 2026 en Cali", "Inauguración 2026 · Cali", 1600, 1200),
-        f("col", "visita-2", "Estudiantes recorriendo las instalaciones de PriceSmart en Barranquilla", "Visita a PriceSmart · Barranquilla", 1600, 902),
-      ],
-      monitores: [],
-    },
-    config: { estado: "proxima" },
-    formularioAnterior: "https://forms.gle/5gCnUUFWbhTsBpBG6",
-  },
-  pan: {
-    slug: "pan",
-    nombre: "Panamá",
-    ruta: `/${SEGMENTO_URL.pan}`,
-    en: "en Panamá",
-    voz: TU,
-    equipo: "computadora",
-    dondeVivir: "Vivir en la provincia de Panamá o en ciudades cercanas.",
-    sedes: ["Ciudad de Panamá"],
-    grados: "Estar en 11° o 12° grado, o haberte graduado de la secundaria hace máximo 3 años.",
-    bandera: ["#FFFFFF", "#005293", "#D21034"],
-    fotos: {
-      hero: f("pan", "hero", "Foto grupal de la inauguración de Jóvenes creaTIvos 2026 en Ciudad de Panamá", "Inauguración 2026 · Ciudad de Panamá", 1600, 1067),
-      galeria: [
-        f("pan", "taller", "Estudiantes trabajando en equipo durante un reto práctico", "Reto en equipo · Ciudad de Panamá", 1600, 1200),
-        f("pan", "aula", "Estudiantes en una sala de computadores durante una sesión presencial", "Sesión presencial · Ciudad de Panamá", 1600, 709),
-        f("pan", "taller-2", "Estudiantes mostrando el cartel de su proyecto", "Presentación de proyecto", 1600, 1200),
-        f("pan", "comunidad", "Grupo de Jóvenes creaTIvos en Panamá", "Comunidad JC · Panamá", 1280, 960),
-        f("pan", "exterior", "Estudiantes con la camiseta de Jóvenes creaTIvos al aire libre", "Sesión presencial al aire libre", 1600, 1200),
-        f("pan", "inauguracion", "Estudiantes con gorras naranjas en el auditorio de la inauguración", "Inauguración 2026", 1600, 1067),
-      ],
-      monitores: [],
-    },
-    config: { estado: "proxima" },
-    formularioAnterior: "https://forms.gle/5Kzc5UJe4HUSzBBd9",
-  },
-  ecu: {
-    slug: "ecu",
-    nombre: "Ecuador",
-    ruta: `/${SEGMENTO_URL.ecu}`,
-    en: "en Ecuador",
-    voz: TU,
-    equipo: "computadora",
-    dondeVivir: "Vivir en Quito o Guayaquil.",
-    sedes: ["Quito", "Guayaquil"],
-    grados: "Estar en 2.° o 3.° de bachillerato, o haberte graduado como bachiller hace máximo 3 años.",
-    bandera: ["#FFDD00", "#034EA2", "#ED1C24"],
-    fotos: {
-      hero: f("ecu", "hero", "Estudiantes sonrientes con gorras naranjas en la inauguración de Jóvenes creaTIvos 2026 en Quito", "Inauguración 2026 · Quito", 1600, 1067),
-      galeria: [
-        f("ecu", "aula", "Estudiante escribiendo código en una sala de computadores en Quito", "Clase práctica · Quito", 1600, 1200),
-        f("ecu", "taller", "Equipos presentando sus carteles en una sesión presencial en Quito", "Taller presencial · Quito", 1600, 1200),
-        f("ecu", "visita", "Grupo de estudiantes en la visita a Sofka en Quito", "Visita a Sofka · Quito", 1600, 1200),
-        f("ecu", "visita-2", "Estudiantes en la visita a Torres & Torres en Guayaquil", "Visita a Torres & Torres · Guayaquil", 1280, 874),
-        f("ecu", "comunidad", "Jóvenes creaTIvos posando en grupo en Quito", "Comunidad JC · Quito", 1600, 1200),
-        f("ecu", "inauguracion", "Cuatro estudiantes sonriendo en una sesión presencial en Guayaquil", "Sesión presencial · Guayaquil", 1600, 1200),
-      ],
-      monitores: [],
-    },
-    config: { estado: "proxima" },
-    formularioAnterior: "https://forms.gle/ohoPQ9hS44yfNs1N8",
-  },
-  uy: {
-    slug: "uy",
-    nombre: "Uruguay",
-    ruta: `/${SEGMENTO_URL.uy}`,
-    en: "en Uruguay",
-    voz: VOS,
-    equipo: "computadora",
-    dondeVivir: "Vivir en Uruguay, o en Colón o Concepción del Uruguay (Argentina).",
-    sedes: ["Colonia", "Paysandú"],
-    grados: "Estar en 5.° o 6.° de liceo, o haber egresado del bachillerato hace máximo 3 años.",
-    bandera: ["#FFFFFF", "#0038A8", "#FCD116"],
-    fotos: {
-      hero: f("uy", "hero-2", "Grupo de Jóvenes creaTIvos celebrando en la primera sesión presencial en Colonia", "Primera sesión presencial · Colonia", 1600, 1200),
-      galeria: [
-        // foco: la torre de fideos que arman los dos muchachos queda al centro del recuadro de "Cómo funciona".
-        { ...f("uy", "taller", "Estudiantes resolviendo un reto práctico en equipo en Paysandú", "Reto en equipo · Paysandú", 1600, 900), foco: "22% 60%" },
-        f("uy", "reto", "Estudiantes con gorras naranjas resolviendo un reto en equipo en Paysandú", "Reto en equipo · Paysandú", 1600, 900),
-        f("uy", "visita", "Estudiantes en la visita a Sofka en Paysandú", "Visita a Sofka · Paysandú", 1600, 738),
-        f("uy", "equipo", "Estudiantes trabajando juntos en una mesa durante una sesión en Colonia", "Trabajo en equipo · Colonia", 1600, 900),
-        f("uy", "aula", "Estudiantes programando en Paysandú", "Clase práctica · Paysandú", 1600, 738),
-        f("uy", "inauguracion", "Estudiantes con gorras en la inauguración de Paysandú", "Inauguración 2026 · Paysandú", 1600, 1200),
-      ],
-      monitores: [
-        f("uy", "monitor-1", "Monitor explicando a estudiantes en la sala de computadoras en Paysandú", "Monitor en clase · Paysandú", 1600, 738),
-        f("uy", "monitor-2", "Monitor tomándose una selfie con el grupo en Colonia", "Con el monitor · Colonia", 1600, 900),
-      ],
-    },
-    // Formulario propio. Se activa cuando CONVOCATORIA_CONFIG pone a Uruguay en "abierta"; antes sale "muy pronto".
-    config: { estado: "proxima", acciones: { postular: { tipo: "ruta", ruta: `/inscripcion/${SEGMENTO_URL.uy}` } } },
-    formularioAnterior: "https://forms.gle/Q1Dug7r2W6XbgHwe9",
-  },
-};
-
-/** Egresados 2025 (videos ya publicados en YouTube por la Fundación). */
-export const TESTIMONIOS: Testimonio[] = [
-  { nombre: "Antonella Caballero", ciudad: "Barranquilla", pais: "col", anio: 2025, youtubeId: "2nqR9nhCkdg", rotulo: "Joven creaTIva" },
-  { nombre: "Andrés Navarrete", ciudad: "Bogotá", pais: "col", anio: 2025, youtubeId: "4LLBIA_JnTI", rotulo: "Joven creaTIvo" },
-  { nombre: "Eilyn Obregón", ciudad: "Cali", pais: "col", anio: 2025, youtubeId: "roXbrp300RM", rotulo: "Joven creaTIva" },
-  { nombre: "Linda Julio", ciudad: "Cartagena", pais: "col", anio: 2025, youtubeId: "a0h-nldX7eo", rotulo: "Joven creaTIva" },
-  { nombre: "Dairyn Palacios", ciudad: "Medellín", pais: "col", anio: 2025, youtubeId: "e36AcPeU_xs", rotulo: "Joven creaTIva" },
-  { nombre: "Damaris Jiménez", ciudad: "Guayaquil", pais: "ecu", anio: 2025, youtubeId: "haTs9oOExGM", rotulo: "Joven creaTIva" },
-  { nombre: "César Ortuño", ciudad: "Quito", pais: "ecu", anio: 2025, youtubeId: "6w0KpOtU2nw", rotulo: "Joven creaTIvo" },
-  { nombre: "Danara Guerrero", ciudad: "Uruguay", pais: "uy", anio: 2025, youtubeId: "VQnYTwORz5I", rotulo: "Joven creaTIva" },
-];
-
-/** Primero los del país; luego el resto. Panamá aún no tiene videos propios. */
-export function testimoniosPara(pais: PaisSlug): Testimonio[] {
-  return [...TESTIMONIOS.filter((t) => t.pais === pais), ...TESTIMONIOS.filter((t) => t.pais !== pais)];
+export type Ruta = { semanas: number; nota: string; titulo: string; texto: string; temas: string[]; foto: Foto };
+export function rutas(voz: Voz): Ruta[] {
+  return [
+    { semanas: 3, nota: "Mentoría activa", titulo: "Habilidades Esenciales", texto: voz.habilidades, temas: ["Liderazgo y Teamwork", "Comunicación Efectiva", "Resolución de Conflictos"], foto: foto("ecu-proyecto", "Jóvenes presentando su trabajo en equipo frente al grupo, Ecuador") },
+    { semanas: 3, nota: "Incubación", titulo: "Emprender", texto: "Espacio diseñado para transformar tus ideas en proyectos viables mediante metodologías prácticas y validación de negocio.", temas: ["Modelo CANVAS", "Ideación y Validación", "Procesos de Negocio"], foto: foto("ecu-aula-2", "Participantes trabajando en computadores con la gorra de Jóvenes creaTIvos, Ecuador") },
+    { semanas: 23, nota: "Full stack", titulo: "Desarrollo de Software", texto: "Desde los fundamentos hasta la creación de aplicaciones modernas, integrando tecnologías e inteligencia artificial.", temas: ["HTML, CSS y JS moderno", "React y Node.js", "Integración con IA"], foto: foto("ecu-codigo", "Dos jóvenes programando frente a una pantalla con código, Ecuador") },
+  ];
 }
 
-export const CURSOS = [
-  { n: 1, titulo: "Habilidades esenciales", semanas: 3, lema: "Confianza para liderar y comunicar", temas: ["Liderazgo", "Trabajo en equipo", "Comunicación efectiva", "Resolución de conflictos"] },
-  { n: 2, titulo: "Emprendimiento", semanas: 3, lema: "De una idea a un proyecto", temas: ["Ideación", "Modelo CANVAS", "Validación"] },
-  { n: 3, titulo: "Desarrollo de software", semanas: 23, lema: "Páginas y apps de verdad", temas: ["PSeInt", "HTML", "CSS", "JavaScript", "Git", "React"] },
-] as const;
-
-/** Intereses para la ruta: al tocar uno se voltea la tarjeta del curso que lo trabaja. */
-export const INTERESES = [
-  { texto: "Hablar en público sin nervios", curso: 1 },
-  { texto: "Liderar un equipo", curso: 1 },
-  { texto: "Tener mi propio negocio", curso: 2 },
-  { texto: "Sacar adelante una idea", curso: 2 },
-  { texto: "Crear páginas web", curso: 3 },
-  { texto: "Programar mis propias apps", curso: 3 },
-] as const;
-
-export function comoFunciona(p: Pais) {
-  const v = p.voz;
+// ---------- Cómo funciona ----------
+export type IconoLanding = "portatil" | "personas" | "corazon" | "microfono" | "ubicacion" | "birrete" | "calendario" | "reloj";
+export type ItemComo = { titulo: string; texto: string; icono: IconoLanding; foto: Foto };
+export function comoFunciona(pais: PaisLanding | null): ItemComo[] {
+  const voz = pais?.voz ?? TU;
+  const f = (sufijo: "aula-2" | "taller" | "monitor-1" | "comunidad", general: IdFoto): IdFoto => (pais ? (`${pais.pre}-${sufijo}` as IdFoto) : general);
   return [
-    { titulo: `${MODALIDAD.virtual} % virtual`, texto: `Rutas de formación en línea, parecidas a las de plataformas como Platzi, con sesiones en Zoom para reforzar lo que ${v.vas.toLowerCase()} aprendiendo.` },
-    { titulo: `${MODALIDAD.presencial} % presencial`, texto: `Un encuentro práctico cada mes en ${p.sedes.length > 1 ? "tu ciudad" : p.sedes[0]} y visitas a empresas de tecnología.` },
-    { titulo: "Apoyo y acompañamiento", texto: `${v.tienes[0]!.toUpperCase()}${v.tienes.slice(1)} apoyo cercano del equipo para cuidar tu bienestar durante todo el programa.` },
-    { titulo: "Charlas complementarias", texto: "Temas actuales del mundo tecnológico, más allá del curso." },
+    { titulo: "80 % virtual", texto: "Rutas de formación en línea, parecidas a las de plataformas como Platzi, con sesiones en Zoom para reforzar lo que vas aprendiendo.", icono: "portatil", foto: foto(f("aula-2", "col-codigo"), "Participantes trabajando en sus computadores") },
+    { titulo: "20 % presencial", texto: "Un encuentro práctico cada mes en tu ciudad y visitas a empresas de tecnología.", icono: "personas", foto: foto(f("taller", "ecu-proyecto"), "Jóvenes en un encuentro presencial") },
+    { titulo: "Apoyo y acompañamiento", texto: `${voz.tienes} apoyo cercano del equipo para cuidar tu bienestar durante todo el programa.`, icono: "corazon", foto: foto(f("monitor-1", "col-monitor-1"), "Monitor acompañando a un participante") },
+    { titulo: "Charlas complementarias", texto: "Temas actuales del mundo tecnológico, más allá del curso.", icono: "microfono", foto: foto(f("comunidad", "pan-inauguracion"), "Jóvenes creaTIvos reunidos") },
+  ];
+}
+
+// ---------- Beneficios (solo en la principal) ----------
+export const BENEFICIOS = {
+  texto: "Todo lo que necesitas para que tu formación sea una experiencia integral de aprendizaje y crecimiento personal.",
+  beca: { titulo: "Beca del 100 %", texto: "Acceso total sin costo alguno. Tu talento es tu única moneda de entrada." },
+  visitas: { titulo: "Visitas pedagógicas", texto: "Conoce por dentro las oficinas de las empresas tecnológicas más importantes.", foto: foto("col-visita", "Jóvenes creaTIvos en la visita a las oficinas de Sofka") },
+  otros: [
+    { clase: "bt-a bt-tinte", icono: "certificado", titulo: "Certificado", texto: "Recibe una certificación oficial que respalda tus nuevos conocimientos técnicos." },
+    { clase: "bt-b", icono: "personas", titulo: "Comunidad", texto: "Únete a la red exclusiva de Jóvenes creaTIvos en toda Latinoamérica." },
+    { clase: "bt-c", icono: "corazon", titulo: "Apoyo en salud mental", texto: "Acompañamiento integral para potenciar tu bienestar durante el programa." },
+    { clase: "bt-d bt-tinte", icono: "charla", titulo: "Asesorías de emprendimiento", texto: "Mentoría experta para llevar tus ideas de negocio al siguiente nivel." },
+  ],
+} as const;
+
+// ---------- Requisitos ----------
+export type Requisito = { clave: string; texto: string; icono: IconoLanding; pendiente?: string };
+export function requisitos(pais: PaisLanding | null): Requisito[] {
+  const equipo = pais?.equipo ?? "computador";
+  return [
+    { clave: "Ubicación", icono: "ubicacion", texto: pais ? `${pais.lugar}. ${pais.ciudades}` : "Vivir en Colombia, Ecuador, Panamá o Uruguay. Se priorizan las ciudades principales, pero cualquier persona del país puede inscribirse." },
+    { clave: "Nivel educativo", icono: "birrete", texto: pais ? pais.grado : "Estar en los últimos años del colegio o ser egresado reciente." },
+    { clave: "Edad", icono: "calendario", texto: pais ? pais.edad : "En 2026 fue de 14 a 25 años en Colombia y Ecuador, y de 14 a 30 en Panamá y Uruguay.", pendiente: "[RANGO 2027 POR CONFIRMAR]" },
+    { clave: "Herramientas", icono: "portatil", texto: `${equipo === "computador" ? "Computador" : "Computadora"} e internet estable.` },
+    { clave: "Compromiso", icono: "reloj", texto: "Mínimo 8 horas semanales." },
   ];
 }
 
 export const INCLUYE = [
-  "Beca del 100 % para la formación completa: sin costo de matrícula ni de inscripción.",
-  "Visitas pedagógicas a empresas del sector TI.",
-  "Certificado de participación.",
-  "Acceso a la comunidad Jóvenes creaTIvos, donde se comparten oportunidades laborales.",
+  "Beca del 100 %: acceso total sin costo alguno.",
+  "Visitas pedagógicas a empresas tecnológicas.",
+  "Certificación oficial.",
+  "Comunidad de Jóvenes creaTIvos en toda Latinoamérica.",
+  "Apoyo en salud mental.",
+  "Asesorías de emprendimiento.",
+];
+export function noIncluye(pais: PaisLanding): string[] {
+  return [`${pais.equipo === "computador" ? "Computadores" : "Computadoras"} ni otros equipos.`, "Ayudas económicas.", "Acceso a internet."];
+}
+
+// ---------- Galería ----------
+export type FotoGaleria = { foto: Foto; pie: string };
+export function galeria(pais: PaisLanding | null): FotoGaleria[] {
+  if (!pais) {
+    return [
+      { foto: foto("col-visita", "Grupo de jóvenes en la visita a las oficinas de Sofka", "center 45%"), pie: "Visita pedagógica a Sofka · Colombia" },
+      { foto: foto("ecu-visita-2", "Jóvenes y equipo de una empresa aliada durante una visita", "center 40%"), pie: "Visita pedagógica · Ecuador" },
+      { foto: foto("col-comunidad", "Jóvenes creaTIvos reunidos después de una sesión presencial", "center 35%"), pie: "Comunidad · Colombia" },
+      { foto: foto("pan-hero-2", "Jóvenes creaTIvos de Panamá con sus gorras del programa", "center 35%"), pie: "Comunidad · Panamá" },
+      { foto: foto("uy-visita", "Jóvenes creaTIvos de Uruguay durante una visita", "center 40%"), pie: "Visita pedagógica · Uruguay" },
+      { foto: foto("ecu-comunidad", "Jóvenes creaTIvos de Ecuador reunidos en el aula", "center 40%"), pie: "Comunidad · Ecuador" },
+      { foto: foto("pan-comunidad", "Grupo de jóvenes creaTIvos de Panamá", "center 35%"), pie: "Comunidad · Panamá" },
+      { foto: foto("uy-comunidad", "Jóvenes creaTIvos de Uruguay reunidos", "center 45%"), pie: "Comunidad · Uruguay" },
+    ];
+  }
+  const n = pais.nombre;
+  const f = (sufijo: string) => `${pais.pre}-${sufijo}` as IdFoto;
+  return [
+    { foto: foto(f("aula"), `Jóvenes en una sesión presencial en ${n}`, "center 40%"), pie: "En el aula" },
+    { foto: foto(f("monitor-1"), `Monitor acompañando a un participante en ${n}`, "center 35%"), pie: "Con los monitores" },
+    { foto: foto(f("aula-2"), `Participantes trabajando en ${n}`, "center 40%"), pie: "Sesión presencial" },
+    { foto: foto(f("monitor-2"), `Monitor explicando al grupo en ${n}`, "center 30%"), pie: "Acompañamiento" },
+    { foto: foto(f("taller"), `Taller práctico en ${n}`, "center 40%"), pie: "Taller" },
+    { foto: foto(pais.fotoVisita, `Actividad fuera del aula en ${n}`, "center 35%"), pie: pais.visita },
+    { foto: foto(f("comunidad"), `Jóvenes creaTIvos de ${n} reunidos`, "center 40%"), pie: "Comunidad" },
+  ];
+}
+
+// ---------- Acerca, testimonios, aliados y preguntas ----------
+export const ACERCA = {
+  parrafos: [
+    "Programa integral de desarrollo de capacidades para el trabajo y el emprendimiento.",
+    "Está compuesto por cinco módulos: Curso de Aprendizaje Efectivo, desarrollo de habilidades esenciales del ser, taller de emprendimiento “Desarrolla una Idea de Negocio”, formación en inteligencia artificial, y formación en desarrollo de software, donde de la mano de expertos los jóvenes aprenden diferentes especialidades de programación.",
+  ],
+  modulos: ["Curso de Aprendizaje Efectivo", "Habilidades esenciales del ser", "Taller de emprendimiento “Desarrolla una Idea de Negocio”", "Formación en inteligencia artificial", "Formación en desarrollo de software"],
+  foto: foto("pan-inauguracion", "Inauguración de Jóvenes creaTIvos en Panamá, con el auditorio lleno de participantes"),
+};
+
+/** Egresados 2025. `youtubeId`: video ya publicado por la Fundación. `cita`: pendiente de entregar. */
+export type Testimonio = { nombre: string; rol: string; ciudad: string; pais: PaisSlug; youtubeId?: string; cita?: string };
+export const TESTIMONIOS: Testimonio[] = [
+  { nombre: "Antonella Caballero", rol: "Joven creaTIva 2025", ciudad: "Barranquilla", pais: "col", youtubeId: "2nqR9nhCkdg" },
+  { nombre: "Andrés Navarrete", rol: "Joven creaTIvo 2025", ciudad: "Bogotá", pais: "col", youtubeId: "4LLBIA_JnTI" },
+  { nombre: "Eilyn Obregón", rol: "Joven creaTIva 2025", ciudad: "Cali", pais: "col", youtubeId: "roXbrp300RM" },
+  { nombre: "Linda Julio", rol: "Joven creaTIva 2025", ciudad: "Cali", pais: "col", youtubeId: "a0h-nldX7eo" },
+  { nombre: "Dairyn Palacios", rol: "Joven creaTIva 2025", ciudad: "Medellín", pais: "col", youtubeId: "e36AcPeU_xs" },
+  { nombre: "Damaris Jiménez", rol: "Joven creaTIva 2025", ciudad: "Guayaquil", pais: "ecu", youtubeId: "haTs9oOExGM" },
+  { nombre: "César Ortuño", rol: "Joven creaTIvo 2025", ciudad: "Quito", pais: "ecu", youtubeId: "6w0KpOtU2nw" },
+  { nombre: "Danara Guerrero", rol: "Joven creaTIva 2025", ciudad: "Paysandú", pais: "uy", youtubeId: "VQnYTwORz5I" },
+];
+/** En una landing de país, solo los de ese país. Panamá aún no tiene: queda uno marcado como pendiente. */
+export function testimoniosPara(pais: PaisLanding | null): Testimonio[] {
+  const lista = TESTIMONIOS.filter((t) => !pais || t.pais === pais.slug);
+  if (lista.length || !pais) return lista;
+  return [{ nombre: "[NOMBRE POR CONFIRMAR]", rol: "Joven creaTIvo/a", ciudad: "Ciudad de Panamá", pais: pais.slug }];
+}
+
+/** Logos de aliados: pendientes de entregar. */
+export const ALIADOS_PENDIENTES = ["Sofka Technologies [LOGO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]"];
+
+export const PREGUNTAS = [
+  { q: "¿Tiene algún costo el programa?", a: "No, es 100 % gratuito para todos los seleccionados gracias a nuestros aliados." },
+  { q: "¿Necesito conocimientos previos en código?", a: "No para las rutas iniciales. Empezamos desde los fundamentos, aunque la pasión por aprender es indispensable." },
+  { q: "¿Cuándo inician las clases?", a: "Las cohortes de 2027 inician en el primer trimestre. Los seleccionados recibirán el cronograma detallado por email." },
 ];
 
-export function noIncluye(p: Pais) {
-  return [`${p.equipo === "computador" ? "Computadores" : "Computadoras"} ni otros equipos.`, "Ayudas económicas.", "Acceso a internet."];
-}
-
-export function requisitos(p: Pais) {
-  return [
-    p.dondeVivir,
-    p.grados,
-    `Tener acceso a ${p.equipo === "computador" ? "un computador" : "una computadora"} y a internet.`,
-    `Tener ${COHORTE.horasSemana} horas a la semana para dedicarle al programa.`,
-  ];
-}
-
-export function preguntas(p: Pais) {
-  const v = p.voz;
-  const uy = p.slug === "uy";
-  return [
-    { q: "¿Cuánto cuesta?", a: `Nada. Es una beca del 100 %: no hay costo de matrícula ni de inscripción.` },
-    { q: uy ? "¿Tengo que saber programar?" : "¿Necesito saber programar?", a: `No. El programa empieza desde cero: primero habilidades esenciales, después emprendimiento y por último desarrollo de software.` },
-    { q: "¿Cuánto dura y cuándo empieza?", a: `${COHORTE.meses} meses: de ${COHORTE.inicio} a ${COHORTE.fin}. ${v.necesitas} unas ${COHORTE.horasSemana} horas a la semana.` },
-    { q: "¿Es virtual o presencial?", a: `Mayoritariamente virtual, con un encuentro presencial al mes en ${p.sedes.join(", ").replace(/, ([^,]*)$/, " y $1")} y visitas a empresas.` },
-    { q: uy ? "¿Me prestan una computadora?" : `¿Me prestan ${p.equipo === "computador" ? "un computador" : "una computadora"}?`, a: `No. El programa no incluye equipos ni ayudas económicas: ${v.necesitas.toLowerCase()} tener ${p.equipo === "computador" ? "un computador" : "una computadora"} e internet por tu cuenta.` },
-    { q: uy ? "¿Qué recibo al terminar?" : "¿Qué recibo al terminar?", a: `Un certificado de participación y la entrada a la comunidad Jóvenes creaTIvos, donde se comparten oportunidades laborales.` },
-  ];
-}
-
-export const CONTACTO = { correo: "comunicaciones@tocaunavida.org", sitio: "https://tocaunavida.org" };
+/** Redes de la Fundación. Sin `url`, el enlace queda marcado como pendiente. */
+export const REDES: Array<{ nombre: "Instagram" | "YouTube" | "LinkedIn"; url?: string }> = [{ nombre: "Instagram" }, { nombre: "YouTube" }, { nombre: "LinkedIn" }];

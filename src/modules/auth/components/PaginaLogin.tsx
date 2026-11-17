@@ -14,7 +14,7 @@ export default function PaginaLogin() {
     <main className={s.raiz}>
       <section className={s.tarjeta}>
         <div className={s.marca}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- logo pequeño y local, sin optimización */}
+          { }
           <img className={s.logo} src="/logo-jc.png" alt="" width={46} height={40} />
           <div>
             <h1 className={s.titulo}>{T.tituloLogin}</h1>

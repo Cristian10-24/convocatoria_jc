@@ -13,7 +13,7 @@ export default function MarcoPanel({ enlaces, nombre, rol, acciones, children }:
       <header className={s.barra}>
         <div className={s.barraInterna}>
           <Link href="/admin" className={s.marca}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- logo pequeño y local */}
+            { }
             <img className={s.logo} src="/logo-jc.png" alt="" width={40} height={35} />
             <span>
               <strong>Jóvenes creaTIvos 2027</strong>

@@ -34,7 +34,7 @@ export default function PaginaInscripcion({ pais }: { pais: PaisSlug }) {
     <div className={s.raiz} data-pais={pais}>
       <header className={s.encabezado}>
         <a href={rutaLanding} className={s.marca}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          { }
           <img src="/logo-jc.png" alt="" className={s.logo} width={46} height={40} />
           <span className={s.marcaTexto}>
             <strong>Inscripción Jóvenes creaTIvos {anio}</strong>

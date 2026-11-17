@@ -8,6 +8,6 @@ import type { ReactNode } from "react";
 
 const cargar = () => import("./movimientoFunciones").then((r) => r.default);
 
-export default function MovimientoProveedor({ children }: { children: ReactNode }) {
+export default function ProveedorMovimiento({ children }: { children: ReactNode }) {
   return <LazyMotion features={cargar} strict>{children}</LazyMotion>;
 }

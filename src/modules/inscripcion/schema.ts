@@ -94,6 +94,16 @@ export function ciudadesCercanas(def: DefinicionPais): Array<{ ciudad: string; s
   return sedesReales(def).flatMap((s) => (def.reglas.ubicacion === "lista" ? s.ciudades.slice(1) : s.ciudades).map((ciudad) => ({ ciudad, sede: s.id })));
 }
 
+/**
+ * TODAS las ciudades del país (sedes y cercanas, mezcladas) en orden alfabético, con la sede que les corresponde.
+ * La persona solo elige su ciudad; la sede se deduce de aquí y nunca se le pregunta.
+ */
+export function ciudadesDelPais(def: DefinicionPais): Array<{ ciudad: string; sede: string; esSede: boolean }> {
+  const sedes = sedesReales(def).map((s) => ({ ciudad: ciudadSede(def, s), sede: s.id, esSede: true }));
+  const cercanas = ciudadesCercanas(def).map((c) => ({ ...c, esSede: false }));
+  return [...sedes, ...cercanas].sort((a, b) => a.ciudad.localeCompare(b.ciudad, "es"));
+}
+
 const CAMPOS_ACUDIENTE = ["acudienteNombres", "acudienteApellidos", "acudienteCorreo", "acudienteTelefono", "acudienteRelacion", "acudienteRelacionOtra"];
 
 /** Casillas de consentimiento que aplican: las del formato del envío y, si es menor, la del adulto responsable. */
@@ -106,16 +116,9 @@ export function casillasConsentimiento(def: DefinicionPais, d: Borrador, hoy: st
 export function camposVisibles(def: DefinicionPais, d: Borrador, hoy: string, formato: Formato = 2): Set<string> {
   const { config: cfg, reglas } = def;
   const ocultos = new Set<string>();
-  if (reglas.ubicacion === "lista") {
-    if (cfg.sedes.length <= 1) ocultos.add("sede");
-    if (d.ciudad !== CIUDAD_OTRA) ocultos.add("ciudadOtra");
-    ocultos.add("sedeCercana");
-  } else {
-    if (d.sede !== CIUDAD_OTRA) ocultos.add("ciudadOtra").add("sedeCercana");
-    if (sedesReales(def).length <= 1) ocultos.add("sedeCercana");
-    // Quien eligió una ciudad que no es sede ya dijo dónde vive: no se le vuelve a preguntar la residencia.
-    if (d.sede === CIUDAD_OTRA) ocultos.add("ciudad");
-  }
+  // Ubicación: solo la ciudad (y el texto si no está en la lista). La sede no se pregunta: se deduce de la ciudad.
+  ocultos.add("sede").add("sedeCercana");
+  if (d.ciudad !== CIUDAD_OTRA) ocultos.add("ciudadOtra");
   if (!cfg.tiposDocumento.find((t) => t.id === d.tipoDocumento)?.conTexto) ocultos.add("tipoDocumentoOtro");
   if (d.acudienteRelacion !== "otro") ocultos.add("acudienteRelacionOtra");
   if (d.grado !== "egresado") ocultos.add("anioEgreso");
@@ -238,37 +241,19 @@ export function revisar(def: DefinicionPais, d: EntradaInscripcion, hoy: string,
   const opcional = (cond: boolean, v: string) => (cond ? limpiarEspacios(v) : undefined);
 
   // Ubicación
-  let sede: string | undefined;
-  let ciudad = "";
-  let ciudadOtra: string | undefined;
-  let viveEnSede = false;
-  if (reglas.ubicacion === "lista") {
-    const sedeCfg = cfg.sedes.find((s) => s.id === (cfg.sedes.length === 1 ? cfg.sedes[0]!.id : d.sede));
-    if (!sedeCfg) error("sede", m("elegir"));
-    // La ciudad puede ser de cualquier sede del país: quien vive en una ciudad cercana elige a qué sede asistiría.
-    if (vacio(d.ciudad)) error("ciudad", m("elegir"));
-    else if (d.ciudad !== CIUDAD_OTRA && !cfg.sedes.some((s) => s.ciudades.includes(d.ciudad))) error("ciudad", m("elegir"));
-    if (d.ciudad === CIUDAD_OTRA) libre("ciudadOtra");
-    sede = sedeCfg?.id;
-    ciudad = d.ciudad;
-    ciudadOtra = opcional(d.ciudad === CIUDAD_OTRA, d.ciudadOtra);
-    viveEnSede = !!sedeCfg && d.ciudad === sedeCfg.ciudades[0];
-  } else {
-    const reales = sedesReales(def);
-    if (d.sede === CIUDAD_OTRA) {
-      libre("ciudadOtra");
-      sede = reales.length === 1 ? reales[0]!.id : unica("sedeCercana", reales.map((s) => ({ id: s.id, etiqueta: s.nombre })));
-    } else {
-      const elegida = cfg.sedes.find((s) => s.id === d.sede);
-      if (!elegida) error("sede", m("elegir"));
-      sede = elegida ? (elegida.sede ?? elegida.id) : undefined;
-      viveEnSede = !!elegida;
-    }
-    // La residencia se escribe aparte; quien eligió "Otra ciudad" ya la escribió en el primer paso.
-    ciudad = limpiarEspacios(d.ciudad) || (d.sede === CIUDAD_OTRA ? limpiarEspacios(d.ciudadOtra) : "");
-    if (!ciudad) error("ciudad", m("obligatorio"));
-    else if (!textoConSentido(ciudad, 2)) error("ciudad", m("texto"));
-  }
+  // La persona elige su ciudad de la lista del país (o escribe la suya). La sede se deduce de la ciudad; si escribió
+  // otra ciudad, queda sin sede. Compatibilidad: el formulario anterior de Uruguay también enviaba la sede elegida
+  // (con "Otra" la persona la elegía a mano): si llega y es válida, se respeta en ese caso.
+  const lista = ciudadesDelPais(def);
+  const enLista = lista.find((c) => c.ciudad === d.ciudad);
+  if (vacio(d.ciudad)) error("ciudad", m("elegir"));
+  else if (d.ciudad !== CIUDAD_OTRA && !enLista) error("ciudad", m("elegir"));
+  if (d.ciudad === CIUDAD_OTRA) libre("ciudadOtra");
+  const ciudad = d.ciudad;
+  const ciudadOtra = opcional(d.ciudad === CIUDAD_OTRA, d.ciudadOtra);
+  const sedeEnviada = sedesReales(def).find((s) => s.id === d.sede)?.id;
+  const sede = enLista ? enLista.sede : d.ciudad === CIUDAD_OTRA ? (sedeEnviada ?? "") : undefined;
+  const viveEnSede = !!enLista?.esSede;
   if (vacio(d.direccion)) error("direccion", m("obligatorio"));
   else if (!textoConSentido(d.direccion, 5)) error("direccion", m("direccion"));
 
@@ -376,7 +361,7 @@ export function revisar(def: DefinicionPais, d: EntradaInscripcion, hoy: string,
   } else if (!d.aceptaDatos) error("aceptaDatos", m("aceptar"));
   if (menor && !d.autorizaAcudiente) error("autorizaAcudiente", m("acudienteAutoriza"));
 
-  if (Object.keys(errores).length || !tipo || !sede || edad === null) return { errores };
+  if (Object.keys(errores).length || !tipo || sede === undefined || edad === null) return { errores };
 
   return {
     errores,

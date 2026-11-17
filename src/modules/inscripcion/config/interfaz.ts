@@ -18,10 +18,10 @@ export const IU = {
   opcional: " (opcional)",
   otraCiudad: "Otra ciudad",
   ciudad: {
-    sedes: "Ciudades sede",
-    cercanas: "Otras ciudades de {pais}",
+    pregunta: { tu: "¿En qué ciudad vives?", vos: "¿En qué ciudad vivís?" },
+    noEsta: "Mi ciudad no está en la lista",
     buscar: { tu: "Busca tu ciudad", vos: "Buscá tu ciudad" },
-    sinResultados: { tu: "No la encontramos en la lista. Elige «Otra ciudad» y escríbela.", vos: "No la encontramos en la lista. Elegí «Otra ciudad» y escribila." },
+    sinResultados: { tu: "No la encontramos. Elige «Mi ciudad no está en la lista» y escríbela.", vos: "No la encontramos. Elegí «Mi ciudad no está en la lista» y escribila." },
   },
   otraCiudadDe: "Otra ciudad de {pais}",
   ciudadOtraLista: "Otra",

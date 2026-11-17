@@ -47,7 +47,7 @@ function leerOrigen(): NonNullable<SobreEnvio["origen"]> {
 
 /** Cómo se dibuja cada pregunta de opciones. Lo que no está aquí es un campo de texto. */
 const FORMA: Record<string, "lista" | "rejilla" | "segmentos"> = {
-  sedeCercana: "lista", ciudad: "rejilla", tipoDocumento: "rejilla", acudienteRelacion: "segmentos", grado: "lista", internet: "segmentos", computadora: "lista",
+  tipoDocumento: "rejilla", acudienteRelacion: "segmentos", grado: "lista", internet: "segmentos", computadora: "lista",
   autonomia: "lista", horas: "rejilla", ocupacion: "rejilla", emprendimiento: "lista", laboral: "lista", otrasPostulaciones: "lista", aplicoAntes: "segmentos",
   seleccionadoAntes: "segmentos", genero: "rejilla", poblaciones: "rejilla", ingresos: "lista", talla: "segmentos", vivienda: "rejilla", estrato: "segmentos",
   nucleo: "segmentos", elementos: "rejilla", servicios: "rejilla", conocimiento: "segmentos", ingles: "rejilla", canal: "rejilla",
@@ -463,7 +463,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
           <div className="lado-i">
             <span><Icono nombre="birrete" /><span><strong>{IU.lateral.gratis}</strong> {IU.lateral.gratisTexto}</span></span>
             <span><Icono nombre="escudo" /><span>{IU.lateral.confidencial}</span></span>
-            <span><Icono nombre="sobre" /><span>{IU.lateral.dudas} <a href={`mailto:${CONTACTO.correo}`}>{CONTACTO.correo}</a></span></span>
+            <span><Icono nombre="sobre" /><span className="lado-correo"><span>{IU.lateral.dudas}</span><a href={`mailto:${CONTACTO.correo}`}>{CONTACTO.correo}</a></span></span>
           </div>
         </aside>
       </div>

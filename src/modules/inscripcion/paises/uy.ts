@@ -37,13 +37,14 @@ export const definicion: DefinicionPais = {
     edad: { minima: EDAD_MINIMA, alertaMayorDe: 30, mayoriaDeEdad: MAYORIA_DE_EDAD },
     maxAniosEgreso: 3,
   },
+  etiquetas: { ciudad: { etiqueta: "Ciudad donde vivís" }, ciudadOtra: { etiqueta: "Escribí el nombre de tu ciudad" } },
   reglas: { ubicacion: "lista", poblacionUnica: false, seleccionadoSiempre: false, tallaObligatoria: true },
   opciones: {
     computadora: COMPUTADORA, ocupacion: OCUPACION, genero: conPrefieroNo(GENERO), poblaciones: conPrefieroNo(POBLACIONES),
     ingresos: conPrefieroNo(INGRESOS), tallas: TALLAS, canales: CANALES,
   },
   pasos: [
-    { id: "ubicacion", titulo: "¿Desde qué ciudad aplicás?", corto: "Ciudad", descripcion: "Elegí la ciudad donde vivís. En cada ciudad sede hay un encuentro presencial al mes.", campos: ["sede", "ciudad", "ciudadOtra"] },
+    { id: "ubicacion", titulo: "¿En qué ciudad vivís?", corto: "Ciudad", descripcion: "Elegí la ciudad donde vivís.", campos: ["ciudad", "ciudadOtra"] },
     {
       id: "personales", titulo: "Datos personales", corto: "Datos personales", descripcion: "Tal como aparecen en tu documento.",
       campos: ["nombres", "apellidos", "tipoDocumento", "tipoDocumentoOtro", "documento", "fechaNacimiento", "correo", "whatsapp", "telefonoAlterno", "direccion"],

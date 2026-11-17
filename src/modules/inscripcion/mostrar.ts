@@ -6,14 +6,13 @@ import {
 } from "./config/preguntas";
 import { txt } from "./config/textos";
 import type { DefinicionPais, Opcion, TextoTrato } from "./config/tipos";
-import { CIUDAD_OTRA, sedesReales, type Borrador } from "./schema";
+import { CIUDAD_OTRA, type Borrador } from "./schema";
 
 /** Opciones de una pregunta en un país, o undefined si es de texto libre. */
 export function opcionesDe(def: DefinicionPais, campo: string): Opcion[] | undefined {
   const { config: cfg, opciones: ops } = def;
   switch (campo) {
     case "sede": return cfg.sedes.map((s) => ({ id: s.id, etiqueta: s.nombre }));
-    case "sedeCercana": return sedesReales(def).map((s) => ({ id: s.id, etiqueta: s.nombre }));
     case "tipoDocumento": return cfg.tiposDocumento;
     case "grado": return cfg.grados;
     case "acudienteRelacion": return RELACION_ACUDIENTE;

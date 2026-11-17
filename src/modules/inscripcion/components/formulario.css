@@ -141,7 +141,6 @@
 }
 /* Panel lateral: el texto en negrita va en la misma línea que el resto, y el correo puede partirse si no cabe. */
 .fpg .lado-i span span { display: inline; }
-.fpg .lado-i a { overflow-wrap: anywhere; }
 /* "Guardado automático": solo en pantallas anchas (en celular el lienzo lo oculta para que quepa el encabezado). */
 .fpg .guardado { display: none; align-items: center; gap: 6px; font-size: 14px; color: hsl(231.9 20.2% 41.8%); }
 @media (min-width: 761px) { .fpg .guardado { display: flex; } }
@@ -160,27 +159,29 @@
 
 /* ---------- Paso Ciudad ---------- */
 .fpg .ciudad-paso { margin-top: 24px; }
-.fpg .ciu-sedes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 8px; }
-/* Tarjetas de sede algo más bajas que en el lienzo para que el paso quepa en 1366×768. */
-.fpg .ciu-sedes .ciu { min-height: 52px; padding: 10px 16px; font-size: 17px; }
-.fpg .ciu-sedes .ciu.is-sel { padding: 9px 15px; }
-.fpg .ciu-sub { margin-top: 8px; }
-.fpg .ciu-otra { border-style: dashed; min-height: 48px; padding: 10px 14px; }
-.fpg .ciu-otra.is-sel { border-style: solid; padding: 9px 13px; }
 .fpg .ciu-buscar { position: relative; }
 .fpg .ciu-buscar svg.i { position: absolute; left: 16px; top: 16px; color: hsl(231.9 20.2% 41.8%); pointer-events: none; }
-.fpg .ciu-buscar .input { padding-left: 48px; height: 48px; }
-.fpg .ciu-buscar svg.i { top: 12px; }
-.fpg .ciu-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); gap: 8px; }
-/* Con buscador la lista queda abierta y con su propio scroll (no empuja el resto del paso). */
-.fpg .ciu-lista.con-buscador { max-height: 124px; overflow-y: auto; padding: 4px; margin: -4px; overscroll-behavior: contain; }
-.fpg .ciu-lista .op { min-height: 48px; padding: 10px 14px; }
+.fpg .ciu-buscar .input { padding-left: 48px; }
+/* Todas las ciudades a la vista: sin scroll propio; la lista crece con la página y ningún nombre se corta. */
+.fpg .ciu-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); gap: 8px; }
+.fpg .ciu-lista .op, .fpg .ciu-otra { min-height: 48px; padding: 10px 14px; overflow-wrap: anywhere; }
 .fpg .ciu-lista .op.is-sel { padding: 9px 13px; }
+.fpg .ciu-otra { border-style: dashed; }
+.fpg .ciu-otra.is-sel { border-style: solid; padding: 9px 13px; }
 /* Marca de radio dibujada (el input real está oculto pero sigue siendo el control). */
 .fpg .ciu-marca { width: 20px; height: 20px; border-radius: 50%; border: 2px solid hsl(231.9 77.1% 20.6%); background: hsl(0 0% 100%); flex: none; }
 .fpg .op.is-sel .ciu-marca { border-width: 6px; }
 .fpg .ciu-vacio { grid-column: 1 / -1; }
 .fpg label.op:focus-within, .fpg label.ciu:focus-within { outline: 3px solid hsl(231.9 77.1% 20.6%); outline-offset: 2px; }
+
+/* ---------- Ancho del formulario (escritorio) ----------
+   Más ancho y con menos margen a los lados; el panel lateral cabe con el correo de contacto en una sola línea
+   (si en algún ancho no cabe, baja un poco su letra en vez de partirlo). */
+.jc.fpg .fw { max-width: 1520px; }
+@media (min-width: 761px) { .jc.fpg .wrap { padding-left: 32px; padding-right: 32px; } }
+.fpg .lado { flex: 0 0 clamp(300px, 26vw, 380px); max-width: 380px; }
+.fpg .lado-i a { white-space: nowrap; overflow-wrap: normal; font-size: clamp(12.5px, 1.04vw, 15px); }
+.fpg .lado-i .lado-correo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
 @media (max-width: 760px) {
   .fpg .fcard { padding: 20px 16px 0; }

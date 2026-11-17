@@ -23,15 +23,16 @@ const COMUN = {
 
 /** Uruguay con el formulario nuevo: mismas preguntas y claves, dos casillas en vez de una. */
 export function nuevaUy(extra: Record<string, unknown> = {}): Record<string, unknown> {
-  const { aceptaDatos: _anterior, ...datos } = inscripcionUy();
-  void _anterior;
+  // El formulario nuevo no envía la sede (se deduce de la ciudad).
+  const { aceptaDatos: _anterior, sede: _sede, ...datos } = inscripcionUy();
+  void _anterior; void _sede;
   return { ...datos, ...CONSENTIMIENTOS, ...extra };
 }
 
 export function nuevaCol(extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     ...COMUN,
-    sede: "medellin", ciudad: "Medellín",
+    ciudad: "Medellín",
     correo: "Lucia.Prueba@Gmail.com", whatsapp: "300 123 4567", telefonoAlterno: "310 765 4321",
     tipoDocumento: "ti", documento: "1023456789",
     grado: "11",
@@ -48,7 +49,7 @@ export function nuevaCol(extra: Record<string, unknown> = {}): Record<string, un
 export function nuevaEcu(extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     ...COMUN,
-    sede: "quito", ciudad: "Quito",
+    ciudad: "Quito",
     correo: "lucia.ecuador@gmail.com", whatsapp: "099 123 4567", telefonoAlterno: "098 765 4321",
     tipoDocumento: "cedula", documento: "1712345678",
     grado: "3",
@@ -65,7 +66,7 @@ export function nuevaEcu(extra: Record<string, unknown> = {}): Record<string, un
 export function nuevaPan(extra: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     ...COMUN,
-    sede: "panama", ciudad: "San Miguelito",
+    ciudad: "San Miguelito",
     correo: "lucia.panama@gmail.com", whatsapp: "6123 4567", telefonoAlterno: "6765 4321",
     tipoDocumento: "cedula_juvenil", documento: "8-123-4567",
     grado: "12", institucion: "Colegio de prueba",

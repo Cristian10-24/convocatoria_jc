@@ -60,9 +60,9 @@ export type OpcionesPais = {
 
 export type ReglasPais = {
   /**
-   * "lista" (Uruguay): sede y luego ciudad de residencia de la lista de esa sede (o "Otra").
-   * "libre": se elige una ciudad sede u "Otra ciudad"; quien vive en otra ciudad dice a qué sede podría asistir, y la
-   * residencia se escribe aparte.
+   * Cómo están escritas las ciudades de cada sede en `config.sedes` (ver el tipo Sede): "lista" (Uruguay) incluye la
+   * ciudad sede como primera ciudad; "libre", no (la ciudad sede es el nombre de la sede). En los dos casos la
+   * persona solo elige su ciudad y la sede se deduce.
    */
   ubicacion: "lista" | "libre";
   /** true: la población es una sola respuesta (se guarda igual como lista de un elemento). */

@@ -44,7 +44,8 @@ describe("validación del formulario de Uruguay", () => {
   it("devuelve errores por campo con el trato de Uruguay (voseo)", () => {
     const r = revisarUy({});
     expect(r.datos).toBeUndefined();
-    expect(r.errores.sede).toBe("Elegí una opción.");
+    expect(r.errores.ciudad).toBe("Elegí una opción.");
+    expect(r.errores.sede).toBeUndefined(); // la sede ya no se pregunta
     expect(r.errores.nombres).toBe("Respondé esta pregunta.");
     expect(r.errores.aceptaDatos).toBe("Tenés que aceptar para enviar la inscripción.");
   });
@@ -76,8 +77,8 @@ describe("validación del formulario de Uruguay", () => {
   });
 
   it("la ciudad debe ser de alguna sede del país (se asiste a la sede elegida), o «Otra» con texto", () => {
-    // Carmelo es cercana a Colonia, pero quien vive ahí puede elegir asistir a Paysandú.
-    expect(revisarUy(inscripcionUy({ ciudad: "Carmelo" })).datos).toMatchObject({ ciudad: "Carmelo", sede: "paysandu", viveEnSede: false });
+    // La sede se deduce de la ciudad (Carmelo es de Colonia), aunque llegue otra en el envío.
+    expect(revisarUy(inscripcionUy({ ciudad: "Carmelo" })).datos).toMatchObject({ ciudad: "Carmelo", sede: "colonia", viveEnSede: false });
     expect(revisarUy(inscripcionUy({ ciudad: "Montevideo" })).errores.ciudad).toBeDefined(); // no está en ninguna lista
     expect(revisarUy(inscripcionUy({ ciudad: "__otra__" })).errores.ciudadOtra).toBeDefined();
     expect(revisarUy(inscripcionUy({ ciudad: "__otra__", ciudadOtra: "Bella Unión" })).datos?.ciudadOtra).toBe("Bella Unión");
@@ -142,9 +143,14 @@ describe("validación del formulario de Uruguay", () => {
 
   it("muestra solo los campos que aplican", () => {
     const visibles = camposVisibles(uyDef, inscripcionUy(), hoy, 1);
-    expect(visibles.has("sede")).toBe(true); // Uruguay tiene 2 sedes
+    expect(visibles.has("sede")).toBe(false); // la sede se deduce de la ciudad
     expect(visibles.has("anioEgreso")).toBe(false);
-    expect(camposVisibles(DEFINICIONES.pan, { sede: "__otra__" }, hoy).has("sedeCercana")).toBe(false); // Panamá: una sola sede, no se pregunta cuál
+    // La sede nunca se pregunta: solo la ciudad (y el texto si no está en la lista).
+    for (const p of PAISES) {
+      const v = camposVisibles(DEFINICIONES[p], { ciudad: "__otra__" }, hoy);
+      expect(v.has("sede") || v.has("sedeCercana"), p).toBe(false);
+      expect(v.has("ciudad") && v.has("ciudadOtra"), p).toBe(true);
+    }
   });
 
   it("texto legible para el resumen", () => {

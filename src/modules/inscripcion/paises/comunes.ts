@@ -32,10 +32,10 @@ export function opcionesComputadora(equipo: "computador" | "computadora"): Opcio
  */
 export function pasosLibre(extras: { perfil?: string[]; sociodemograficos?: string[]; cierre: string[] }): PasoDef[] {
   return [
-    { id: "ubicacion", titulo: "¿Desde qué ciudad aplicas?", corto: "Ciudad", descripcion: "Elige la ciudad donde vives. En cada ciudad sede hay un encuentro presencial al mes.", campos: ["sede", "ciudadOtra", "sedeCercana"] },
+    { id: "ubicacion", titulo: "¿En qué ciudad vives?", corto: "Ciudad", descripcion: "Elige la ciudad donde vives.", campos: ["ciudad", "ciudadOtra"] },
     {
       id: "personales", titulo: "Datos personales", corto: "Datos personales", descripcion: "Tal como aparecen en tu documento.",
-      campos: ["correo", "nombres", "apellidos", "whatsapp", "telefonoAlterno", "tipoDocumento", "tipoDocumentoOtro", "documento", "ciudad", "direccion", "fechaNacimiento"],
+      campos: ["correo", "nombres", "apellidos", "whatsapp", "telefonoAlterno", "tipoDocumento", "tipoDocumentoOtro", "documento", "direccion", "fechaNacimiento"],
     },
     {
       id: "acudiente", titulo: "Padre, madre, acudiente o tutor", corto: "Adulto responsable", descripcion: "Como eres menor de edad, necesitamos los datos de un adulto responsable.",
@@ -53,8 +53,8 @@ export function pasosLibre(extras: { perfil?: string[]; sociodemograficos?: stri
 
 /** Redacción del diseño 2027 para las preguntas comunes (Uruguay conserva la suya, la del formulario en producción). */
 export const ETIQUETAS_DISENO: NonNullable<DefinicionPais["etiquetas"]> = {
-  sede: { etiqueta: "Ciudad" },
-  ciudad: { etiqueta: "Ciudad o población de residencia" },
+  ciudad: { etiqueta: "Ciudad donde vives" },
+  ciudadOtra: { etiqueta: "Escribe el nombre de tu ciudad" },
   direccion: { etiqueta: "Dirección" },
   telefonoAlterno: { ayuda: "De un familiar o persona cercana." },
   documento: { ayuda: "Solo dígitos, sin puntos ni comas." },

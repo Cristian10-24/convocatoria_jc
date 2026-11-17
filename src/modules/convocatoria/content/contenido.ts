@@ -16,7 +16,7 @@ export const CIERRE_PRIMERA_ETAPA = "2026-12-18";
  * Muestra los datos pendientes tal como los marca el diseño ([CITA], [LOGO ALIADO], [ENLACES DE REDES]...).
  * Antes de publicar: completar los datos o poner esto en false para ocultar lo que siga pendiente.
  */
-export const MOSTRAR_PENDIENTES = true;
+export const MOSTRAR_PENDIENTES = false;
 
 export const fechaLarga = (iso: string) =>
   new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
@@ -248,8 +248,8 @@ export const ACERCA = {
   foto: foto("pan-inauguracion", "Inauguración de Jóvenes creaTIvos en Panamá, con el auditorio lleno de participantes"),
 };
 
-/** Egresados 2025. `youtubeId`: video ya publicado por la Fundación. `cita`: pendiente de entregar. */
-export type Testimonio = { nombre: string; rol: string; ciudad: string; pais: PaisSlug; youtubeId?: string; cita?: string };
+/** Egresados 2025. `youtubeId`: video ya publicado por la Fundación. Cada testimonio muestra solo video, nombre y ciudad. */
+export type Testimonio = { nombre: string; rol: string; ciudad: string; pais: PaisSlug; youtubeId?: string };
 export const TESTIMONIOS: Testimonio[] = [
   { nombre: "Antonella Caballero", rol: "Joven creaTIva 2025", ciudad: "Barranquilla", pais: "col", youtubeId: "2nqR9nhCkdg" },
   { nombre: "Andrés Navarrete", rol: "Joven creaTIvo 2025", ciudad: "Bogotá", pais: "col", youtubeId: "4LLBIA_JnTI" },
@@ -260,13 +260,24 @@ export const TESTIMONIOS: Testimonio[] = [
   { nombre: "César Ortuño", rol: "Joven creaTIvo 2025", ciudad: "Quito", pais: "ecu", youtubeId: "6w0KpOtU2nw" },
   { nombre: "Danara Guerrero", rol: "Joven creaTIva 2025", ciudad: "Paysandú", pais: "uy", youtubeId: "VQnYTwORz5I" },
 ];
-/** En una landing de país, solo los de ese país. Panamá aún no tiene: queda uno marcado como pendiente. */
+/** Países cuya landing muestra todos los testimonios, igual y en el mismo orden que la principal. */
+const TESTIMONIOS_COMPLETOS: readonly PaisSlug[] = ["uy"];
+
+/**
+ * Testimonios de cada página. La principal y Uruguay: todos, en el mismo orden. Las demás landings: los de su país;
+ * si un país todavía no tiene (Panamá), los de todos, así nunca queda la sección vacía ni con un dato pendiente.
+ */
 export function testimoniosPara(pais: PaisLanding | null): Testimonio[] {
-  const lista = TESTIMONIOS.filter((t) => !pais || t.pais === pais.slug);
-  if (lista.length || !pais) return lista;
-  return [{ nombre: "[NOMBRE POR CONFIRMAR]", rol: "Joven creaTIvo/a", ciudad: "Ciudad de Panamá", pais: pais.slug }];
+  if (!pais || TESTIMONIOS_COMPLETOS.includes(pais.slug)) return TESTIMONIOS;
+  const propios = TESTIMONIOS.filter((t) => t.pais === pais.slug);
+  return propios.length ? propios : TESTIMONIOS;
 }
 
+/**
+ * Sección de aliados. Oculta hasta tener los logos: al recibirlos, cargar la lista y poner `true` (sin la sección
+ * no queda ningún espacio vacío en la página).
+ */
+export const MOSTRAR_ALIADOS = false;
 /** Logos de aliados: pendientes de entregar. */
 export const ALIADOS_PENDIENTES = ["Sofka Technologies [LOGO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]"];
 

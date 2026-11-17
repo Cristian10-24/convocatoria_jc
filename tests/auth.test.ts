@@ -11,7 +11,7 @@ import { POST as logout } from "@/app/api/auth/logout/route";
 import { alcanceDe, filtroPais, puede } from "@/modules/auth/permisos";
 import { COL_AUDITORIA, COL_USUARIOS } from "@/modules/auth/repository";
 import { ClaveNueva, Credenciales } from "@/modules/auth/schema";
-import { MAX_INTENTOS, MINUTOS_BLOQUEO } from "@/modules/auth/config/acceso";
+import { MAX_INTENTOS, MAX_INTENTOS_CONEXION, MINUTOS_BLOQUEO } from "@/modules/auth/config/acceso";
 import { crearUsuario, desactivarUsuario, iniciarSesion, revocarSesiones, verificarSesion } from "@/modules/auth/service";
 import { exigirApi } from "@/modules/auth/servidor";
 import { crearToken, DURACION_SESION_MS, leerToken, nombreCookie, opcionesCookie } from "@/modules/auth/sesion";
@@ -141,10 +141,13 @@ describe("login", () => {
 });
 
 describe("bloqueo por intentos fallidos", () => {
-  it("bloquea por conexión tras el máximo de fallos, aunque luego la clave sea correcta", async () => {
+  it("bloquea por conexión tras su máximo (más alto que por correo), aunque luego la clave sea correcta", async () => {
     const { usuario } = await usuarioNuevo();
     const ipFija = nuevaIp();
-    for (let i = 0; i < MAX_INTENTOS - 1; i++) expect((await entrar(`intruso${i}`, "nada-que-ver", { ip: ipFija })).cuerpo).toEqual({ error: "credenciales", quedan: MAX_INTENTOS - 1 - i });
+    // Cada intento con un correo distinto: ninguno llega a su máximo, pero la conexión sí.
+    for (let i = 0; i < MAX_INTENTOS_CONEXION - 1; i++) expect((await entrar(`intruso${i}`, "nada-que-ver", { ip: ipFija })).status).toBe(401);
+    // Con correos distintos, avisa según lo que le queda a la conexión.
+    expect(MAX_INTENTOS_CONEXION).toBeGreaterThan(MAX_INTENTOS);
     const ultimo = await entrar("intruso.final", "nada-que-ver", { ip: ipFija });
     expect(ultimo.status).toBe(429);
     expect(ultimo.cuerpo).toMatchObject({ error: "bloqueado", reintentarEnSeg: MINUTOS_BLOQUEO * 60 });
@@ -153,6 +156,13 @@ describe("bloqueo por intentos fallidos", () => {
     expect(r.cookie).toBe("");
     // Otra conexión sigue pudiendo entrar.
     expect((await entrar(usuario, CLAVE)).status).toBe(200);
+  });
+
+  it("varias personas que se equivocan desde la misma red no bloquean a las demás", async () => {
+    const ipOficina = nuevaIp();
+    for (let p = 0; p < 3; p++) for (let i = 0; i < MAX_INTENTOS - 1; i++) await entrar(`persona.oficina${p}`, "equivocada", { ip: ipOficina });
+    const { usuario } = await usuarioNuevo();
+    expect((await entrar(usuario, CLAVE, { ip: ipOficina })).status).toBe(200);
   });
 
   it("bloquea por correo aunque los fallos lleguen desde conexiones distintas, y avisa cuántos intentos quedan", async () => {

@@ -16,6 +16,10 @@
 .lg .lg-doc { flex: 999 1 560px; min-width: 0; max-width: 760px; display: flex; flex-direction: column; gap: 32px; }
 .lg .lg-titulo { font-size: clamp(36px, 4.4vw, 60px); line-height: 1.04; font-weight: 700; letter-spacing: -0.025em; }
 .lg .lg-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 15px; color: hsl(231.9 20.2% 41.8%); }
+.lg .lg-oficial { display: flex; gap: 12px; align-items: center; padding: 16px 18px; border-radius: 14px; background: hsl(0 0% 100%); border: 1.5px solid hsl(231.9 77.1% 20.6%); font-size: 16px; font-weight: 600; line-height: 1.4; color: hsl(231.9 77.1% 20.6%); text-decoration: underline; text-underline-offset: 3px; }
+.lg .lg-oficial:hover { background: hsl(31.8 86.2% 94.3%); }
+.lg .lg-oficial:focus-visible { outline: 3px solid hsl(231.9 77.1% 20.6%); outline-offset: 3px; }
+.lg .lg-oficial svg { flex: none; }
 .lg .lg-nota { display: flex; gap: 12px; padding: 16px 18px; border-radius: 14px; background: hsl(31.8 86.2% 94.3%); border: 1px solid hsl(33.2 86.2% 74.5%); font-size: 15px; line-height: 1.5; }
 .lg .lg-sec { display: flex; flex-direction: column; gap: 12px; padding-top: 28px; border-top: 1px solid hsl(231.9 22.4% 90.4%); scroll-margin-top: 24px; }
 .lg .lg-sec h2 { font-size: 24px; line-height: 1.2; font-weight: 700; }

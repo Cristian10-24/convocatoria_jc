@@ -1,7 +1,12 @@
 // Reglas de acceso al panel. Valores del diseño 2027 marcados [POR CONFIRMAR]: se cambian solo aquí.
 
-/** Intentos fallidos seguidos (por correo y por conexión) antes de bloquear el ingreso. */
+/** Intentos fallidos seguidos con un mismo correo o usuario antes de bloquear su ingreso. */
 export const MAX_INTENTOS = 5;
+/**
+ * Intentos fallidos desde una misma conexión (cualquier correo) antes de bloquearla. Más alto que por correo: en la
+ * red compartida de la oficina, los errores de varias personas no deben bloquear a todo el equipo.
+ */
+export const MAX_INTENTOS_CONEXION = 20;
 /** Minutos de bloqueo tras llegar al máximo. */
 export const MINUTOS_BLOQUEO = 15;
 /** Minutos que vale el enlace para restablecer la contraseña. */

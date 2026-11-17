@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NOMBRE_PAIS, PAISES, paisDeSegmento, type PaisSlug } from "@/shared/config/paises";
+import { MOSTRAR_MARCAS_LEGALES, POLITICA_OFICIAL, avisoProvisional, sinMarcas } from "@/shared/config/legal";
 import { CONTACTO } from "@/shared/config/sitio";
 import Icono from "@/shared/ui/Icono";
 import { LEY_DATOS, NOTA_PROVISIONAL, PRIVACIDAD, PROVISIONAL, TERMINOS } from "../content/documentos";
@@ -17,6 +18,8 @@ const versionLegible = (v: string) => v.replace(/^.*-(\d{4})-provisional-(\d+)$/
 
 /** Marca visible en lo que aún no está definido ("[POR CONFIRMAR]"). */
 function ConMarcas({ texto }: { texto: string }) {
+  // En el sitio publicado no se ven las marcas (MOSTRAR_MARCAS_LEGALES); el texto fuente no cambia.
+  if (!MOSTRAR_MARCAS_LEGALES) return <>{sinMarcas(texto)}</>;
   const partes = texto.split(/(\[[^\]]+\])/g);
   return <>{partes.map((p, k) => (p.startsWith("[") ? <span key={k} className="falta">{p}</span> : p))}</>;
 }
@@ -70,7 +73,13 @@ export default function PaginaLegal({ documento, vigente }: { documento: "privac
               <span>Vigente desde el {fecha(vigente)}</span>
               <span>{doc.porPais ? ley.ley : "Aplica en los 4 países"}</span>
             </div>
-            <div role="note" className="lg-nota"><Icono nombre="info" /><span><strong>{PROVISIONAL}</strong> {NOTA_PROVISIONAL}</span></div>
+            {documento === "privacidad" ? (
+              <a className="lg-oficial" href={POLITICA_OFICIAL.url} target="_blank" rel="noopener">
+                <Icono nombre="documento" />
+                <span>{POLITICA_OFICIAL.texto}<span className="solo-lector"> (se abre en una pestaña nueva)</span></span>
+              </a>
+            ) : null}
+            <div role="note" className="lg-nota"><Icono nombre="info" /><span><strong>{MOSTRAR_MARCAS_LEGALES ? PROVISIONAL : `${avisoProvisional(PROVISIONAL)}.`}</strong> {NOTA_PROVISIONAL}</span></div>
             {/* En celular la columna lateral se oculta (como en el diseño): el selector de país pasa aquí. */}
             {doc.porPais ? <div className="lg-solo-movil">{selector}</div> : null}
           </div>

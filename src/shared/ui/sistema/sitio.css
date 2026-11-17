@@ -205,3 +205,7 @@
 @media (prefers-reduced-motion: reduce) {
   .jc *, .jc *::before, .jc *::after { animation: none !important; transition: none !important; }
 }
+
+/* Banderas oficiales (shared/ui/Bandera): sin deformar dentro de la caja 3:2 que fija cada página. */
+img.bandera { display: block; object-fit: contain; }
+img.bandera.con-borde { box-shadow: 0 0 0 1px hsl(31.8 15.6% 87.5%); }

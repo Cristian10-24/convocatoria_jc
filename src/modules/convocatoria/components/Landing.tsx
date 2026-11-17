@@ -12,7 +12,7 @@ import ProveedorMovimiento from "@/shared/ui/ProveedorMovimiento";
 import PantallaSistema from "@/shared/ui/PantallaSistema";
 import { destinoInscripcion } from "../content/acciones";
 import {
-  ACERCA, ALIADOS_PENDIENTES, BENEFICIOS, CIERRE_PRIMERA_ETAPA, COHORTE, IMPACTO, INCLUYE, MOSTRAR_PENDIENTES, ORDEN_PAISES, PAISES, PREGUNTAS, REDES,
+  ACERCA, ALIADOS_PENDIENTES, BENEFICIOS, MOSTRAR_ALIADOS, CIERRE_PRIMERA_ETAPA, COHORTE, IMPACTO, INCLUYE, MOSTRAR_PENDIENTES, ORDEN_PAISES, PAISES, PREGUNTAS, REDES,
   comoFunciona, diapositivas, fechaLarga, galeria, noIncluye, requisitos, rutas, testimoniosPara,
   type EstadoLanding, type Foto, type IconoLanding,
 } from "../content/contenido";
@@ -311,10 +311,10 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
           </section>
 
           <section id="testimonios" className="sec">
-            <Testimonios lista={testimoniosPara(pais).map((t) => ({ nombre: t.nombre, detalle: `${t.rol}, ${t.ciudad}`, youtubeId: t.youtubeId, cita: t.cita }))} pendientes={MOSTRAR_PENDIENTES} />
+            <Testimonios lista={testimoniosPara(pais).map((t) => ({ nombre: t.nombre, ciudad: t.ciudad, youtubeId: t.youtubeId }))} pendientes={MOSTRAR_PENDIENTES} />
           </section>
 
-          {MOSTRAR_PENDIENTES ? (
+          {MOSTRAR_ALIADOS ? (
             <section id="aliados" style={{ padding: "0 0 120px" }}>
               <Revelar className="wrap">
                 <div style={{ borderTop: "1px solid hsl(231.9 22.4% 90.4%)", paddingTop: 64 }}>

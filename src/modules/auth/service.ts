@@ -8,7 +8,7 @@ import { hashIp } from "@/shared/security/hash";
 import { consumir } from "@/shared/security/rateLimit";
 import type { PaisSlug } from "@/shared/config/paises";
 import { conPaises, type Rol } from "./config/roles";
-import { MAX_INTENTOS, MINUTOS_BLOQUEO, MINUTOS_ENLACE, RUTA_RESTABLECER } from "./config/acceso";
+import { MAX_INTENTOS, MAX_INTENTOS_CONEXION, MINUTOS_BLOQUEO, MINUTOS_ENLACE, RUTA_RESTABLECER } from "./config/acceso";
 import { MENSAJES_AUTH } from "./config/textos";
 import { compararClave, hashearClave } from "./password";
 import {
@@ -90,7 +90,8 @@ export async function iniciarSesion(credenciales: Credenciales, ctx: { ip: strin
 
   if (!u || !u.activo || !claveOk) {
     const fecha = new Date(ahora);
-    const estados = await Promise.all(claves.map((c) => sumarFallo(c, MAX_INTENTOS, BLOQUEO_MS, fecha)));
+    const maximos = [MAX_INTENTOS, MAX_INTENTOS_CONEXION];
+    const estados = await Promise.all(claves.map((c, i) => sumarFallo(c, maximos[i]!, BLOQUEO_MS, fecha)));
     const seg = segundosBloqueo(estados, ahora);
     await registrarAuditoria({
       accion: seg > 0 ? "bloqueo" : "login_fallido",
@@ -102,7 +103,7 @@ export async function iniciarSesion(credenciales: Credenciales, ctx: { ip: strin
       en: fecha,
     });
     if (seg > 0) return { ok: false, error: "bloqueado", reintentarEnSeg: seg };
-    return { ok: false, error: "credenciales", quedan: MAX_INTENTOS - Math.max(...estados.map((e) => e.fallos)) };
+    return { ok: false, error: "credenciales", quedan: Math.min(...estados.map((e, i) => maximos[i]! - e.fallos)) };
   }
 
   await Promise.all([

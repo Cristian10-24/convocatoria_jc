@@ -211,12 +211,18 @@ Confirmación en pantalla con nombre, país, sede y **radicado**; sin correo (es
 
 Rama `feature/rediseno-2027`. Nada de esto se hace antes: son pasos del cierre, no de cada fase.
 
-- [ ] **Datos pendientes:** completar lo que entregue la Fundación ([CITA] y fotos de testimonios, logos de aliados, enlaces de redes, rango de edad 2027) y poner `MOSTRAR_PENDIENTES = false` en `src/modules/convocatoria/content/contenido.ts` para ocultar todo lo que siga sin dato.
-- [ ] **Quitar `/sistema`:** borrar `src/app/sistema/` y `src/shared/ui/sistema/Muestra.tsx` (página de trabajo del sistema de diseño) y su línea en `robots.ts`.
+- [x] **Datos pendientes ocultos** (`MOSTRAR_PENDIENTES = false`; testimonios sin cita, aliados ocultos con `MOSTRAR_ALIADOS`). Cuando la Fundación entregue lo que falta, completar ([CITA] y fotos de testimonios, logos de aliados, enlaces de redes, rango de edad 2027) y poner `MOSTRAR_PENDIENTES = false` en `src/modules/convocatoria/content/contenido.ts` para ocultar todo lo que siga sin dato.
+- [x] **Quitar `/sistema`:** borrar `src/app/sistema/` y `src/shared/ui/sistema/Muestra.tsx` (página de trabajo del sistema de diseño) y su línea en `robots.ts`.
 - [ ] **Textos legales:** siguen marcados `[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]` hasta que la Fundación entregue los definitivos.
-- [ ] **Correos de los usuarios del panel** (login por correo): asignar el correo a cada usuario existente en la pantalla de usuarios (mientras no lo tenga, entra con su usuario anterior). Documentar en `.env.example` las variables nuevas `RESEND_API_KEY` y `CORREO_REMITENTE` (correo del enlace "Olvidé mi contraseña"; sin la clave no se envía) y revisar que `APP_URL` sea la URL pública, porque con ella se arma el enlace.
+- [ ] **Correos de los usuarios del panel** (login por correo): asignar el correo a cada usuario existente en la pantalla de usuarios (mientras no lo tenga, entra con su usuario anterior).
+- [ ] **Variables de entorno en Vercel** (Production y Preview). Nuevas en esta rama:
+  - `RESEND_API_KEY`: clave de la API de Resend para enviar el enlace de "Olvidé mi contraseña". Sin ella no se envía ningún correo (el resto funciona igual). Marcarla como secreta.
+  - `CORREO_REMITENTE`: remitente de esos correos, p. ej. `Jóvenes creaTIvos <jovenescreativos@tocaunavida.org>`. El dominio tiene que estar verificado en Resend. Si falta, se usa ese mismo valor.
+  - Revisar que ya existan y estén bien: `APP_URL` (URL pública, p. ej. `https://convocatoria.tocaunavida.org`; con ella se arma el enlace del correo), `CONVOCATORIA_CONFIG` (`{"uy":{"estado":"abierta","cierra":"2026-12-18"}}`), `MONGODB_URI`, `MONGODB_DB`, `SESSION_SECRET`, `IP_HASH_SALT`, `TURNSTILE_SECRET_KEY` y `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+  - `RATE_LIMIT_LOGIN` ya no se usa (el bloqueo del panel está en `src/modules/auth/config/acceso.ts`): se puede borrar.
+  - Documentar `RESEND_API_KEY` y `CORREO_REMITENTE` en `.env.example`.
 - [ ] **Usuarios de Consulta en producción:** desde la fase 5, Consulta ve solo los países asignados (antes veía todos). Antes del merge, asignarles sus países en la pantalla de usuarios: sin países no ven inscripciones.
-- [ ] **Reglas de acceso [POR CONFIRMAR]:** 5 intentos, 15 minutos de bloqueo y enlace de 30 minutos, en `src/modules/auth/config/acceso.ts`. El bloqueo cuenta también por conexión: si el equipo entra desde una misma red, 5 fallos seguidos de cualquiera bloquean a todos 15 minutos.
+- [ ] **Reglas de acceso [POR CONFIRMAR]:** 5 intentos, 15 minutos de bloqueo y enlace de 30 minutos, en `src/modules/auth/config/acceso.ts`. Por conexión el máximo es 20 intentos (`MAX_INTENTOS_CONEXION`), para que los errores en la red compartida de la oficina no bloqueen a todo el equipo.
 - [ ] **Producción:** `CONVOCATORIA_CONFIG` sigue siendo `{"uy":{"estado":"abierta","cierra":"2026-12-18"}}`; comprobar en un preview que `/uy` y `/inscripcion/uy` redirigen y que una inscripción de prueba de Uruguay llega al panel.
 - [ ] **Ciudades cercanas de Colombia, Ecuador y Panamá** (paso Ciudad del formulario): hoy son las del plan inicial, marcadas como pendientes en `src/modules/inscripcion/paises/{col,ecu,pan}.ts`. Confirmarlas con cada país antes de abrirlo. Uruguay ya tiene las suyas confirmadas.
 - [ ] **Abrir otro país:** poner su `estado`, su `cierra` y, si corresponde, su `etapa` ("inscripciones" o "preinscripciones") en `CONVOCATORIA_CONFIG`. Sin `cierra`, la landing no muestra fecha.

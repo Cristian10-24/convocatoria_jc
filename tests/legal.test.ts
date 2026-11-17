@@ -8,7 +8,7 @@ import PaginaLegal from "@/modules/legal/components/PaginaLegal";
 import { PRIVACIDAD, TERMINOS } from "@/modules/legal/content/documentos";
 import { DEFINICIONES } from "@/modules/inscripcion/config/paises";
 import NoEncontrada from "@/app/not-found";
-import { LEY_DATOS, VERSION_PRIVACIDAD } from "@/shared/config/legal";
+import { LEY_DATOS, POLITICA_OFICIAL, VERSION_PRIVACIDAD, sinMarcas } from "@/shared/config/legal";
 import { NOMBRE_PAIS, PAISES } from "@/shared/config/paises";
 
 const texto = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ");
@@ -45,10 +45,34 @@ describe("/privacidad", () => {
     expect(t).not.toMatch(/Cra\. 7|contabilidad@|comunicaciones@/);
   });
 
-  it("va marcada como provisional, con su versión", () => {
-    expect(t).toContain("[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]");
+  it("avisa que es provisional (sin marcas entre corchetes en el sitio publicado), con su versión", () => {
+    expect(t).toContain("TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA.");
     expect(t).toContain("Versión provisional 1");
-    expect(html).toContain('class="falta"'); // [POR CONFIRMAR] resaltado
+    expect(t).not.toMatch(/\[[A-ZÁÉÍÓÚ]/);
+    expect(html).not.toContain('class="falta"');
+  });
+
+  it("enlaza arriba la política oficial de la Fundación (PDF) en pestaña nueva", () => {
+    expect(html).toContain(`href="${POLITICA_OFICIAL.url}"`);
+    expect(t).toContain(POLITICA_OFICIAL.texto);
+    expect(html).toMatch(/class="lg-oficial" href="[^"]+" target="_blank" rel="noopener"/);
+    expect(t.indexOf(POLITICA_OFICIAL.texto)).toBeLessThan(t.lastIndexOf("1. Quién es el responsable")); // la primera aparición es el índice lateral
+  });
+
+  it("sin marcas: ningún párrafo legal (en ningún país) queda con «[» ni vacío", () => {
+    for (const p of PAISES) {
+      for (const doc of [PRIVACIDAD, TERMINOS]) {
+        for (const sec of doc.secciones(LEY_DATOS[p], NOMBRE_PAIS[p])) {
+          for (const parrafo of sec.parrafos) {
+            const visto = sinMarcas(parrafo);
+            expect(visto, parrafo).not.toContain("[");
+            expect(visto.length, parrafo).toBeGreaterThan(20);
+          }
+        }
+      }
+    }
+    expect(sinMarcas("Plazo de conservación: [POR CONFIRMAR]. El acceso queda registrado.")).toBe("El acceso queda registrado.");
+    expect(sinMarcas("Se entrega un certificado a quien cumpla los criterios de asistencia y aprobación: [POR CONFIRMAR].")).toBe("Se entrega un certificado a quien cumpla los criterios de asistencia y aprobación.");
   });
 
   it("usa la misma ley y la misma versión que acepta la persona en el formulario", () => {
@@ -67,7 +91,8 @@ describe("/terminos", () => {
     const t = texto(pagina("terminos"));
     expect(t).toContain("Términos y condiciones");
     expect(t).toContain("Aplica en los 4 países");
-    expect(t).toContain("[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]");
+    expect(t).toContain("TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA.");
+    expect(t).not.toMatch(/\[[A-ZÁÉÍÓÚ]/);
     expect(t).toContain("apoyo y acompañamiento");
     expect(t).not.toMatch(/salud mental/i);
     expect(TERMINOS.porPais).toBe(false);

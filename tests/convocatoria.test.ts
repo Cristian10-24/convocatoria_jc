@@ -49,10 +49,18 @@ describe("contenido por país", () => {
     expect(rutas(PAISES.col.voz).map((r) => r.semanas)).toEqual([3, 3, 23]);
   });
 
-  it("cada landing de país muestra solo sus testimonios; Panamá queda con uno pendiente", () => {
+  it("testimonios: Uruguay igual que la principal y en el mismo orden; los demás países, los suyos; sin citas ni pendientes", () => {
+    const principal = testimoniosPara(null);
+    expect(principal).toHaveLength(8);
+    expect(testimoniosPara(PAISES.uy).map((t) => t.nombre)).toEqual(principal.map((t) => t.nombre));
     expect(testimoniosPara(PAISES.ecu).every((t) => t.pais === "ecu")).toBe(true);
-    expect(testimoniosPara(null)).toHaveLength(8);
-    expect(testimoniosPara(PAISES.pan)).toHaveLength(1);
+    // Panamá todavía no tiene: muestra los de todos en vez de un pendiente.
+    expect(testimoniosPara(PAISES.pan)).toEqual(principal);
+    for (const t of principal) {
+      expect(t.youtubeId, t.nombre).toBeTruthy();
+      expect(`${t.nombre} ${t.ciudad}`).not.toMatch(/\[/);
+      expect(t).not.toHaveProperty("cita");
+    }
   });
 
   it("requisitos: sin edad; herramientas con «computadora» (Colombia: «computador»)", () => {

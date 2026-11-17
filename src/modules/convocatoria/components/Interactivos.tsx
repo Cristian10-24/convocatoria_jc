@@ -394,7 +394,8 @@ export function Galeria({ fotos, paisMed }: { fotos: FotoGaleriaVista[]; paisMed
 }
 
 // ---------- Testimonios ----------
-export type TestimonioVista = { nombre: string; detalle: string; youtubeId?: string; cita?: string };
+/** Solo el video (o su miniatura), el nombre y la ciudad: sin citas. */
+export type TestimonioVista = { nombre: string; ciudad: string; youtubeId?: string };
 
 function MedioTestimonio({ t, pendientes }: { t: TestimonioVista; pendientes: boolean }) {
   const [activo, setActivo] = useState(false);
@@ -442,10 +443,9 @@ export function Testimonios({ lista, pendientes }: { lista: TestimonioVista[]; p
               <figure key={t.nombre} className="tc" style={{ margin: 0 }}>
                 <MedioTestimonio t={t} pendientes={pendientes} />
                 <div className="tc-c">
-                  {t.cita ? <blockquote className="tc-q">{t.cita}</blockquote> : pendientes ? <blockquote className="tc-q"><span className="falta">[CITA]</span></blockquote> : null}
                   <figcaption style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <strong style={{ fontSize: 19, fontWeight: 700 }}>{t.nombre}</strong>
-                    <span style={{ fontSize: 15, color: "hsl(231.9 20.2% 41.8%)" }}>{t.detalle}</span>
+                    <span style={{ fontSize: 15, color: "hsl(231.9 20.2% 41.8%)" }}>{t.ciudad}</span>
                   </figcaption>
                 </div>
               </figure>

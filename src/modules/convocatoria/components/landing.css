@@ -20,7 +20,7 @@
 .jcm .menu-m { position: absolute; left: 0; right: 0; top: 80px; background: hsl(0 0% 100%); border-bottom: 1px solid hsl(231.9 22.4% 90.4%); display: flex; flex-direction: column; padding: 8px 20px 20px; animation: baja .3s cubic-bezier(.2,.7,.2,1) both }
 .jcm .menu-m a { display: flex; align-items: center; min-height: 52px; font-weight: 600; font-size: 18px; color: hsl(231.9 77.1% 20.6%); text-decoration: none; border-bottom: 1px solid hsl(231.9 22.6% 93.9%) }
 @keyframes baja { from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none} }
-.jcm .bd svg { display: block; width: 30px; height: 20px; border-radius: 3px }
+.jcm .bd img { display: block; width: 30px; height: 20px; border-radius: 3px }
 .jcm .hero { position: relative; height: min(100vh,900px); min-height: 620px; background: hsl(231.9 77.1% 20.6%); overflow: hidden; color: hsl(0 0% 100%) }
 .jcm .sl { position: absolute; inset: 0 }
 .jcm .sl img { width: 100%; height: 100%; object-fit: cover; display: block }
@@ -61,7 +61,7 @@
 .jcm .pp-l { grid-column: 5/13; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 24px }
 .jcm .pb { display: flex; flex-direction: column; gap: 14px; padding: 20px; border: 1.5px solid hsl(231.9 18.7% 82.2%); border-radius: 12px; background: hsl(0 0% 100%); color: hsl(231.9 77.1% 20.6%); text-decoration: none; font-size: 19px; font-weight: 700; transition: border-color .2s cubic-bezier(.2,.7,.2,1),transform .3s cubic-bezier(.2,.7,.2,1),background-color .2s cubic-bezier(.2,.7,.2,1) }
 .jcm .pb:hover { border-color: hsl(231.9 77.1% 20.6%); background: hsl(31.8 86.2% 94.3%); color: hsl(231.9 77.1% 20.6%); transform: translateY(-4px) }
-.jcm .pb .bd svg { width: 54px; height: 36px; border-radius: 5px }
+.jcm .pb .bd img { width: 54px; height: 36px; border-radius: 5px }
 .jcm .pb small { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: hsl(231.9 20.2% 41.8%) }
 .jcm .pb small svg.i { width: 16px; height: 16px; transition: transform .25s cubic-bezier(.2,.7,.2,1) }
 .jcm .pb:hover small svg.i { transform: translateX(4px) }
@@ -167,7 +167,7 @@
 .jcm .pl { display: grid; grid-template-columns: 36px minmax(0,1fr) 20px; gap: 16px; align-items: center; min-height: 64px; padding: 12px 0; border-top: 1px solid hsl(231.9 22.4% 90.4%); text-decoration: none; color: hsl(231.9 77.1% 20.6%) }
 .jcm .pl:first-of-type { border-top: 0 }
 .jcm .pl:hover { color: hsl(231.9 77.1% 20.6%) }
-.jcm .pl .bd svg { width: 36px; height: 24px }
+.jcm .pl .bd img { width: 36px; height: 24px }
 .jcm .pl b { display: block; font-size: 17px; font-weight: 700 }
 .jcm .pl span.d { display: block; font-size: 14px; line-height: 1.4; color: hsl(231.9 20.2% 41.8%); margin-top: 2px }
 .jcm .pl svg.i { width: 20px; height: 20px; transition: transform .25s cubic-bezier(.2,.7,.2,1) }
@@ -237,7 +237,7 @@
   .jcm .hero-c { padding-bottom: 40px; gap: 28px }
   .jcm .pp { padding: 40px 0 }
   .jcm .pb { flex-direction: row; align-items: center; padding: 14px; font-size: 17px; gap: 12px }
-  .jcm .pb .bd svg { width: 42px; height: 28px }
+  .jcm .pb .bd img { width: 42px; height: 28px }
   .jcm .pb small { display: none }
   .jcm .ruta-c { grid-column: 1/13 }
   .jcm .ruta-f { grid-column: 1/13; aspect-ratio: 16/9 }

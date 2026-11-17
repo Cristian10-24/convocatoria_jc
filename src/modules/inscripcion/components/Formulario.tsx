@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNod
 import { SEGMENTO_URL, TELEFONOS } from "@/shared/config/paises";
 import { CONTACTO } from "@/shared/config/sitio";
 import { CAMPO_TRAMPA } from "@/shared/security/antibots";
+import { MOSTRAR_MARCAS_LEGALES, POLITICA_OFICIAL, avisoProvisional } from "@/shared/config/legal";
 import Bandera from "@/shared/ui/Bandera";
 import { CampoTelefono, CampoTexto, CasillaAcepta, GrupoOpciones, MensajeError } from "@/shared/ui/Campos";
 import Icono from "@/shared/ui/Icono";
@@ -394,7 +395,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                     <details className="leg" open>
                       <summary>{def.legal.titulo}<Icono nombre="abajo" /></summary>
                       <div>
-                        {def.legal.provisional ? <p><span className="falta">{IU.autorizacion.provisional}</span></p> : null}
+                        {def.legal.provisional ? (MOSTRAR_MARCAS_LEGALES ? <p><span className="falta">{IU.autorizacion.provisional}</span></p> : <p><strong>{avisoProvisional(IU.autorizacion.provisional)}.</strong></p>) : null}
                         {def.legal.parrafos.map((p) => <p key={p}>{p}</p>)}
                         <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener" style={{ fontWeight: 600 }}>{IU.autorizacion.politica}</a>
                       </div>
@@ -404,7 +405,13 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                       return (
                         <div key={id} data-campo={id} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                           <CasillaAcepta id={id} marcada={(datos as Record<string, unknown>)[id] === true} error={errores[id]} alCambiar={(v) => cambiar(id, v)}>
-                            {c.clave === "privacidad" ? <>Leí y acepto la <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">Política de privacidad</a></> : c.texto}
+                            {c.clave === "privacidad" ? <>Leí y acepto la <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">Política de privacidad</a></>
+                              : c.clave === "datos" ? (
+                                <>
+                                  {c.texto} (ver la <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">Política de privacidad</a> y la{" "}
+                                  <a href={POLITICA_OFICIAL.url} target="_blank" rel="noopener">{POLITICA_OFICIAL.corto}</a>)
+                                </>
+                              ) : c.texto}
                           </CasillaAcepta>
                         </div>
                       );

@@ -63,10 +63,10 @@
 .fpg .pb { min-height: 92px; border-radius: 16px; border: 1.5px solid hsl(231.9 18.7% 82.2%); background: hsl(0 0% 100%); padding: 16px 22px; display: flex; align-items: center; gap: 20px; font: 700 24px/1.1 Gilroy,Outfit,"Century Gothic",system-ui,sans-serif; color: hsl(231.9 77.1% 20.6%); cursor: pointer; text-align: left; width: 100%; transition: border-color .2s,background-color .2s,transform .2s cubic-bezier(.2,.7,.2,1) }
 .fpg .pb:hover { border-color: hsl(231.9 77.1% 20.6%); background: hsl(31.8 86.2% 94.3%) }
 .fpg .pb:active { transform: scale(.985) }
-.fpg .pb .bd svg { width: 60px; height: 40px; border-radius: 5px; display: block }
+.fpg .pb .bd img { width: 60px; height: 40px; border-radius: 5px; display: block }
 .fpg .pb .fl { margin-left: auto; transition: transform .25s cubic-bezier(.2,.7,.2,1) }
 .fpg .pb:hover .fl { transform: translateX(6px) }
-.fpg .bd svg { display: block; width: 24px; height: 16px; border-radius: 3px }
+.fpg .bd img { display: block; width: 24px; height: 16px; border-radius: 3px }
 .fpg .aviso { display: flex; gap: 12px; padding: 16px 18px; border-radius: 14px; font-size: 15px; line-height: 1.5; margin-top: 24px }
 .fpg .aviso.priv { background: hsl(240 23.1% 97.5%) }
 .fpg .aviso.mal { background: hsl(6.3 82.6% 95.5%) }

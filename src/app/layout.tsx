@@ -5,9 +5,10 @@ import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import { urlSitio } from "@/shared/config/sitio";
 import "./globals.css";
+import "@/shared/ui/sistema/index.css";
 
-// Pesos 400 a 800, como el diseño de las landings (reforma 2026-11-12): lo que pide 900 se dibuja en 800.
-const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap", variable: "--font-outfit" });
+// Pesos 400 a 800 de las landings actuales, más el 300 que usa el diseño 2027 en los textos de apoyo.
+const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700", "800"], display: "swap", variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(urlSitio()),

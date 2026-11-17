@@ -1,0 +1,70 @@
+/* Sistema de diseño 2027 · tokens. Valores EXACTOS del lienzo de Claude Design (Manual de identidad v02, 2025).
+   No se aproximan ni se redondean: si el diseño cambia, se cambia aquí y en ningún otro lugar. */
+:root {
+  /* Marca */
+  --naranja: hsl(31.8 92.7% 56.9%);          /* #F7972B · acciones y acentos sobre azul */
+  --naranja-hover: hsl(31.8 81.7% 50.6%);
+  --naranja-texto: hsl(31.8 92.7% 40%);      /* títulos sobre blanco (3,8:1: solo texto grande) */
+  --azul: hsl(231.9 77.1% 20.6%);            /* #0C175D */
+  --azul-hover: hsl(231.9 63.6% 28%);
+  --azul-linea: hsl(231.9 47.9% 32.4%);      /* divisores sobre azul */
+  --azul-enlace-hover: hsl(231.9 100% 12%);
+  --durazno: hsl(33.2 86.2% 74.5%);          /* #F6C486 */
+  --durazno-medio: hsl(31.8 87.1% 81.8%);
+  --durazno-anillo: hsl(31.8 87.3% 87.6%);   /* anillo de foco de los campos */
+  --durazno-falta: hsl(31.8 91.5% 90.8%);    /* marca de dato pendiente */
+  --durazno-tinte: hsl(31.8 86.2% 94.3%);    /* fondos suaves y estados seleccionados */
+
+  /* Base */
+  --blanco: hsl(0 0% 100%);
+  --neutro: hsl(240 23.1% 97.5%);            /* #F7F7FA */
+  --neutro-claro: hsl(231.9 25% 98.4%);      /* encabezado de tabla, fila al pasar el mouse */
+  --gris-relleno: hsl(231.9 22.2% 92.9%);    /* botón inactivo, pista de barras */
+
+  /* Texto y bordes (familia del azul) */
+  --texto: hsl(231.9 77.1% 20.6%);
+  --texto-cuerpo: hsl(231.9 39.7% 28.6%);
+  --texto-suave: hsl(231.9 20.2% 41.8%);
+  --texto-inactivo: hsl(231.9 19.3% 43.7%);
+  --texto-placeholder: hsl(231.9 16.9% 50%);
+  --texto-sobre-azul: hsl(231.9 33.3% 87.6%);
+  --borde: hsl(231.9 18.7% 82.2%);
+  --borde-suave: hsl(231.9 22.4% 90.4%);
+  --borde-tenue: hsl(231.9 22.6% 93.9%);
+
+  /* Estados */
+  --error: hsl(4.2 76.5% 40%);
+  --error-borde: hsl(4.9 61.7% 76.5%);
+  --error-borde-suave: hsl(5.9 66.2% 84.9%);
+  --error-anillo: hsl(6.9 86.7% 94.1%);
+  --error-fondo: hsl(6.3 82.6% 95.5%);
+  --error-fondo-claro: hsl(7.5 100% 98.4%);
+  --ok: hsl(146.1 60.5% 29.8%);
+  --ok-fondo: hsl(145 33.3% 92.9%);
+  --info: hsl(221.2 71.2% 42.2%);
+  --info-fondo: hsl(218.8 68% 95.1%);
+
+  /* Tipografía. Gilroy va primero por si se confirma la licencia web: hoy se dibuja Outfit (next/font). */
+  --fuente: Gilroy, var(--font-outfit), Outfit, "Century Gothic", system-ui, sans-serif;
+
+  /* Grilla y medidas */
+  --columnas: 12;
+  --separacion: 24px;
+  --margen: 96px;
+  --ancho-contenido: 1248px;
+  --ancho-pagina: 1344px;                     /* .wrap: 1248 + 2 × 48 */
+  --ancho-formulario: 1120px;
+  --ancho-panel: 1360px;
+  --radio: 12px;
+  --radio-tarjeta: 14px;
+  --radio-caja: 16px;
+  --radio-panel: 20px;
+  --radio-pildora: 999px;
+  --boton-alto: 48px;
+  --boton-alto-hero: 56px;
+  --boton-alto-chico: 44px;
+  --campo-alto: 56px;
+
+  /* Movimiento: una sola curva para todo */
+  --curva: cubic-bezier(.2, .7, .2, 1);
+}

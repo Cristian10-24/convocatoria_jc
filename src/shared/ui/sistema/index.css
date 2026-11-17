@@ -1,0 +1,4 @@
+/* Sistema de diseño 2027: tokens + sitio público (.jc) + panel (.ad). Se carga una sola vez desde globals.css. */
+@import "./tokens.css";
+@import "./sitio.css";
+@import "./panel.css";

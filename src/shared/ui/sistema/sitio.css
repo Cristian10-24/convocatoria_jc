@@ -204,6 +204,9 @@
 /* ---------- Movimiento reducido: nada se anima ---------- */
 @media (prefers-reduced-motion: reduce) {
   .jc *, .jc *::before, .jc *::after { animation: none !important; transition: none !important; }
+  /* Desde el primer pintado (antes de que cargue JavaScript): bloques visibles y fotos del hero sin zoom. */
+  .jc .rv { opacity: 1 !important; transform: none !important; }
+  .jc .hero-fotos img { transform: none !important; }
 }
 
 /* Banderas oficiales (shared/ui/Bandera): sin deformar dentro de la caja 3:2 que fija cada página. */

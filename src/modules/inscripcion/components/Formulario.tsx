@@ -5,7 +5,8 @@
 // Valida cada paso con el MISMO validador que el servidor (schema.ts), guarda el avance en sessionStorage, envía
 // una sola vez (botón bloqueado + clave de idempotencia) y, si el servidor o la conexión fallan, conserva lo
 // escrito y ofrece reintentar. Se dibuja solo en el navegador (FormularioCliente.tsx) para leer el avance al iniciar.
-import { AnimatePresence, m, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
+import { useMovimientoReducido } from "@/shared/ui/usarMovimientoReducido";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { SEGMENTO_URL, TELEFONOS } from "@/shared/config/paises";
 import { CONTACTO } from "@/shared/config/sitio";
@@ -62,7 +63,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
   const { config: cfg, pais } = def;
   const tr = cfg.trato;
   const t = useCallback((x: TextoTrato) => txt(x, tr), [tr]);
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
 
   // Estado inicial: avance guardado (si hay) y datos de la visita. Solo corre en el navegador.
   const [inicial] = useState(() => leerBorrador(pais));

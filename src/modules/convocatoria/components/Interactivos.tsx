@@ -1,12 +1,13 @@
 "use client";
 
 // Piezas interactivas de la landing 2027. Siguen la guía de animación del diseño: solo transform y opacity, una
-// sola curva, `m.` dentro de LazyMotion (nunca `motion.`) y useReducedMotion en todo. Los dos carruseles con
+// sola curva, `m.` dentro de LazyMotion (nunca `motion.`) y useMovimientoReducido en todo (seguro al hidratar). Los dos carruseles con
 // gesto táctil (hero y testimonios) y la galería usan Embla. Reciben datos ya resueltos: no importan contenido.
 import Autoplay from "embla-carousel-autoplay";
 import Fade from "embla-carousel-fade";
 import useEmblaCarousel from "embla-carousel-react";
-import { AnimatePresence, animate, m, useInView, useReducedMotion, type Variants } from "framer-motion";
+import { AnimatePresence, animate, m, useInView, type Variants } from "framer-motion";
+import { useMovimientoReducido } from "@/shared/ui/usarMovimientoReducido";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { SEGMENTO_URL } from "@/shared/config/paises";
 import Icono from "@/shared/ui/Icono";
@@ -34,7 +35,7 @@ export function Revelar({ como = "div", d = 0, className, children, ...resto }: 
   id?: string; role?: string; src?: string; srcSet?: string; sizes?: string; alt?: string; width?: number; height?: number; loading?: "lazy";
   "aria-label"?: string; "aria-roledescription"?: string;
 }) {
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   // Todas las etiquetas comparten las props de animación: se tratan como m.div para no complicar los tipos.
   const M = m[como] as typeof m.div;
   return (
@@ -48,7 +49,7 @@ export function Revelar({ como = "div", d = 0, className, children, ...resto }: 
 export function Tramo({ g = 0, como = "span", className, style, children, role, "aria-label": ariaLabel }: {
   g?: number; como?: "span" | "div"; className?: string; style?: CSSProperties; children?: ReactNode; role?: string; "aria-label"?: string;
 }) {
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   const M = m[como] as typeof m.div;
   return (
     <M
@@ -103,7 +104,7 @@ export type DiapositivaVista = { foto: FotoVista; a: string; b: string; c: strin
  * `ctas`: un destino por diapositiva (la ubicación del clic cambia). `pie`: lo que va en vez del botón.
  */
 export function Hero({ diapositivas, ctas, pie, paisMed }: { diapositivas: DiapositivaVista[]; ctas?: Enlace[]; pie?: ReactNode; paisMed: string }) {
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   const [autoplay] = useState(() => Autoplay({ delay: HERO_AVANCE_MS, playOnInit: false, stopOnInteraction: false, stopOnMouseEnter: true, stopOnFocusIn: true }));
   const [raiz, api] = useEmblaCarousel({ loop: true }, [autoplay]);
   const [i, setI] = useState(0);
@@ -151,7 +152,7 @@ export function Hero({ diapositivas, ctas, pie, paisMed }: { diapositivas: Diapo
               src={actual.foto.src} srcSet={srcSet(actual.foto)} sizes="100vw" alt="" width={actual.foto.ancho} height={actual.foto.alto}
               loading={i === 0 ? "eager" : undefined} fetchPriority={i === 0 ? "high" : undefined} decoding="async" draggable={false}
               style={{ objectPosition: actual.foto.pos }}
-              initial={{ scale: 1 }} animate={{ scale: reducir ? 1 : 1.08 }} transition={{ duration: DURACION.heroZoom, ease: curva }}
+              initial={{ scale: 1 }} animate={{ scale: reducir ? 1 : 1.08 }} transition={{ duration: reducir ? 0 : DURACION.heroZoom, ease: curva }}
             />
           </m.div>
         </AnimatePresence>
@@ -262,7 +263,7 @@ export function Reloj({ finMs, etiqueta }: { finMs: number; etiqueta: string }) 
 export function Cifra({ hasta, prefijo = "", minimo = 0 }: { hasta: number; prefijo?: string; minimo?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const enVista = useInView(ref, opcionesVista);
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   const [n, setN] = useState(hasta);
   useEffect(() => {
     if (!enVista || reducir) return;
@@ -278,7 +279,7 @@ export type ItemComoVista = { titulo: string; texto: string; icono: string; foto
 
 export function ComoFunciona({ titulo, items, children }: { titulo: ReactNode; items: ItemComoVista[]; children?: ReactNode }) {
   const [activo, setActivo] = useState(0);
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   return (
     <div className="wrap g" style={{ rowGap: 40 }}>
       <div className="cf-a">
@@ -318,7 +319,7 @@ export function Requisitos({ items, cta, paisMed, textos }: {
   textos: { marca: string; cumples: string; todo: string };
 }) {
   const [marcados, setMarcados] = useState<Record<number, boolean>>({});
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   const n = items.filter((_, k) => marcados[k]).length;
   return (
     <Revelar className="rq-card">
@@ -354,7 +355,7 @@ export type FotoGaleriaVista = { foto: FotoVista; pie: string };
 
 /** Galería con Embla y fundido: flechas, miniaturas o deslizando con el dedo. No avanza sola. */
 export function Galeria({ fotos, paisMed }: { fotos: FotoGaleriaVista[]; paisMed: string }) {
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   const [fundido] = useState(() => Fade());
   const [visor, api] = useEmblaCarousel({ loop: true, duration: reducir ? 0 : 25, containScroll: false }, [fundido]);
   const [i, setI] = useState(0);
@@ -424,7 +425,7 @@ function MedioTestimonio({ t, pendientes }: { t: TestimonioVista; pendientes: bo
 
 /** Carrusel horizontal con Embla (alineado al inicio, sin avance automático) y flechas. */
 export function Testimonios({ lista, pendientes }: { lista: TestimonioVista[]; pendientes: boolean }) {
-  const reducir = useReducedMotion();
+  const reducir = useMovimientoReducido();
   const [visor, api] = useEmblaCarousel({ align: "start", containScroll: "trimSnaps", duration: reducir ? 0 : 25 });
   const mover = useCallback((dir: 1 | -1) => (dir === 1 ? api?.scrollNext() : api?.scrollPrev()), [api]);
   return (

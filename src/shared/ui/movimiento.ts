@@ -1,5 +1,5 @@
 // Valores de animación compartidos (guía de animación del diseño 2027). Reglas: solo transform y opacity, entre
-// 200 y 600 ms, una sola curva y nada se anima con prefers-reduced-motion (useReducedMotion en cada componente).
+// 200 y 600 ms, una sola curva y nada se anima con prefers-reduced-motion (useMovimientoReducido en cada componente).
 // Se usan con `m.` dentro de `LazyMotion strict`, nunca con `motion.`.
 import type { Variants } from "framer-motion";
 

@@ -6,13 +6,13 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import type { NextResponse } from "next/server";
 import { errorJson } from "@/shared/http/peticion";
+import { RUTA_CAMBIO, RUTA_INICIO, RUTA_LOGIN } from "./config/acceso";
 import type { Permiso } from "./config/roles";
 import { puede } from "./permisos";
 import { verificarSesion, type UsuarioSesion } from "./service";
 import { leerCookie, nombreCookie } from "./sesion";
 
-export const RUTA_LOGIN = "/admin/login";
-export const RUTA_INICIO = "/admin";
+export { RUTA_INICIO, RUTA_LOGIN };
 
 /** Usuario de la sesión en Server Components. Una sola consulta por render aunque varios componentes la pidan. */
 export const usuarioActual = cache(async (): Promise<UsuarioSesion | null> => {
@@ -24,6 +24,8 @@ export const usuarioActual = cache(async (): Promise<UsuarioSesion | null> => {
 export async function exigirPagina(permiso?: Permiso): Promise<UsuarioSesion> {
   const u = await usuarioActual();
   if (!u) redirect(RUTA_LOGIN);
+  // Con contraseña temporal, lo único que puede ver es la pantalla de cambio.
+  if (u.debeCambiarClave) redirect(RUTA_CAMBIO);
   if (permiso && !puede(u.rol, permiso)) notFound();
   return u;
 }
@@ -35,6 +37,7 @@ export async function exigirPagina(permiso?: Permiso): Promise<UsuarioSesion> {
 export async function exigirApi(req: Request, permiso?: Permiso): Promise<{ usuario: UsuarioSesion } | { error: NextResponse }> {
   const u = await verificarSesion(leerCookie(req, nombreCookie()));
   if (!u) return { error: errorJson(401, "sesion") };
+  if (u.debeCambiarClave) return { error: errorJson(403, "cambiar_clave") };
   if (permiso && !puede(u.rol, permiso)) return { error: errorJson(403, "sin_permiso") };
   return { usuario: u };
 }

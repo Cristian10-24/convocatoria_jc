@@ -18,7 +18,7 @@ export async function POST(req: Request): Promise<NextResponse> {
   if ("error" in cuerpo) return cuerpo.error;
 
   const clave = generarClaveTemporal();
-  const r = await crearUsuario({ ...cuerpo.datos, clave }, sesion.usuario.usuario);
+  const r = await crearUsuario({ ...cuerpo.datos, clave }, sesion.usuario.usuario, { claveTemporal: true });
   if (!r.ok) {
     if (r.error === "duplicado") return errorJson(409, "duplicado", { errores: { usuario: MENSAJES_AUTH.duplicado } });
     return errorJson(400, "datos_invalidos", { errores: r.errores });

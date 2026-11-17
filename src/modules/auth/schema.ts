@@ -18,28 +18,56 @@ export const USUARIO_REGEX = /^[a-z0-9._-]{3,40}$/;
 /** Usuario normalizado (sin espacios, en minúsculas). */
 const usuarioLibre = z.string().trim().toLowerCase();
 
+/** Correo institucional, en minúsculas. */
+export const CorreoUsuario = z.string().trim().toLowerCase().pipe(z.email(M.correo).max(120, M.correo));
+
 /**
- * Credenciales del login. El usuario solo se recorta y pasa a minúsculas (un formato raro responde lo mismo que un
- * usuario inexistente). La contraseña no se recorta: los espacios cuentan.
+ * Credenciales del login. `usuario` es el correo institucional (o, mientras no lo tenga, el usuario anterior): solo se
+ * recorta y pasa a minúsculas (un formato raro responde lo mismo que uno inexistente). La contraseña no se recorta.
  */
 export const Credenciales = z
   .object({
-    usuario: usuarioLibre.pipe(z.string().min(1, M.usuarioObligatorio).max(60, M.usuarioFormato)),
+    usuario: usuarioLibre.pipe(z.string().min(1, M.usuarioObligatorio).max(120, M.usuarioObligatorio)),
     clave: z.string().min(1, M.claveObligatoria).refine((c) => bytes(c) <= CLAVE_MAX_BYTES, claveLarga),
   })
   .strict();
 export type Credenciales = z.infer<typeof Credenciales>;
 
-/** Contraseña nueva: mínimo de largo y máximo en bytes. */
+/** Requisitos de una contraseña nueva, con su texto: la pantalla de cambio los muestra y marca al escribir. */
+export const REQUISITOS_CLAVE = [
+  { id: "largo", texto: M.reqLargo.replace("{min}", String(CLAVE_MIN)), cumple: (c: string) => c.length >= CLAVE_MIN },
+  { id: "mayuscula", texto: M.reqMayuscula, cumple: (c: string) => /\p{Lu}/u.test(c) },
+  { id: "numero", texto: M.reqNumero, cumple: (c: string) => /\d/.test(c) },
+] as const;
+
+/** Contraseña nueva: mínimo de largo, una mayúscula, un número y máximo en bytes. */
 export const ClaveNueva = z
   .string()
   .min(CLAVE_MIN, M.claveCorta.replace("{min}", String(CLAVE_MIN)))
+  .refine((c) => REQUISITOS_CLAVE[1].cumple(c), M.claveMayuscula)
+  .refine((c) => REQUISITOS_CLAVE[2].cumple(c), M.claveNumero)
   .refine((c) => bytes(c) <= CLAVE_MAX_BYTES, claveLarga);
+
+const coinciden = { path: ["repetir"], message: M.noCoinciden };
+
+/** Cambio de contraseña con sesión (primer ingreso o contraseña temporal). */
+export const CambioClave = z
+  .object({ nueva: ClaveNueva, repetir: z.string() })
+  .strict()
+  .refine((v) => v.nueva === v.repetir, coinciden);
+/** Contraseña nueva desde el enlace del correo. */
+export const ClavePorEnlace = z
+  .object({ token: z.string().regex(/^[A-Za-z0-9_-]{32,64}$/, M.enlaceInvalido), nueva: ClaveNueva, repetir: z.string() })
+  .strict()
+  .refine((v) => v.nueva === v.repetir, coinciden);
+/** Pedido del enlace. */
+export const SolicitudEnlace = z.object({ correo: CorreoUsuario }).strict();
 
 /** Alta de usuario (script `admin:crear` y, en la fase 4, la pantalla de usuarios). */
 export const NuevoUsuario = z
   .object({
     usuario: usuarioLibre.pipe(z.string().regex(USUARIO_REGEX, M.usuarioFormato)),
+    correo: CorreoUsuario.optional(),
     nombre: z
       .string()
       .transform((s) => s.replace(/\s+/g, " ").trim())
@@ -73,6 +101,7 @@ export const EdicionUsuario = z
       .transform((ps) => [...new Set(ps)])
       .optional(),
     activo: z.boolean().optional(),
+    correo: CorreoUsuario.optional(),
   })
   .strict();
 export type EdicionUsuario = z.input<typeof EdicionUsuario>;

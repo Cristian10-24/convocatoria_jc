@@ -1,18 +1,27 @@
 // Lógica del módulo auth: login con límite de intentos, verificación de sesión, cierre, revocación, desactivación y
 // alta de usuarios. Todo lo que cambia sesiones queda en auth_auditoria.
 import "server-only";
-import { randomInt } from "node:crypto";
+import { createHash, randomBytes, randomInt } from "node:crypto";
 import { ObjectId } from "mongodb";
-import { entorno } from "@/shared/config/env";
+import { notificador } from "@/shared/notificaciones/notificador";
 import { hashIp } from "@/shared/security/hash";
-import { bloqueado, registrarFallo, VENTANA_MS } from "@/shared/security/rateLimit";
+import { consumir } from "@/shared/security/rateLimit";
 import type { PaisSlug } from "@/shared/config/paises";
 import type { Rol } from "./config/roles";
+import { MAX_INTENTOS, MINUTOS_BLOQUEO, MINUTOS_ENLACE, RUTA_RESTABLECER } from "./config/acceso";
 import { MENSAJES_AUTH } from "./config/textos";
 import { compararClave, hashearClave } from "./password";
 import {
   actualizarUsuario,
+  borrarRestablecimientos,
+  buscarConHash,
   buscarParaLogin,
+  buscarPorCorreo,
+  guardarRestablecimiento,
+  leerBloqueos,
+  limpiarFallos,
+  sumarFallo,
+  tomarRestablecimiento,
   buscarPorId,
   contarAdminsActivos,
   desactivar,
@@ -23,41 +32,56 @@ import {
   subirVersion,
   type UsuarioPublico,
 } from "./repository";
-import { EdicionUsuario, NuevoUsuario, USUARIO_REGEX, type Credenciales } from "./schema";
+import { CambioClave, ClavePorEnlace, CorreoUsuario, EdicionUsuario, NuevoUsuario, SolicitudEnlace, USUARIO_REGEX, type Credenciales } from "./schema";
 import { crearToken, leerToken } from "./sesion";
 
 /** Lo que se sabe del usuario con sesión: nunca el hash. */
-export type UsuarioSesion = { id: string; usuario: string; nombre: string; rol: Rol; paises: PaisSlug[] };
+export type UsuarioSesion = {
+  id: string;
+  usuario: string;
+  correo?: string;
+  nombre: string;
+  rol: Rol;
+  paises: PaisSlug[];
+  /** Con contraseña temporal: solo puede entrar a la pantalla de cambio. */
+  debeCambiarClave: boolean;
+};
 
 const aSesion = (u: UsuarioPublico): UsuarioSesion => ({
   id: u._id.toHexString(),
   usuario: u.usuario,
+  ...(u.correo ? { correo: u.correo } : {}),
   nombre: u.nombre,
   rol: u.rol,
   paises: u.paises ?? [],
+  debeCambiarClave: !!u.debeCambiarClave,
 });
 
-// Contadores de fallos: uno por IP y otro por usuario escrito (frena a quien prueba un usuario desde muchas IPs).
-const TIPO_IP = "login-ip";
-const TIPO_USUARIO = "login-usuario";
+// Bloqueo por intentos fallidos: un contador por correo escrito y otro por conexión (frena a quien prueba un correo
+// desde muchas IPs y a quien prueba muchos correos desde una). Ver config/acceso.ts.
+const BLOQUEO_MS = MINUTOS_BLOQUEO * 60_000;
+const claveUsuario = (id: string) => `u:${id}`;
+const claveIp = (ip: string) => `ip:${hashIp(ip)}`;
 
 export type ResultadoLogin =
   | { ok: true; token: string; usuario: UsuarioSesion }
-  | { ok: false; error: "credenciales" }
-  | { ok: false; error: "limite"; reintentarEnSeg: number };
+  | { ok: false; error: "credenciales"; quedan: number }
+  | { ok: false; error: "bloqueado"; reintentarEnSeg: number };
+
+/** Segundos que faltan del bloqueo más largo vigente, o 0. */
+const segundosBloqueo = (docs: { bloqueadoHasta?: Date }[], ahora: number) =>
+  Math.max(0, ...docs.map((d) => (d.bloqueadoHasta ? Math.ceil((d.bloqueadoHasta.getTime() - ahora) / 1000) : 0)));
+
+const pareceIdentificador = (v: string) => USUARIO_REGEX.test(v) || CorreoUsuario.safeParse(v).success;
 
 export async function iniciarSesion(credenciales: Credenciales, ctx: { ip: string; ahora?: number }): Promise<ResultadoLogin> {
   const ahora = ctx.ahora ?? Date.now();
-  const limite = entorno().RATE_LIMIT_LOGIN;
   const { usuario, clave } = credenciales;
+  const claves = [claveUsuario(usuario), claveIp(ctx.ip)];
 
-  const [porIp, porUsuario] = await Promise.all([
-    bloqueado(TIPO_IP, ctx.ip, limite, VENTANA_MS, ahora),
-    bloqueado(TIPO_USUARIO, usuario, limite, VENTANA_MS, ahora),
-  ]);
-  if (porIp || porUsuario) {
-    return { ok: false, error: "limite", reintentarEnSeg: Math.ceil((VENTANA_MS - (ahora % VENTANA_MS)) / 1000) };
-  }
+  // Bloqueado: no se compara la contraseña ni se suma otro fallo.
+  const vigente = segundosBloqueo(await leerBloqueos(claves), ahora);
+  if (vigente > 0) return { ok: false, error: "bloqueado", reintentarEnSeg: vigente };
 
   const u = await buscarParaLogin(usuario);
   // Se compara siempre (con el hash señuelo si no existe), también si está inactivo: mismo tiempo en los tres casos.
@@ -65,23 +89,24 @@ export async function iniciarSesion(credenciales: Credenciales, ctx: { ip: strin
   const ipHash = hashIp(ctx.ip);
 
   if (!u || !u.activo || !claveOk) {
-    await Promise.all([
-      registrarFallo(TIPO_IP, ctx.ip, VENTANA_MS, ahora),
-      registrarFallo(TIPO_USUARIO, usuario, VENTANA_MS, ahora),
-      registrarAuditoria({
-        accion: "login_fallido",
-        // Solo se guarda lo escrito si parece un usuario: así no queda en la auditoría una contraseña pegada por error.
-        usuario: USUARIO_REGEX.test(usuario) ? usuario : null,
-        ...(u ? { usuarioId: u._id } : {}),
-        detalle: !u ? "no_existe" : !u.activo ? "inactivo" : "clave",
-        ipHash,
-        en: new Date(ahora),
-      }),
-    ]);
-    return { ok: false, error: "credenciales" };
+    const fecha = new Date(ahora);
+    const estados = await Promise.all(claves.map((c) => sumarFallo(c, MAX_INTENTOS, BLOQUEO_MS, fecha)));
+    const seg = segundosBloqueo(estados, ahora);
+    await registrarAuditoria({
+      accion: seg > 0 ? "bloqueo" : "login_fallido",
+      // Solo se guarda lo escrito si parece un correo o usuario: así no queda una contraseña pegada por error.
+      usuario: pareceIdentificador(usuario) ? usuario : null,
+      ...(u ? { usuarioId: u._id } : {}),
+      detalle: !u ? "no_existe" : !u.activo ? "inactivo" : "clave",
+      ipHash,
+      en: fecha,
+    });
+    if (seg > 0) return { ok: false, error: "bloqueado", reintentarEnSeg: seg };
+    return { ok: false, error: "credenciales", quedan: MAX_INTENTOS - Math.max(...estados.map((e) => e.fallos)) };
   }
 
   await Promise.all([
+    limpiarFallos(claveUsuario(usuario)),
     marcarIngreso(u._id, new Date(ahora)),
     registrarAuditoria({ accion: "login_ok", usuario: u.usuario, usuarioId: u._id, ipHash, en: new Date(ahora) }),
   ]);
@@ -187,10 +212,13 @@ export async function editarUsuario(id: string, entrada: unknown, actor: Usuario
   return { ok: true };
 }
 
-/** Contraseña temporal legible (sin 0/O ni 1/l/I), de 14 caracteres. */
+/** Contraseña temporal legible (sin 0/O ni 1/l/I), de 14 caracteres, con mayúscula y número. */
 export function generarClaveTemporal(): string {
   const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  return Array.from({ length: 14 }, () => chars[randomInt(chars.length)]).join("");
+  for (;;) {
+    const c = Array.from({ length: 14 }, () => chars[randomInt(chars.length)]).join("");
+    if (/[A-Z]/.test(c) && /[0-9]/.test(c)) return c;
+  }
 }
 
 /** Restablece la contraseña con una temporal (se muestra una sola vez) y cierra todas sus sesiones. */
@@ -198,7 +226,7 @@ export async function restablecerClave(id: string, actor: UsuarioSesion): Promis
   const u = await buscarPorId(id);
   if (!u) return { ok: false, error: "no_encontrado" };
   const clave = generarClaveTemporal();
-  await actualizarUsuario(u._id, { passwordHash: await hashearClave(clave) }, true);
+  await actualizarUsuario(u._id, { passwordHash: await hashearClave(clave), debeCambiarClave: true }, true);
   await registrarAuditoria({ accion: "clave_restablecida", usuario: u.usuario, usuarioId: u._id, por: actor.usuario });
   return { ok: true, clave };
 }
@@ -208,8 +236,11 @@ export async function registrarExportacion(actor: UsuarioSesion, detalle: string
   await registrarAuditoria({ accion: "exportacion", usuario: actor.usuario, usuarioId: new ObjectId(actor.id), detalle: detalle.slice(0, 500), ipHash: hashIp(ip) });
 }
 
-/** Alta de usuario. Valida con el mismo esquema que usará la pantalla de usuarios. */
-export async function crearUsuario(entrada: unknown, por: string): Promise<ResultadoAlta> {
+/**
+ * Alta de usuario. Valida con el mismo esquema que la pantalla de usuarios. `claveTemporal`: la contraseña la eligió
+ * otra persona (alta desde el panel), así que al primer ingreso hay que cambiarla.
+ */
+export async function crearUsuario(entrada: unknown, por: string, { claveTemporal = false } = {}): Promise<ResultadoAlta> {
   const r = NuevoUsuario.safeParse(entrada);
   if (!r.success) {
     const errores: Record<string, string> = {};
@@ -219,6 +250,7 @@ export async function crearUsuario(entrada: unknown, por: string): Promise<Resul
   const d = r.data;
   const alta = await insertarUsuario({
     usuario: d.usuario,
+    ...(d.correo ? { correo: d.correo } : {}),
     nombre: d.nombre,
     rol: d.rol,
     // Solo el coordinador usa la lista; para los demás se guarda vacía y no confunde.
@@ -226,9 +258,91 @@ export async function crearUsuario(entrada: unknown, por: string): Promise<Resul
     activo: true,
     passwordHash: await hashearClave(d.clave),
     tokenVersion: 0,
+    debeCambiarClave: claveTemporal,
     creadoEn: new Date(),
   });
   if (!alta.ok) return alta;
   await registrarAuditoria({ accion: "usuario_creado", usuario: d.usuario, usuarioId: alta.id, por, detalle: d.rol });
   return { ok: true, id: alta.id };
+}
+
+// ---------- Contraseña: cambio con sesión y enlace por correo ----------
+
+export type ResultadoClave =
+  | { ok: true; token: string; usuario: UsuarioSesion }
+  | { ok: false; error: "datos_invalidos"; errores: Record<string, string> }
+  | { ok: false; error: "enlace" | "no_encontrado" };
+
+/** Guarda la contraseña nueva, quita la marca de temporal, cierra las demás sesiones y abre una nueva. */
+async function guardarClave(id: ObjectId, nueva: string, ahora: number): Promise<{ token: string; usuario: UsuarioSesion } | null> {
+  await actualizarUsuario(id, { passwordHash: await hashearClave(nueva), debeCambiarClave: false }, true);
+  await borrarRestablecimientos(id);
+  const u = await buscarPorId(id.toHexString());
+  if (!u || !u.activo) return null;
+  await Promise.all([limpiarFallos(claveUsuario(u.usuario)), ...(u.correo ? [limpiarFallos(claveUsuario(u.correo))] : [])]);
+  return { token: crearToken(u._id.toHexString(), u.tokenVersion ?? 0, ahora), usuario: aSesion(u) };
+}
+
+/** Cambio de contraseña con sesión (primer ingreso o temporal). La nueva tiene que ser distinta de la actual. */
+export async function cambiarClave(actor: UsuarioSesion, entrada: unknown, ctx: { ip: string; ahora?: number }): Promise<ResultadoClave> {
+  const r = CambioClave.safeParse(entrada);
+  if (!r.success) return { ok: false, error: "datos_invalidos", errores: erroresZod(r.error) };
+  const u = await buscarConHash(actor.id);
+  if (!u || !u.activo) return { ok: false, error: "no_encontrado" };
+  if (await compararClave(r.data.nueva, u.passwordHash)) return { ok: false, error: "datos_invalidos", errores: { nueva: MENSAJES_AUTH.igualAnterior } };
+  const hecho = await guardarClave(u._id, r.data.nueva, ctx.ahora ?? Date.now());
+  if (!hecho) return { ok: false, error: "no_encontrado" };
+  await registrarAuditoria({ accion: "clave_cambiada", usuario: u.usuario, usuarioId: u._id, ipHash: hashIp(ctx.ip) });
+  return { ok: true, ...hecho };
+}
+
+const hashEnlace = (token: string) => createHash("sha256").update(token).digest("base64url");
+
+export type ResultadoEnlace =
+  | { ok: true }
+  | { ok: false; error: "datos_invalidos"; errores: Record<string, string> }
+  | { ok: false; error: "limite"; reintentarEnSeg: number };
+
+/**
+ * Pide el enlace para restablecer. Responde siempre igual (exista o no el correo) y no cuenta como intento de
+ * ingreso. Límite propio por conexión y por correo para que no sirva para llenar buzones.
+ */
+export async function solicitarEnlace(entrada: unknown, ctx: { ip: string; origen: string; ahora?: number }): Promise<ResultadoEnlace> {
+  const r = SolicitudEnlace.safeParse(entrada);
+  if (!r.success) return { ok: false, error: "datos_invalidos", errores: erroresZod(r.error) };
+  const ahora = ctx.ahora ?? Date.now();
+  const { correo } = r.data;
+  const [porIp, porCorreo] = await Promise.all([
+    consumir("enlace-ip", ctx.ip, 10, BLOQUEO_MS, ahora),
+    consumir("enlace-correo", correo, 3, BLOQUEO_MS, ahora),
+  ]);
+  if (!porIp.permitido) return { ok: false, error: "limite", reintentarEnSeg: porIp.reintentarEnSeg };
+  // Por correo se responde igual que si se hubiera enviado: no revela si existe.
+  if (!porCorreo.permitido) return { ok: true };
+
+  const u = await buscarPorCorreo(correo);
+  if (!u || !u.activo) return { ok: true };
+  const token = randomBytes(32).toString("base64url");
+  await guardarRestablecimiento({ _id: hashEnlace(token), usuarioId: u._id, creadoEn: new Date(ahora), expiraEn: new Date(ahora + MINUTOS_ENLACE * 60_000) });
+  // El token va después de "#": el navegador no lo manda al servidor, así no queda en registros ni en el Referer.
+  const enlace = `${ctx.origen}${RUTA_RESTABLECER}#t=${token}`;
+  await notificador().restablecerClave({ correo, nombre: u.nombre, enlace, minutos: MINUTOS_ENLACE });
+  await registrarAuditoria({ accion: "enlace_solicitado", usuario: u.usuario, usuarioId: u._id, ipHash: hashIp(ctx.ip) });
+  return { ok: true };
+}
+
+/** Contraseña nueva desde el enlace: vale una sola vez y antes de vencer. */
+export async function claveConEnlace(entrada: unknown, ctx: { ip: string; ahora?: number }): Promise<ResultadoClave> {
+  const r = ClavePorEnlace.safeParse(entrada);
+  if (!r.success) {
+    const errores = erroresZod(r.error);
+    return errores.token ? { ok: false, error: "enlace" } : { ok: false, error: "datos_invalidos", errores };
+  }
+  const ahora = ctx.ahora ?? Date.now();
+  const enlace = await tomarRestablecimiento(hashEnlace(r.data.token), new Date(ahora));
+  if (!enlace) return { ok: false, error: "enlace" };
+  const hecho = await guardarClave(enlace.usuarioId, r.data.nueva, ahora);
+  if (!hecho) return { ok: false, error: "enlace" };
+  await registrarAuditoria({ accion: "clave_por_enlace", usuario: hecho.usuario.usuario, usuarioId: enlace.usuarioId, ipHash: hashIp(ctx.ip) });
+  return { ok: true, ...hecho };
 }

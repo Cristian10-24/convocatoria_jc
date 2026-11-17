@@ -1,5 +1,5 @@
 // Crea un usuario administrador del panel. Uso: npm run admin:crear
-// Lee MONGODB_URI y MONGODB_DB de .env.local (o del entorno). Pide usuario, nombre y contraseña por consola; la
+// Lee MONGODB_URI y MONGODB_DB de .env.local (o del entorno). Pide usuario, correo, nombre y contraseña por consola; la
 // contraseña no se muestra al escribirla y nunca se recibe por argumentos ni variables de entorno (quedaría en el
 // historial de la terminal).
 import { createInterface } from "node:readline";
@@ -35,14 +35,15 @@ async function main() {
   console.log(`Crear administrador del panel en ${hostDb() || "(MONGODB_URI sin definir)"}\n`);
 
   const usuario = await preguntar("Usuario (minúsculas, números, punto, guion): ");
+  const correo = await preguntar("Correo institucional (con él se ingresa al panel): ");
   const nombre = await preguntar("Nombre completo: ");
-  const clave = await preguntar(`Contraseña (mínimo ${CLAVE_MIN} caracteres): `, true);
+  const clave = await preguntar(`Contraseña (mínimo ${CLAVE_MIN} caracteres, con una mayúscula y un número): `, true);
   const repetida = await preguntar("Repite la contraseña: ", true);
   if (clave !== repetida) throw new Error("Las contraseñas no coinciden.");
 
-  const r = await crearUsuario({ usuario, nombre, rol: "admin", paises: [], clave }, "script:admin:crear");
+  const r = await crearUsuario({ usuario, correo, nombre, rol: "admin", paises: [], clave }, "script:admin:crear");
   if (!r.ok) {
-    if (r.error === "duplicado") throw new Error(`Ya existe el usuario "${usuario.trim().toLowerCase()}".`);
+    if (r.error === "duplicado") throw new Error(`Ya existe el usuario "${usuario.trim().toLowerCase()}" o el correo "${correo.trim().toLowerCase()}".`);
     throw new Error(Object.values(r.errores).join("\n"));
   }
   console.log(`\nListo: administrador "${usuario.trim().toLowerCase()}" creado.`);

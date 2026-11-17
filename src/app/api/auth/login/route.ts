@@ -1,12 +1,11 @@
-// POST /api/auth/login: inicia sesión en el panel.
-// Orden: mismo origen → tamaño y forma → límite de intentos (por IP y por usuario) → bcrypt → cookie firmada.
+// POST /api/auth/login: inicia sesión en el panel con el correo institucional (o el usuario anterior).
+// Orden: mismo origen → tamaño y forma → bloqueo por intentos (por correo y por conexión) → bcrypt → cookie firmada.
 // Clave incorrecta, usuario inexistente y usuario inactivo responden exactamente lo mismo.
 import { NextResponse } from "next/server";
 import { errorJson, ipCliente, leerCuerpo, mismoOrigen } from "@/shared/http/peticion";
-import { TEXTOS_AUTH } from "@/modules/auth/config/textos";
+import { RUTA_CAMBIO, RUTA_INICIO } from "@/modules/auth/config/acceso";
 import { Credenciales } from "@/modules/auth/schema";
 import { iniciarSesion } from "@/modules/auth/service";
-import { RUTA_INICIO } from "@/modules/auth/servidor";
 import { nombreCookie, opcionesCookie } from "@/modules/auth/sesion";
 
 export async function POST(req: Request): Promise<NextResponse> {
@@ -18,14 +17,15 @@ export async function POST(req: Request): Promise<NextResponse> {
   try {
     const r = await iniciarSesion(cuerpo.datos, { ip: ipCliente(req) });
     if (!r.ok) {
-      if (r.error === "limite") {
-        const res = errorJson(429, "limite", { mensaje: TEXTOS_AUTH.limite });
+      if (r.error === "bloqueado") {
+        const res = errorJson(429, "bloqueado", { reintentarEnSeg: r.reintentarEnSeg });
         res.headers.set("Retry-After", String(r.reintentarEnSeg));
         return res;
       }
-      return errorJson(401, "credenciales", { mensaje: TEXTOS_AUTH.credenciales });
+      return errorJson(401, "credenciales", { quedan: r.quedan });
     }
-    const res = NextResponse.json({ ok: true, destino: RUTA_INICIO }, { headers: { "Cache-Control": "no-store" } });
+    const destino = r.usuario.debeCambiarClave ? RUTA_CAMBIO : RUTA_INICIO;
+    const res = NextResponse.json({ ok: true, destino }, { headers: { "Cache-Control": "no-store" } });
     res.cookies.set(nombreCookie(), r.token, opcionesCookie());
     return res;
   } catch (e) {

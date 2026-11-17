@@ -22,6 +22,9 @@ const Esquema = z.object({
   RATE_LIMIT_LOGIN: entero(10),
   TURNSTILE_SECRET_KEY: opcional,
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: opcional,
+  // Correo saliente (Resend). Sin RESEND_API_KEY no se envía nada.
+  RESEND_API_KEY: opcional,
+  CORREO_REMITENTE: opcional,
 });
 export type Entorno = z.infer<typeof Esquema>;
 

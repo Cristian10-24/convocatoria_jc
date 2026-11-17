@@ -1,0 +1,42 @@
+/* Pantallas de acceso al panel (diseño 2027: AdminLogin, AdminBloqueo, AdminOlvide, AdminCambio, AdminLoginMovil).
+   Dos columnas en escritorio: a la izquierda el azul con el logo y una foto; a la derecha el formulario.
+   En celular queda solo una franja azul con el logo, arriba del formulario. Usa el sistema `.ad` (panel.css). */
+.ad.acceso { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: var(--blanco); }
+.acceso-l { background: var(--azul); color: var(--blanco); padding: 56px; display: flex; flex-direction: column; gap: 36px; }
+.acceso-l .logo-caja { display: block; width: 108px; height: 96px; object-fit: contain; background: var(--blanco); border-radius: 16px; padding: 12px; box-sizing: content-box; align-self: flex-start; }
+.acceso-l .foto { flex: 1 1 0; height: 0; min-height: 320px; width: 100%; object-fit: cover; object-position: center 40%; border-radius: 10px; display: block; }
+.acceso-l p { margin: 0; font-size: 15px; line-height: 1.5; color: hsl(231.9 33.3% 87.6%); }
+.acceso-r { display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+.acceso-c { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 24px; }
+.acceso-marca { display: flex; align-items: center; gap: 12px; }
+.acceso-marca img { display: block; width: 56px; height: 50px; object-fit: contain; }
+.acceso-marca span { display: flex; flex-direction: column; line-height: 1.2; }
+.acceso-marca b { font-size: 17px; font-weight: 700; }
+.acceso-marca small { font-size: 14px; color: var(--texto-suave); }
+.acceso-t { display: flex; flex-direction: column; gap: 8px; }
+.acceso-t h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em; }
+.acceso-t p { margin: 0; font-size: 16px; line-height: 1.5; color: var(--texto-suave); }
+.acceso-f { display: flex; flex-direction: column; gap: 18px; }
+.acceso-f .btn-texto { align-self: center; }
+.acceso-nota { margin: 0; font-size: 13px; line-height: 1.5; color: var(--texto-suave); display: flex; gap: 8px; }
+.acceso-nota svg.i { width: 18px; height: 18px; margin-top: 1px; }
+.acceso .clave-caja { position: relative; }
+.acceso .clave-caja .input { padding-right: 104px; }
+.acceso .clave-caja .btn { position: absolute; right: 6px; top: 6px; }
+.acceso .requisitos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--texto-suave); }
+.acceso .requisitos li { display: flex; align-items: center; gap: 8px; }
+.acceso .requisitos li.ok { color: var(--ok); }
+.acceso .requisitos svg.i { width: 18px; height: 18px; }
+.acceso .aviso-err span, .acceso .aviso-info span { min-width: 0; overflow-wrap: anywhere; }
+.acceso .reloj { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+@media (max-width: 860px) {
+  .ad.acceso { grid-template-columns: minmax(0, 1fr); align-content: start; }
+  .acceso-l { padding: 20px 24px; }
+  .acceso-l .foto, .acceso-l p { display: none; }
+  .acceso-l .logo-caja { width: 64px; height: 57px; padding: 8px; border-radius: 12px; }
+  .acceso-r { padding: 32px 20px; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .acceso-c { animation: ad-entra .6s var(--curva) both; }
+}

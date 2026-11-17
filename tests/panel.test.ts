@@ -22,7 +22,7 @@ import { ObjectId } from "mongodb";
 
 let mongo: MongoMemoryServer;
 const env = process.env as Record<string, string | undefined>;
-const CLAVE = "clave-de-prueba-larga";
+const CLAVE = "Clave-de-prueba-2027";
 const ADMIN = { paises: [...PAISES], verSensibles: true };
 const COORD_UY = { paises: ["uy" as const], verSensibles: false };
 const filtros = (q: Record<string, string> = {}) => leerFiltros(q);
@@ -249,7 +249,7 @@ describe("gestión de usuarios", () => {
     const usuario = `gestion.${rol}.${ip++}`;
     const r = await crearUsuario({ usuario, nombre: "Persona Prueba", rol, paises, clave: CLAVE }, "pruebas");
     if (!r.ok) throw new Error(JSON.stringify(r));
-    return { id: r.id.toHexString(), usuario, nombre: "Persona Prueba", rol, paises: rol === "coordinador" ? (paises as never) : [] };
+    return { id: r.id.toHexString(), usuario, nombre: "Persona Prueba", rol, paises: rol === "coordinador" ? (paises as never) : [], debeCambiarClave: false };
   }
 
   it("un admin no puede quitarse su propio rol ni desactivarse", async () => {

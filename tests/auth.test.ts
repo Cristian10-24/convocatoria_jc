@@ -11,14 +11,15 @@ import { POST as logout } from "@/app/api/auth/logout/route";
 import { alcanceDe, filtroPais, puede } from "@/modules/auth/permisos";
 import { COL_AUDITORIA, COL_USUARIOS } from "@/modules/auth/repository";
 import { ClaveNueva, Credenciales } from "@/modules/auth/schema";
-import { crearUsuario, desactivarUsuario, revocarSesiones, verificarSesion } from "@/modules/auth/service";
+import { MAX_INTENTOS, MINUTOS_BLOQUEO } from "@/modules/auth/config/acceso";
+import { crearUsuario, desactivarUsuario, iniciarSesion, revocarSesiones, verificarSesion } from "@/modules/auth/service";
 import { exigirApi } from "@/modules/auth/servidor";
 import { crearToken, DURACION_SESION_MS, leerToken, nombreCookie, opcionesCookie } from "@/modules/auth/sesion";
 
 let mongo: MongoMemoryServer;
 const env = process.env as Record<string, string | undefined>;
 const LIMITE = 4;
-const CLAVE = "clave-de-prueba-larga";
+const CLAVE = "Clave-de-prueba-2027";
 let ip = 1;
 let n = 1;
 
@@ -93,7 +94,7 @@ describe("login", () => {
     expect(r.cookie).not.toMatch(/Secure/i); // en local sobre http
 
     const sesion = await verificarSesion(r.token);
-    expect(sesion).toEqual({ id, usuario, nombre: "Persona de Prueba", rol: "admin", paises: [] });
+    expect(sesion).toEqual({ id, usuario, nombre: "Persona de Prueba", rol: "admin", paises: [], debeCambiarClave: false });
 
     const doc = await (await usuarios()).findOne({ usuario });
     expect(doc?.ultimoIngreso).toBeInstanceOf(Date);
@@ -115,7 +116,7 @@ describe("login", () => {
     }
     expect(inexistente.cuerpo).toEqual(clave.cuerpo);
     expect(desactivado.cuerpo).toEqual(clave.cuerpo);
-    expect(clave.cuerpo).toEqual({ error: "credenciales", mensaje: "Usuario o contraseña incorrectos." });
+    expect(clave.cuerpo).toEqual({ error: "credenciales", quedan: MAX_INTENTOS - 1 });
 
     // El motivo real queda solo en la auditoría interna.
     const col = await auditoria();
@@ -139,25 +140,41 @@ describe("login", () => {
   });
 });
 
-describe("límite de intentos", () => {
-  it("bloquea por IP tras varios fallos, aunque luego la clave sea correcta", async () => {
+describe("bloqueo por intentos fallidos", () => {
+  it("bloquea por conexión tras el máximo de fallos, aunque luego la clave sea correcta", async () => {
     const { usuario } = await usuarioNuevo();
     const ipFija = nuevaIp();
-    for (let i = 0; i < LIMITE; i++) expect((await entrar(`intruso${i}`, "nada-que-ver", { ip: ipFija })).status).toBe(401);
+    for (let i = 0; i < MAX_INTENTOS - 1; i++) expect((await entrar(`intruso${i}`, "nada-que-ver", { ip: ipFija })).cuerpo).toEqual({ error: "credenciales", quedan: MAX_INTENTOS - 1 - i });
+    const ultimo = await entrar("intruso.final", "nada-que-ver", { ip: ipFija });
+    expect(ultimo.status).toBe(429);
+    expect(ultimo.cuerpo).toMatchObject({ error: "bloqueado", reintentarEnSeg: MINUTOS_BLOQUEO * 60 });
     const r = await entrar(usuario, CLAVE, { ip: ipFija });
     expect(r.status).toBe(429);
     expect(r.cookie).toBe("");
-    expect(r.cuerpo.error).toBe("limite");
-    // Otra IP sigue pudiendo entrar.
+    // Otra conexión sigue pudiendo entrar.
     expect((await entrar(usuario, CLAVE)).status).toBe(200);
   });
 
-  it("bloquea por usuario aunque los fallos lleguen desde IPs distintas", async () => {
+  it("bloquea por correo aunque los fallos lleguen desde conexiones distintas, y avisa cuántos intentos quedan", async () => {
     const { usuario } = await usuarioNuevo();
-    for (let i = 0; i < LIMITE; i++) expect((await entrar(usuario, "clave-equivocada")).status).toBe(401);
-    const r = await entrar(usuario, CLAVE); // IP nueva, clave correcta
+    const quedan: unknown[] = [];
+    for (let i = 0; i < MAX_INTENTOS - 1; i++) quedan.push((await entrar(usuario, "clave-equivocada")).cuerpo.quedan);
+    expect(quedan).toEqual([4, 3, 2, 1]);
+    expect((await entrar(usuario, "clave-equivocada")).status).toBe(429);
+    const r = await entrar(usuario, CLAVE); // conexión nueva, clave correcta
     expect(r.status).toBe(429);
     expect(r.cookie).toBe("");
+    expect(await (await auditoria()).findOne({ accion: "bloqueo", usuario })).toBeTruthy();
+  });
+
+  it("el bloqueo vence a los minutos configurados y un ingreso correcto reinicia la cuenta", async () => {
+    const { usuario } = await usuarioNuevo();
+    const ipFija = nuevaIp();
+    const t0 = Date.now();
+    for (let i = 0; i < MAX_INTENTOS; i++) await iniciarSesion({ usuario, clave: "mala" }, { ip: ipFija, ahora: t0 + i });
+    expect(await iniciarSesion({ usuario, clave: CLAVE }, { ip: ipFija, ahora: t0 + 60_000 })).toMatchObject({ ok: false, error: "bloqueado" });
+    expect(await iniciarSesion({ usuario, clave: CLAVE }, { ip: ipFija, ahora: t0 + MINUTOS_BLOQUEO * 60_000 + 10 })).toMatchObject({ ok: true });
+    expect(await iniciarSesion({ usuario, clave: "mala" }, { ip: nuevaIp(), ahora: t0 + MINUTOS_BLOQUEO * 60_000 + 20 })).toMatchObject({ ok: false, quedan: MAX_INTENTOS - 1 });
   });
 });
 

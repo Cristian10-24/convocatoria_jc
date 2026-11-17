@@ -12,7 +12,7 @@ import ProveedorMovimiento from "@/shared/ui/ProveedorMovimiento";
 import PantallaSistema from "@/shared/ui/PantallaSistema";
 import { destinoInscripcion } from "../content/acciones";
 import {
-  ACERCA, ALIADOS_PENDIENTES, BENEFICIOS, MOSTRAR_ALIADOS, CIERRE_PRIMERA_ETAPA, COHORTE, IMPACTO, INCLUYE, MOSTRAR_PENDIENTES, ORDEN_PAISES, PAISES, PREGUNTAS, REDES,
+  ACERCA, ALIADOS_PENDIENTES, BENEFICIOS, MOSTRAR_ALIADOS, CIERRE_PRIMERA_ETAPA, COHORTE, IMPACTO, INCLUYE, MOSTRAR_PENDIENTES, ORDEN_PAISES, PAISES, REDES, preguntas,
   comoFunciona, diapositivas, fechaLarga, galeria, noIncluye, requisitos, rutas, testimoniosPara,
   type EstadoLanding, type Foto, type IconoLanding,
 } from "../content/contenido";
@@ -150,7 +150,7 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
               <div className="g imp">
                 <Revelar como="img" className="imp-f" src={IMPACTO.foto.src800} srcSet={`${IMPACTO.foto.src800} 800w, ${IMPACTO.foto.src} ${IMPACTO.foto.ancho}w`} sizes="(max-width: 1000px) 100vw, 824px" alt={IMPACTO.foto.alt} width={IMPACTO.foto.ancho} height={IMPACTO.foto.alto} loading="lazy" />
                 <Revelar className="imp-n osc" d={2}>
-                  <div><Cifra hasta={IMPACTO.jovenes} prefijo="+" /><p>jóvenes creaTIvos</p></div>
+                  <div><Cifra hasta={IMPACTO.jovenes} prefijo="+" /><p>Jóvenes creaTIvos</p></div>
                   <div><Cifra hasta={IMPACTO.paises} minimo={1} /><p>países: Colombia, Ecuador, Uruguay y Panamá</p></div>
                 </Revelar>
               </div>
@@ -226,13 +226,12 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
           {!pais ? (
             <section id="beneficios" className="sec">
               <div className="wrap">
-                <Revelar className="g sh"><h2 className="h2">Beneficios de ser <span className="ac">joven creaTIvo</span></h2><p className="lead">{BENEFICIOS.texto}</p></Revelar>
+                <Revelar className="g sh"><h2 className="h2">Beneficios de ser <span className="ac">Joven creaTIvo</span></h2><p className="lead">{BENEFICIOS.texto}</p></Revelar>
                 <div className="g">
                   <Revelar className="bt bt-beca osc">
-                    <img src="/logo-jc-redondo.webp" alt="" width={126} height={112} loading="lazy" />
                     <span className="cifra">100 %</span>
                     <h3 className="h3">{BENEFICIOS.beca.titulo}</h3>
-                    <p className="txt" style={{ maxWidth: "22em" }}>{BENEFICIOS.beca.texto}</p>
+                    <p className="txt">{BENEFICIOS.beca.texto}</p>
                   </Revelar>
                   <Revelar className="bt bt-vis" d={1}>
                     <Img f={BENEFICIOS.visitas.foto} sizes="(max-width: 760px) 100vw, 300px" />
@@ -329,7 +328,7 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
             <div className="wrap g" style={{ alignItems: "start" }}>
               <Revelar como="h2" className="h2" style={{ gridColumn: "1 / 6" }}>Preguntas <span className="ac">frecuentes</span></Revelar>
               <Revelar className="faq-l" d={1}>
-                {PREGUNTAS.map((f) => (
+                {preguntas(pais).map((f) => (
                   <details key={f.q}><summary>{f.q}<Icono nombre="mas" /></summary><p className="txt">{f.a}</p></details>
                 ))}
               </Revelar>
@@ -343,7 +342,6 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
           <div className="wrap">
             <div className="g pie-g" style={{ alignItems: "start" }}>
               <div style={{ gridColumn: "1 / 6", display: "flex", flexDirection: "column", gap: 28, alignItems: "flex-start" }}>
-                <img src="/logo-jc-redondo.webp" alt="Jóvenes creaTIvos" width={126} height={112} loading="lazy" style={{ display: "block", width: 126, height: 112, objectFit: "contain", background: "hsl(0 0% 100%)", borderRadius: 16, padding: 12, boxSizing: "content-box" }} />
                 {enlaceCta("footer", "btn btn-pri")}
               </div>
               <nav className="pie-c" aria-label="Pie de página" style={{ gridColumn: "7 / 9" }}><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
@@ -351,7 +349,7 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
               <div id="redes" className="pie-c" style={{ gridColumn: "11 / 13" }}><b>Redes</b>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                   {REDES.map((r) => (
-                    <a key={r.nombre} className="rb rb-o" href={r.url ?? "#redes"} aria-label={r.url ? r.nombre : `${r.nombre} (enlace pendiente)`} {...(r.url ? { target: "_blank", rel: "noopener" } : {})}>
+                    <a key={r.nombre} className="rb rb-o" href={r.url ?? "#redes"} aria-label={r.url ? `${r.nombre} de la Fundación ROFÉ (se abre en una pestaña nueva)` : `${r.nombre} (enlace pendiente)`} {...(r.url ? { target: "_blank", rel: "noopener" } : {})}>
                       <svg className="i" viewBox="0 0 24 24" aria-hidden="true">{ICONO_RED[r.nombre]}</svg>
                     </a>
                   ))}

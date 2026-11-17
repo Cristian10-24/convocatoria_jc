@@ -5,7 +5,7 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { conUtm, destinoInscripcion, rutaFormulario } from "@/modules/convocatoria/content/acciones";
 import { DEFINICIONES } from "@/modules/inscripcion/config/paises";
-import { ACERCA, BENEFICIOS, COHORTE, IMPACTO, INCLUYE, ORDEN_PAISES, PAISES, PREGUNTAS, comoFunciona, diapositivas, galeria, requisitos, rutas, testimoniosPara } from "@/modules/convocatoria/content/contenido";
+import { ACERCA, BENEFICIOS, COHORTE, IMPACTO, INCLUYE, ORDEN_PAISES, PAISES, PREGUNTAS, REDES, comoFunciona, preguntas, diapositivas, galeria, requisitos, rutas, testimoniosPara } from "@/modules/convocatoria/content/contenido";
 import { ETAPA_POR_DEFECTO, estadoConvocatoria, etapaDe, leerConfigEntorno } from "@/shared/config/convocatoria";
 import { PAISES as SLUGS, SEGMENTO_URL } from "@/shared/config/paises";
 
@@ -61,6 +61,22 @@ describe("contenido por país", () => {
       expect(`${t.nombre} ${t.ciudad}`).not.toMatch(/\[/);
       expect(t).not.toHaveProperty("cita");
     }
+  });
+
+  it("preguntas frecuentes: 6, en lenguaje neutro, con las sedes de cada país", () => {
+    expect(PREGUNTAS.map((f) => f.q)).toHaveLength(6);
+    for (const lista of [PREGUNTAS, ...Object.values(PAISES).map((p) => preguntas(p))]) {
+      const todo = lista.map((f) => `${f.q} ${f.a}`).join(" ");
+      // Sin tú ni vos: ni "necesitás"/"necesitas", ni "tenés"/"tienes", ni "me/te".
+      expect(todo).not.toMatch(/(necesit[aá]s|ten[eé]s|tienes|sab[eé]s|me prestan|recibo|tengo)/i);
+    }
+    expect(preguntas(PAISES.uy).find((f) => f.q.includes("virtual"))!.a).toContain("Colonia y Paysandú");
+    expect(preguntas(PAISES.col).map((f) => f.q).join(" ")).toContain("un computador");
+    expect(PREGUNTAS.find((f) => f.q.includes("virtual"))!.a).toContain("ciudades sede");
+  });
+
+  it("redes con enlace (sin pendientes)", () => {
+    expect(REDES.every((r) => r.url?.startsWith("https://"))).toBe(true);
   });
 
   it("requisitos: sin edad; herramientas con «computadora» (Colombia: «computador»)", () => {

@@ -27,11 +27,20 @@ function landing(pais: PaisSlug | null, config?: object) {
 const PRODUCCION = { uy: { estado: "abierta", cierra: "2026-12-18" } };
 
 describe("landing principal", () => {
+  it("la marca se escribe siempre «Jóvenes creaTIvos» (también en singular: «Joven creaTIvo/a»)", () => {
+    for (const pais of [null, "col", "ecu", "pan", "uy"] as const) {
+      const { html } = landing(pais, PRODUCCION);
+      const formas = [...html.replace(/jovenescreativos@/g, "").matchAll(/j[oó]ven(es)?\s+crea\s*t[ií]v[oa]s?/gi)].map((m) => m[0]);
+      expect(formas.length, pais ?? "principal").toBeGreaterThan(0);
+      for (const f of formas) expect(f, pais ?? "principal").toMatch(/^(Jóvenes creaTIvos|Joven creaTIv[oa])$/);
+    }
+  });
+
   it("trae las secciones del diseño y lleva al paso 0 del formulario", () => {
     const { html, texto } = landing(null, PRODUCCION);
     const secciones = [
       "Formando talento en las TIC", "Inscríbete desde tu país", "Impacto regional", "Rutas de aprendizaje", "8 meses que combinan lo virtual y lo presencial",
-      "Beneficios de ser joven creaTIvo", "¿Qué necesitas para aplicar?", "Así se vive el programa", "Acerca del programa", "Testimonios", "Preguntas frecuentes",
+      "Beneficios de ser Joven creaTIvo", "¿Qué necesitas para aplicar?", "Así se vive el programa", "Acerca del programa", "Testimonios", "Preguntas frecuentes",
     ];
     for (const t of secciones) expect(texto, t).toContain(t);
     expect(html).toContain('href="/inscripcion?origen=landing_principal&amp;ubicacion=hero_slide_1"');
@@ -85,7 +94,7 @@ describe("landing de Uruguay", () => {
     expect(html).toContain('aria-label="Tiempo para el cierre de las preinscripciones"');
     expect(texto).not.toContain("[CONFIRMAR FECHAS POR PAÍS]"); // la fecha viene confirmada en la configuración
     expect(texto).toContain("Qué no incluye");
-    expect(texto).not.toContain("Beneficios de ser joven creaTIvo"); // solo en la principal
+    expect(texto).not.toContain("Beneficios de ser Joven creaTIvo"); // solo en la principal
   });
 
   it("muy pronto: sin enlaces al formulario, con el aviso de apertura", () => {

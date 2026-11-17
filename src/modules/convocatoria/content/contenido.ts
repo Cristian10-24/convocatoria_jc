@@ -77,6 +77,8 @@ export type PaisLanding = {
   grado: string;
   gradoCorto: string;
   equipo: "computador" | "computadora";
+  /** Ciudades donde se hacen los encuentros presenciales (preguntas frecuentes). */
+  sedes: string;
   /** Pie de la foto de la actividad fuera del aula y la foto que la ilustra. */
   visita: string;
   fotoVisita: IdFoto;
@@ -89,23 +91,23 @@ export const PAISES: Record<PaisSlug, PaisLanding> = {
     nombre: "Colombia", pre: "col", voz: TU,
     ubicacion: "Vivir en Barranquilla, Bogotá D.C., Cali, Cartagena de Indias, Medellín (incluido el Valle de Aburrá) o ciudades cercanas.",
     grado: "Estar en 10.° u 11.°, o ser bachiller.", gradoCorto: "10.° y 11.°, o bachiller",
-    equipo: "computador", visita: "Visita a Sofka", fotoVisita: "col-visita",
+    equipo: "computador", sedes: "Barranquilla, Bogotá D.C., Cali, Cartagena de Indias y Medellín", visita: "Visita a Sofka", fotoVisita: "col-visita",
   }),
   ecu: p("ecu", {
     nombre: "Ecuador", pre: "ecu", voz: TU, ubicacion: "Vivir en Quito, Guayaquil o ciudades cercanas.",
     grado: "Estar en 2.° o 3.° de bachillerato, o ser bachiller.", gradoCorto: "2.° y 3.° de bachillerato, o bachiller",
-    equipo: "computadora", visita: "Visita a Sofka", fotoVisita: "ecu-visita",
+    equipo: "computadora", sedes: "Quito y Guayaquil", visita: "Visita a Sofka", fotoVisita: "ecu-visita",
   }),
   pan: p("pan", {
     nombre: "Panamá", pre: "pan", voz: TU, ubicacion: "Vivir en Ciudad de Panamá o ciudades cercanas de la provincia de Panamá.",
     grado: "Estar en 11.° o 12.°, o ser bachiller (egresado reciente).", gradoCorto: "11.° y 12.°, o bachiller",
     // El diseño pide "pan-visita", que no existe en el paquete: se usa pan-reto (decisión de la fase 0).
-    equipo: "computadora", visita: "Reto en equipo", fotoVisita: "pan-reto",
+    equipo: "computadora", sedes: "Ciudad de Panamá", visita: "Reto en equipo", fotoVisita: "pan-reto",
   }),
   uy: p("uy", {
     nombre: "Uruguay", pre: "uy", voz: VOS, ubicacion: "Vivir en Colonia, Paysandú o ciudades cercanas, o en Colón y Concepción del Uruguay (Argentina).",
     grado: "Estar en 5.° o 6.° de liceo, o ser bachiller.", gradoCorto: "5.° y 6.° de liceo, o bachiller",
-    equipo: "computadora", visita: "Visita pedagógica", fotoVisita: "uy-visita",
+    equipo: "computadora", sedes: "Colonia y Paysandú", visita: "Visita pedagógica", fotoVisita: "uy-visita",
   }),
 };
 
@@ -144,7 +146,7 @@ export function diapositivas(pais: PaisLanding | null, estado: EstadoLanding, et
 // ---------- Impacto y rutas ----------
 export const IMPACTO = {
   texto: "Jóvenes creaTIvos es una iniciativa de alto impacto dedicada a cerrar la brecha digital en América Latina, preparando a la próxima generación de desarrolladores, emprendedores y líderes digitales en la región.",
-  foto: foto("col-grupo", "Grupo de jóvenes creaTIvos de Colombia con camisetas y gorras del programa"),
+  foto: foto("col-grupo", "Grupo de Jóvenes creaTIvos de Colombia con camisetas y gorras del programa"),
   jovenes: 2300,
   paises: 4,
 };
@@ -221,7 +223,7 @@ export function galeria(pais: PaisLanding | null): FotoGaleria[] {
       { foto: foto("pan-hero-2", "Jóvenes creaTIvos de Panamá con sus gorras del programa", "center 35%"), pie: "Comunidad · Panamá" },
       { foto: foto("uy-visita", "Jóvenes creaTIvos de Uruguay durante una visita", "center 40%"), pie: "Visita pedagógica · Uruguay" },
       { foto: foto("ecu-comunidad", "Jóvenes creaTIvos de Ecuador reunidos en el aula", "center 40%"), pie: "Comunidad · Ecuador" },
-      { foto: foto("pan-comunidad", "Grupo de jóvenes creaTIvos de Panamá", "center 35%"), pie: "Comunidad · Panamá" },
+      { foto: foto("pan-comunidad", "Grupo de Jóvenes creaTIvos de Panamá", "center 35%"), pie: "Comunidad · Panamá" },
       { foto: foto("uy-comunidad", "Jóvenes creaTIvos de Uruguay reunidos", "center 45%"), pie: "Comunidad · Uruguay" },
     ];
   }
@@ -281,11 +283,28 @@ export const MOSTRAR_ALIADOS = false;
 /** Logos de aliados: pendientes de entregar. */
 export const ALIADOS_PENDIENTES = ["Sofka Technologies [LOGO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]", "[LOGO ALIADO]"];
 
-export const PREGUNTAS = [
-  { q: "¿Tiene algún costo el programa?", a: "No, es 100 % gratuito para todos los seleccionados gracias a nuestros aliados." },
-  { q: "¿Necesito conocimientos previos en código?", a: "No para las rutas iniciales. Empezamos desde los fundamentos, aunque la pasión por aprender es indispensable." },
-  { q: "¿Cuándo inician las clases?", a: "Las cohortes de 2027 inician en el primer trimestre. Los seleccionados recibirán el cronograma detallado por email." },
-];
+/**
+ * Preguntas frecuentes, en lenguaje neutro (sin tú ni vos: sirven igual en los 4 países). Cambian solo las ciudades de
+ * los encuentros y la palabra para el equipo (computador en Colombia).
+ */
+export function preguntas(pais: PaisLanding | null): Array<{ q: string; a: string }> {
+  const equipo = pais?.equipo === "computador" ? "un computador" : "una computadora";
+  const sedes = pais ? `en ${pais.sedes}` : "en las ciudades sede de cada país";
+  return [
+    { q: "¿Cuánto cuesta?", a: "Nada. Es una beca del 100 %: no hay costo de matrícula ni de inscripción." },
+    { q: "¿Hay que saber programar?", a: "No. El programa empieza desde cero: primero habilidades esenciales, después emprendimiento y por último desarrollo de software." },
+    { q: "¿Cuánto dura y cuándo empieza?", a: "8 meses: de marzo de 2027 a noviembre de 2027. Requiere unas 8 horas a la semana." },
+    { q: "¿Es virtual o presencial?", a: `Mayoritariamente virtual, con un encuentro presencial al mes ${sedes} y visitas a empresas.` },
+    { q: `¿El programa presta ${equipo}?`, a: `No. El programa no incluye equipos ni ayudas económicas: hace falta contar con ${equipo} e internet propios.` },
+    { q: "¿Qué se recibe al terminar?", a: "Un certificado de participación y la entrada a la comunidad Jóvenes creaTIvos, donde se comparten oportunidades laborales." },
+  ];
+}
+/** Preguntas de la landing principal. */
+export const PREGUNTAS = preguntas(null);
 
 /** Redes de la Fundación. Sin `url`, el enlace queda marcado como pendiente. */
-export const REDES: Array<{ nombre: "Instagram" | "YouTube" | "LinkedIn"; url?: string }> = [{ nombre: "Instagram" }, { nombre: "YouTube" }, { nombre: "LinkedIn" }];
+export const REDES: Array<{ nombre: "Instagram" | "YouTube" | "LinkedIn"; url?: string }> = [
+  { nombre: "Instagram", url: "https://www.instagram.com/tocaunavida/" },
+  { nombre: "YouTube", url: "https://www.youtube.com/channel/UCnb0QeYM_z_91NcTkjjm3SQ" },
+  { nombre: "LinkedIn", url: "https://www.linkedin.com/company/tocaunavida/" },
+];

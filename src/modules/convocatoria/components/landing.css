@@ -67,8 +67,8 @@
 .jcm .pb:hover small svg.i { transform: translateX(4px) }
 .jcm .cifra { font-size: clamp(80px,10.5vw,160px); line-height: .86; font-weight: 700; letter-spacing: -0.045em; font-variant-numeric: tabular-nums; display: block }
 .jcm .imp { align-items: end; row-gap: 0 }
-.jcm .imp-f { grid-column: 1/9; grid-row: 1; width: 100%; aspect-ratio: 16/10; object-fit: cover; object-position: center 40%; border-radius: 12px; display: block }
-.jcm .imp-n { grid-column: 8/13; grid-row: 1; position: relative; background: hsl(231.9 77.1% 20.6%); color: hsl(0 0% 100%); border-radius: 12px; padding: 48px; margin-bottom: -56px; display: flex; flex-direction: column; gap: 40px }
+.jcm .imp-f { grid-column: 1/8; grid-row: 1; width: 100%; aspect-ratio: 16/10; object-fit: cover; object-position: center 40%; border-radius: 12px; display: block }
+.jcm .imp-n { grid-column: 7/13; grid-row: 1; position: relative; background: hsl(231.9 77.1% 20.6%); color: hsl(0 0% 100%); border-radius: 12px; padding: 48px; margin-bottom: -56px; display: flex; flex-direction: column; gap: 40px }
 .jcm .imp-n p { font-size: 19px; line-height: 1.4; font-weight: 600; margin-top: 12px }
 .jcm .lt-b { display: flex; gap: 4px; height: 14px }
 .jcm .lt-b span { border-radius: 7px; transform-origin: left }
@@ -118,8 +118,8 @@
 .jcm .bt:hover { transform: translateY(-4px) }
 .jcm .bt h3 { font-size: 22px; line-height: 1.2; font-weight: 700 }
 .jcm .bt svg.i { width: 32px; height: 32px; margin-bottom: 8px; color: hsl(31.8 92.7% 40%) }
-.jcm .bt-beca { grid-column: 1/6; grid-row: 1/4; background: hsl(231.9 77.1% 20.6%); color: hsl(0 0% 100%); padding: 48px; justify-content: flex-end; gap: 20px; position: relative; min-height: 560px }
-.jcm .bt-beca img { position: absolute; top: 40px; left: 48px; width: 126px; height: 112px; object-fit: contain; background: hsl(0 0% 100%); border-radius: 16px; padding: 12px }
+.jcm .bt-beca { grid-column: 1/6; grid-row: 1/4; background: hsl(231.9 77.1% 20.6%); color: hsl(0 0% 100%); padding: 48px; justify-content: center; align-items: center; text-align: center; gap: 20px; position: relative; min-height: 560px }
+.jcm .bt-beca .txt { max-width: 22em }
 .jcm .bt-beca .cifra { color: hsl(31.8 92.7% 56.9%) }
 .jcm .bt-vis { grid-column: 6/13; display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); column-gap: 24px; padding: 0; overflow: hidden; align-items: stretch }
 .jcm .bt-vis img { grid-column: 1/4; width: 100%; height: 100%; min-height: 220px; object-fit: cover; display: block }
@@ -218,7 +218,6 @@
   .jcm .cf-f { min-height: 0; aspect-ratio: 16/10 }
   .jcm .bt-beca, .jcm .bt-vis, .jcm .bt-a, .jcm .bt-b, .jcm .bt-c, .jcm .bt-d { grid-column: 1/-1; grid-row: auto }
   .jcm .bt-beca { min-height: 0; padding: 36px 28px }
-  .jcm .bt-beca img { position: static; width: 90px; height: 80px; padding: 8px }
   .jcm .gt-l { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 88px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px }
   .jcm .pie-g { row-gap: 40px }
 }

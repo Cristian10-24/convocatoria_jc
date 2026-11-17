@@ -81,7 +81,8 @@ describe("landing de Uruguay", () => {
     expect(html.match(/data-track="cta_inscribirme"/g)?.length).toBe(ubicaciones.length);
     expect(html).toContain('data-pais="uy"');
     expect(html).toContain('target="_blank" rel="noopener"');
-    expect(texto).toContain("La primera etapa de inscripciones en Uruguay cierra el 18 de diciembre de 2026");
+    expect(texto).toContain("Las preinscripciones en Uruguay cierran el 18 de diciembre de 2026");
+    expect(html).toContain('aria-label="Tiempo para el cierre de las preinscripciones"');
     expect(texto).not.toContain("[CONFIRMAR FECHAS POR PAÍS]"); // la fecha viene confirmada en la configuración
     expect(texto).toContain("Qué no incluye");
     expect(texto).not.toContain("Beneficios de ser joven creaTIvo"); // solo en la principal
@@ -90,17 +91,17 @@ describe("landing de Uruguay", () => {
   it("muy pronto: sin enlaces al formulario, con el aviso de apertura", () => {
     const { html, texto } = landing("uy", {});
     expect(html).not.toContain("/inscripcion/uruguay");
-    expect(texto).toContain("Muy pronto abrimos las inscripciones en Uruguay.");
+    expect(texto).toContain("Muy pronto abrimos las preinscripciones en Uruguay.");
     expect(texto).toContain("Avisame cuando abran");
     expect(html).toContain('id="aviso"');
     expect(html).toContain('href="#aviso"');
-    expect(texto).not.toContain("cierra el");
+    expect(texto).not.toContain("cierran el");
   });
 
   it("cerrada: sin enlaces al formulario y con la invitación a las redes", () => {
     const { html, texto } = landing("uy", { uy: { estado: "cerrada" } });
     expect(html).not.toContain("/inscripcion/uruguay");
-    expect(texto).toContain("La primera etapa de inscripciones en Uruguay ya cerró.");
+    expect(texto).toContain("Las preinscripciones en Uruguay ya cerraron.");
     expect(texto).toContain("Entérate en redes de la próxima etapa");
     expect(html).toContain('data-track="cta_redes"');
   });
@@ -108,6 +109,40 @@ describe("landing de Uruguay", () => {
   it("la fecha de cierre pasada cierra la landing aunque la configuración diga abierta", () => {
     const { html } = landing("uy", { uy: { estado: "abierta", cierra: "2020-01-01" } });
     expect(html).not.toContain("/inscripcion/uruguay");
+  });
+});
+
+describe("etapa y fechas por país", () => {
+  it("la principal solo nombra como abierto lo que está abierto (con el valor de producción, Uruguay)", () => {
+    const { texto } = landing(null, PRODUCCION);
+    expect(texto).toContain("Preinscripciones abiertas en Uruguay.");
+    expect(texto).not.toContain("Inscripciones 2027 abiertas");
+    for (const p of ["Colombia", "Ecuador", "Panamá"]) expect(texto).not.toMatch(new RegExp(`(abiertas|Hasta el)[^.]*${p}`));
+  });
+
+  it("Colombia, Ecuador y Panamá (muy pronto): sin fecha ni [CONFIRMAR]; «Muy pronto» y el aviso, con «inscripciones»", () => {
+    for (const p of ["col", "ecu", "pan"] as const) {
+      const { html, texto } = landing(p, PRODUCCION);
+      expect(texto, p).not.toMatch(/18 de diciembre|\[CONFIRMAR|preinscripciones|cierran el/i);
+      expect(texto, p).toContain("Inscripciones Muy pronto");
+      expect(html, p).toContain('data-ubicacion="fechas_clave"');
+      expect(texto, p).toMatch(/Muy pronto abrimos las inscripciones en/);
+    }
+  });
+
+  it("Uruguay: «Preinscripciones · Hasta el 18 de diciembre de 2026» en las fechas clave", () => {
+    expect(landing("uy", PRODUCCION).texto).toContain("Preinscripciones Hasta el 18 de diciembre de 2026");
+  });
+
+  it("el término de la etapa se cambia por país en CONVOCATORIA_CONFIG, sin tocar código", () => {
+    const config = { ...PRODUCCION, col: { estado: "abierta", cierra: "2027-02-15", etapa: "preinscripciones" } };
+    const col = landing("col", config).texto;
+    expect(col).toContain("Las preinscripciones en Colombia cierran el 15 de febrero de 2027");
+    expect(landing(null, config).texto).toContain("Preinscripciones abiertas en Colombia y Uruguay.");
+    // Con etapas distintas abiertas, la principal usa el término genérico.
+    const mezcla = { ...PRODUCCION, col: { estado: "abierta" } };
+    expect(landing(null, mezcla).texto).toContain("Inscripciones abiertas en Colombia y Uruguay.");
+    expect(landing("col", mezcla).texto).toContain("Inscripciones Abiertas"); // abierta sin fecha: no inventa una
   });
 });
 

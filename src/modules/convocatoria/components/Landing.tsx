@@ -3,7 +3,7 @@
 // estática (○) y no lee Mongo ni cookies. El estado se lee de CONVOCATORIA_CONFIG al construir.
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { estadoConvocatoria, finDelCierre, leerConfigEntorno } from "@/shared/config/convocatoria";
+import { estadoConvocatoria, etapaDe, etapaMayuscula, finDelCierre, leerConfigEntorno } from "@/shared/config/convocatoria";
 import { CODIGO_MEDICION, NOMBRE_PAIS, type PaisSlug } from "@/shared/config/paises";
 import { CONTACTO } from "@/shared/config/sitio";
 import Bandera from "@/shared/ui/Bandera";
@@ -72,10 +72,18 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
   const abierta = estado === "abierta";
   const voz = pais?.voz ?? PAISES.col.voz;
   const paisMed = slug ? CODIGO_MEDICION[slug] : "sin_definir";
-  const cierra = config.cierra ?? CIERRE_PRIMERA_ETAPA;
-  // Landing principal: la fecha clave es la de las preinscripciones de Uruguay (la única confirmada).
-  const cierreUy = slug ? undefined : (leerConfigEntorno().uy?.cierra ?? CIERRE_PRIMERA_ETAPA);
-  const fechaPendiente = MOSTRAR_PENDIENTES && !config.cierra;
+  const configEntorno = leerConfigEntorno();
+  // Fecha de cierre: la configurada; sin ella, solo Uruguay tiene una por defecto. Los demás no muestran fecha.
+  const cierreDe = (p: PaisSlug) => configEntorno[p]?.cierra ?? (p === "uy" ? CIERRE_PRIMERA_ETAPA : undefined);
+  const cierra = slug ? cierreDe(slug) : undefined;
+  const etapa = slug ? etapaDe(slug, configEntorno) : "inscripciones";
+  // Landing principal: solo nombra los países abiertos de verdad (con su etapa y su fecha).
+  const abiertos = slug ? [] : ORDEN_PAISES.filter((p) => estadoConvocatoria(p, { entorno: configEntorno }).estado === "abierta");
+  const etapasAbiertas = [...new Set(abiertos.map((p) => etapaDe(p, configEntorno)))];
+  const etapaPrincipal = etapasAbiertas.length === 1 ? etapasAbiertas[0]! : "inscripciones";
+  const listaNombres = (ps: PaisSlug[]) => ps.map((p) => PAISES[p].nombre).join(", ").replace(/, ([^,]*)$/, " y $1");
+  const textoAbiertas = abiertos.length ? `${etapaMayuscula(etapaPrincipal)} abiertas en ${listaNombres(abiertos)}.` : "Inscripciones 2027 muy pronto.";
+  const fechaPrincipal = abiertos.map((p) => ({ p, cierra: cierreDe(p) })).find((x) => x.cierra);
 
   /** Botón principal según el estado: inscribirse, dejar el correo o ir a las redes. */
   const cta = (ubicacion: string): Enlace & { texto: string; track: string } =>
@@ -88,7 +96,7 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
     return <a className={clase} {...attrs(c)} data-track={c.track} data-ubicacion={ubicacion} data-pais={paisMed}>{c.texto}{flecha ? <Icono nombre="flecha" clase="fl" /> : null}</a>;
   };
 
-  const slides = diapositivas(pais, estado);
+  const slides = diapositivas(pais, estado, etapa, textoAbiertas);
   const pieHero = estado === "pronto" && slug ? <AvisoApertura pais={slug} paisMed={paisMed} avisame={voz.avisame} />
     : estado === "cerrada" ? <div><a className="btn btn-ter-b btn-lg" href="#redes" data-track="cta_redes" data-ubicacion="hero" data-pais={paisMed}>Entérate en redes de la próxima etapa</a></div>
     : undefined;
@@ -124,14 +132,14 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
             </section>
           ) : null}
 
-          {pais && slug && abierta ? (
+          {pais && slug && abierta && cierra ? (
             <div className="cierre">
               <div className="wrap cierre-in">
                 <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <span className="bd"><Bandera pais={slug} /></span>
-                  <span>La primera etapa de inscripciones en {pais.nombre} cierra el <strong>{fechaLarga(cierra)}</strong>{fechaPendiente ? <> <span className="falta">[CONFIRMAR FECHAS POR PAÍS]</span></> : null}</span>
+                  <span>Las {etapa} en {pais.nombre} cierran el <strong>{fechaLarga(cierra)}</strong></span>
                 </span>
-                <Reloj finMs={finDelCierre(cierra)} />
+                <Reloj finMs={finDelCierre(cierra)} etiqueta={`Tiempo para el cierre de las ${etapa}`} />
               </div>
             </div>
           ) : null}
@@ -197,10 +205,17 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
               items={comoFunciona(pais).map((c) => ({ titulo: c.titulo, texto: c.texto, icono: TRAZO[c.icono], foto: c.foto }))}
             >
               <Revelar className="cf-h">
-                {cierreUy ? (
-                  <div><span>Preinscripciones en Uruguay</span><b>Hasta el {fechaLarga(cierreUy)}</b></div>
+                {pais ? (
+                  // País: su etapa y su fecha solo si la tiene; si no ha abierto, "Muy pronto" y el aviso.
+                  <div>
+                    <span>{etapaMayuscula(etapa)}</span>
+                    <b>{cierra && estado !== "pronto" ? `Hasta el ${fechaLarga(cierra)}` : estado === "pronto" ? "Muy pronto" : estado === "cerrada" ? "Cerradas" : "Abiertas"}</b>
+                    {estado === "pronto" ? <a className="cf-aviso" href="#aviso" data-track="cta_avisame" data-ubicacion="fechas_clave" data-pais={paisMed}>{voz.avisame} cuando abran</a> : null}
+                  </div>
+                ) : fechaPrincipal ? (
+                  <div><span>{etapaMayuscula(etapaDe(fechaPrincipal.p, configEntorno))} en {PAISES[fechaPrincipal.p].nombre}</span><b>Hasta el {fechaLarga(fechaPrincipal.cierra!)}</b></div>
                 ) : (
-                  <div><span>Primera etapa de inscripciones</span><b>Hasta el {fechaLarga(cierra)}</b>{fechaPendiente ? <span className="falta" style={{ alignSelf: "flex-start" }}>[CONFIRMAR]</span> : null}</div>
+                  <div><span>Inscripciones 2027</span><b>Muy pronto</b></div>
                 )}
                 <div><span>Inicio del programa</span><b>{COHORTE.inicio}</b></div>
                 <div><span>Cierre y graduación</span><b>{COHORTE.fin}</b></div>

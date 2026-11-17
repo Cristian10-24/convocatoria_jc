@@ -77,13 +77,14 @@ export const IU = {
     conDocumento: "con tu número de documento.",
   },
   cerradas: {
-    titulo: "Las inscripciones en {pais} están cerradas",
-    cuerpo: "La primera etapa de inscripciones de la cohorte {anio} ya terminó. Si ya te inscribiste, tu inscripción sigue en revisión.",
+    // {etapa}: "inscripciones" o "preinscripciones", según el país (ver etapaDe en shared/config/convocatoria.ts).
+    titulo: "Las {etapa} en {pais} están cerradas",
+    cuerpo: "Las {etapa} de la cohorte {anio} ya terminaron. Si ya te inscribiste, tu inscripción sigue en revisión.",
     dudas: { tu: "Escríbenos a", vos: "Escribinos a" },
     dudas2: { tu: "si tienes dudas, o sigue nuestras redes.", vos: "si tenés dudas, o seguí nuestras redes." },
   },
   pronto: {
-    titulo: "Las inscripciones en {pais} abren muy pronto",
+    titulo: "Las {etapa} en {pais} abren muy pronto",
     cuerpo: { tu: "El formulario de {pais} todavía no está abierto. En la página de la convocatoria puedes dejar tu correo para que te avisemos.", vos: "El formulario de {pais} todavía no está abierto. En la página de la convocatoria podés dejar tu correo para que te avisemos." },
   },
   paso0: {

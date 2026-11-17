@@ -236,7 +236,7 @@ export function AvisoApertura({ pais, paisMed, avisame }: { pais: string; paisMe
 
 // ---------- Reloj de cierre ----------
 /** Cuenta regresiva hasta el cierre. La página es estática: el tiempo se calcula en el navegador, después de cargar. */
-export function Reloj({ finMs }: { finMs: number }) {
+export function Reloj({ finMs, etiqueta }: { finMs: number; etiqueta: string }) {
   const [ahora, setAhora] = useState<number | null>(null);
   useEffect(() => {
     const marcar = () => setAhora(Date.now());
@@ -250,7 +250,7 @@ export function Reloj({ finMs }: { finMs: number }) {
   const h = ms === null ? "–" : dos(Math.floor((ms % 864e5) / 36e5));
   const min = ms === null ? "–" : dos(Math.floor((ms % 36e5) / 6e4));
   return (
-    <span className="reloj" role="timer" aria-label="Tiempo para el cierre">
+    <span className="reloj" role="timer" aria-label={etiqueta}>
       <span><b>{d}</b> días</span><span><b>{h}</b> h</span><span><b>{min}</b> min</span>
     </span>
   );

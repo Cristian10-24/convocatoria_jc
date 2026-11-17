@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { conUtm, destinoInscripcion, rutaFormulario } from "@/modules/convocatoria/content/acciones";
 import { DEFINICIONES } from "@/modules/inscripcion/config/paises";
 import { ACERCA, BENEFICIOS, COHORTE, IMPACTO, INCLUYE, ORDEN_PAISES, PAISES, PREGUNTAS, comoFunciona, diapositivas, galeria, requisitos, rutas, testimoniosPara } from "@/modules/convocatoria/content/contenido";
-import { estadoConvocatoria, leerConfigEntorno } from "@/shared/config/convocatoria";
+import { ETAPA_POR_DEFECTO, estadoConvocatoria, etapaDe, leerConfigEntorno } from "@/shared/config/convocatoria";
 import { PAISES as SLUGS, SEGMENTO_URL } from "@/shared/config/paises";
 
 describe("contenido por país", () => {
@@ -122,6 +122,22 @@ describe("CONVOCATORIA_CONFIG", () => {
     expect(leerConfigEntorno('["uy"]')).toEqual({});
     expect(leerConfigEntorno("")).toEqual({});
     expect(err).toHaveBeenCalledTimes(2);
+    err.mockRestore();
+  });
+
+  it("etapa: Uruguay en preinscripciones y los demás en inscripciones; se cambia por país en la configuración", () => {
+    expect(ETAPA_POR_DEFECTO).toEqual({ uy: "preinscripciones", col: "inscripciones", ecu: "inscripciones", pan: "inscripciones" });
+    const produccion = leerConfigEntorno('{"uy":{"estado":"abierta","cierra":"2026-12-18"}}');
+    for (const p of SLUGS) expect(etapaDe(p, produccion), p).toBe(p === "uy" ? "preinscripciones" : "inscripciones");
+    const cambiada = leerConfigEntorno(JSON.stringify({ col: { estado: "abierta", etapa: "preinscripciones" }, uy: { etapa: "inscripciones" } }));
+    expect(etapaDe("col", cambiada)).toBe("preinscripciones");
+    expect(etapaDe("uy", cambiada)).toBe("inscripciones");
+    // Un término desconocido invalida solo la entrada de ese país (queda en "muy pronto" y con su término por defecto).
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const rota = leerConfigEntorno(JSON.stringify({ ecu: { estado: "abierta", etapa: "matriculas" }, uy: { estado: "abierta" } }));
+    expect(rota.ecu).toEqual({ estado: "proxima" });
+    expect(etapaDe("ecu", rota)).toBe("inscripciones");
+    expect(rota.uy).toEqual({ estado: "abierta" });
     err.mockRestore();
   });
 

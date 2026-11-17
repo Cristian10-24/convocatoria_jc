@@ -297,3 +297,6 @@
 }
 /* Las fotos llevan width y height (para reservar su espacio): el alto real lo deciden su ancho y su aspect-ratio. */
 .jcm img { height: auto; }
+/* Fechas clave de un país que aún no abre: enlace al aviso de apertura. */
+.jcm .cf-h .cf-aviso { align-self: flex-start; color: hsl(33.2 86.2% 74.5%); font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.jcm .cf-h .cf-aviso:hover { color: hsl(0 0% 100%); }

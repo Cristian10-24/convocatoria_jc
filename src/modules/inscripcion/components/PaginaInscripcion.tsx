@@ -3,7 +3,7 @@
 // pronto", "cerradas" o mantenimiento. La API vuelve a revisar el estado en cada envío, así que un HTML viejo en
 // caché no permite inscribirse fuera de plazo.
 import type { Metadata } from "next";
-import { estadoConvocatoria } from "@/shared/config/convocatoria";
+import { estadoConvocatoria, etapaDe } from "@/shared/config/convocatoria";
 import { entorno } from "@/shared/config/env";
 import { CODIGO_MEDICION, NOMBRE_PAIS, PAISES, SEGMENTO_URL, type PaisSlug } from "@/shared/config/paises";
 import Bandera from "@/shared/ui/Bandera";
@@ -52,6 +52,7 @@ export default async function PaginaInscripcion({ pais }: { pais: PaisSlug }) {
   const anio = anioDe(env.CONVOCATORIA_ID);
   const rutaLanding = `/${SEGMENTO_URL[pais]}`;
   const { estado } = estadoConvocatoria(pais);
+  const etapa = etapaDe(pais);
 
   if (estado === "mantenimiento") return <PantallaSistema tipo="mantenimiento" pais={NOMBRE_PAIS[pais]} inicio={rutaLanding} />;
 
@@ -62,7 +63,7 @@ export default async function PaginaInscripcion({ pais }: { pais: PaisSlug }) {
   if (estado === "abierta" && def.config.habilitado) {
     return (
       <ProveedorMovimiento>
-        <FormularioCliente def={def} anio={anio} claveTurnstile={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} rutaLanding={rutaLanding} paisMed={CODIGO_MEDICION[pais]} />
+        <FormularioCliente def={def} anio={anio} claveTurnstile={env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} rutaLanding={rutaLanding} paisMed={CODIGO_MEDICION[pais]} etapa={etapa} />
       </ProveedorMovimiento>
     );
   }
@@ -72,11 +73,11 @@ export default async function PaginaInscripcion({ pais }: { pais: PaisSlug }) {
       <Cabecera anio={anio} pais={pais} volver={rutaLanding} />
       <main className="wrap fw fcol" style={{ justifyContent: "center" }}>
         {estado === "cerrada" ? (
-          <Cerradas def={def} anio={anio} rutaLanding={rutaLanding} />
+          <Cerradas def={def} anio={anio} rutaLanding={rutaLanding} etapa={etapa} />
         ) : (
           <section className="fcard centro" style={{ alignItems: "flex-start", textAlign: "left" }} aria-labelledby="t-pronto">
             <span style={{ width: 64, height: 64, borderRadius: "50%", background: "hsl(218.8 68% 95.1%)", color: "hsl(221.2 71.2% 42.2%)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icono nombre="reloj" tam={30} /></span>
-            <h1 id="t-pronto" className="ft">{plantilla(IU.pronto.titulo, { pais: def.config.nombre })}</h1>
+            <h1 id="t-pronto" className="ft">{plantilla(IU.pronto.titulo, { pais: def.config.nombre, etapa })}</h1>
             <p className="fs" style={{ margin: 0 }}>{plantilla(txt(IU.pronto.cuerpo, def.config.trato), { pais: def.config.nombre })}</p>
             <a className="btn btn-sec btn-lg" href={rutaLanding}>{IU.volver}</a>
           </section>

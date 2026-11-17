@@ -20,6 +20,15 @@
         ],
         "createdAt": "2026-11-11T20:28:50.661Z",
         "reason": "Confirmado por el usuario: el degradado naranja del título viene del diseño entregado y se queda"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/modules/convocatoria/components/Landing.tsx"
+        ],
+        "createdAt": "2026-11-17T17:28:50.207Z",
+        "reason": "Falso positivo: las fotos se pasan por props a <Img f={...}>; una prueba verifica que existen"
       }
     ]
   }

@@ -31,11 +31,21 @@ export type EstadoConvocatoria = z.infer<typeof EstadoConvocatoria>;
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Cómo se llama la etapa de inscripción en cada país. Uruguay está en "preinscripciones"; los demás usan el término
+ * genérico "inscripciones" hasta que abran. Se cambia sin tocar código con `etapa` en CONVOCATORIA_CONFIG.
+ */
+export const Etapa = z.enum(["inscripciones", "preinscripciones"]);
+export type Etapa = z.infer<typeof Etapa>;
+export const ETAPA_POR_DEFECTO: Record<PaisSlug, Etapa> = { uy: "preinscripciones", col: "inscripciones", ecu: "inscripciones", pan: "inscripciones" };
+
 /** Configuración de un país (en contenido.ts o en la variable de entorno). */
 export const ConfigPais = z.object({
   estado: EstadoConvocatoria.optional(),
   /** Último día para inscribirse (AAAA-MM-DD). Pasado ese día, "abierta" se trata como "cerrada". */
   cierra: z.string().regex(FECHA).optional(),
+  /** Nombre de la etapa ("inscripciones" o "preinscripciones"); sin él, el de ETAPA_POR_DEFECTO. */
+  etapa: Etapa.optional(),
   acciones: z.partialRecord(z.enum(BOTONES), Accion).optional(),
 });
 export type ConfigPais = z.infer<typeof ConfigPais>;
@@ -98,3 +108,11 @@ export function estadoConvocatoria(
   if (estado === "abierta" && cierra && (opciones.ahora ?? Date.now()) > finDelCierre(cierra)) return { estado: "cerrada", cierra };
   return { estado, cierra };
 }
+
+/** Nombre de la etapa de inscripción del país: CONVOCATORIA_CONFIG → valor por defecto del país. */
+export function etapaDe(pais: PaisSlug, entorno: Partial<Record<PaisSlug, ConfigPais>> = leerConfigEntorno()): Etapa {
+  return entorno[pais]?.etapa ?? ETAPA_POR_DEFECTO[pais];
+}
+
+/** "preinscripciones" → "Preinscripciones" (para rótulos al inicio de frase). */
+export const etapaMayuscula = (etapa: Etapa): string => etapa.charAt(0).toUpperCase() + etapa.slice(1);

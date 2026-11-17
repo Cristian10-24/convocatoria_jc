@@ -216,4 +216,6 @@ Rama `feature/rediseno-2027`. Nada de esto se hace antes: son pasos del cierre, 
 - [ ] **Textos legales:** siguen marcados `[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]` hasta que la Fundación entregue los definitivos.
 - [ ] **Correos de los usuarios del panel** (login por correo) y variables nuevas documentadas en `.env.example`.
 - [ ] **Producción:** `CONVOCATORIA_CONFIG` sigue siendo `{"uy":{"estado":"abierta","cierra":"2026-12-18"}}`; comprobar en un preview que `/uy` y `/inscripcion/uy` redirigen y que una inscripción de prueba de Uruguay llega al panel.
+- [ ] **Ciudades cercanas de Colombia, Ecuador y Panamá** (paso Ciudad del formulario): hoy son las del plan inicial, marcadas como pendientes en `src/modules/inscripcion/paises/{col,ecu,pan}.ts`. Confirmarlas con cada país antes de abrirlo. Uruguay ya tiene las suyas confirmadas.
+- [ ] **Abrir otro país:** poner su `estado`, su `cierra` y, si corresponde, su `etapa` ("inscripciones" o "preinscripciones") en `CONVOCATORIA_CONFIG`. Sin `cierra`, la landing no muestra fecha.
 - [ ] typecheck, lint, pruebas y build en verde; sin push ni merge hasta la confirmación.

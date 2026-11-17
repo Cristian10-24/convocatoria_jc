@@ -6,7 +6,10 @@ import { SEGMENTO_URL, type PaisSlug } from "@/shared/config/paises";
 /** Cohorte a la que se convoca. */
 export const COHORTE = { anio: 2027, inicio: "Marzo de 2027", fin: "Noviembre de 2027", horasSemana: 8 } as const;
 
-/** Cierre de la 1.ª etapa si CONVOCATORIA_CONFIG no trae "cierra". Con "cierra" en la configuración, manda esa. */
+/**
+ * Cierre de las preinscripciones de URUGUAY si CONVOCATORIA_CONFIG no trae "cierra" (con "cierra", manda esa).
+ * Los demás países no tienen fecha hasta que se configure: no se inventa ninguna.
+ */
 export const CIERRE_PRIMERA_ETAPA = "2026-12-18";
 
 /**
@@ -114,18 +117,23 @@ export type EstadoLanding = "abierta" | "pronto" | "cerrada";
 // ---------- Hero ----------
 export type Diapositiva = { foto: Foto; a: string; b: string; c: string; sub: string };
 
-export function diapositivas(pais: PaisLanding | null, estado: EstadoLanding): Diapositiva[] {
+/**
+ * Diapositivas del hero. `etapa`: nombre de la etapa del país ("inscripciones" o "preinscripciones").
+ * `abiertas` (solo la principal): texto de qué está abierto, armado con la configuración (p. ej. "Preinscripciones
+ * abiertas en Uruguay."), para no dar a entender que hay países abiertos que no lo están.
+ */
+export function diapositivas(pais: PaisLanding | null, estado: EstadoLanding, etapa = "inscripciones", abiertas = "Inscripciones 2027 muy pronto."): Diapositiva[] {
   if (!pais) {
     return [
-      { foto: foto("ecu-hero", "", "center 30%"), a: "Formando talento en ", b: "las TIC", c: "", sub: "Inscripciones 2027 abiertas." },
+      { foto: foto("ecu-hero", "", "center 30%"), a: "Formando talento en ", b: "las TIC", c: "", sub: abiertas },
       { foto: foto("col-codigo", "", "center 40%"), a: TU.aprende, b: "desde cero", c: "", sub: "Beca del 100 %." },
       { foto: foto("col-hero", "", "center 45%"), a: "", b: "+2.300 jóvenes", c: " en 4 países ya lo vivieron", sub: "Colombia, Ecuador, Panamá y Uruguay." },
       { foto: foto("col-taller", "", "center 35%"), a: TU.convierte, b: "un proyecto real", c: "", sub: "Ruta Emprender." },
     ];
   }
   const sub =
-    estado === "pronto" ? `Muy pronto abrimos las inscripciones en ${pais.nombre}.`
-    : estado === "cerrada" ? `La primera etapa de inscripciones en ${pais.nombre} ya cerró.`
+    estado === "pronto" ? `Muy pronto abrimos las ${etapa} en ${pais.nombre}.`
+    : estado === "cerrada" ? `Las ${etapa} en ${pais.nombre} ya cerraron.`
     : "Formando talento en las TIC, con beca del 100 %.";
   return [
     { foto: foto(`${pais.pre}-hero`, "", "center 40%"), a: "Inscripciones 2027 · ", b: pais.nombre, c: "", sub },

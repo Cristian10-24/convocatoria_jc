@@ -29,7 +29,7 @@ import {
 import PasoCiudad from "./PasoCiudad";
 import Turnstile, { type ControlTurnstile } from "./Turnstile";
 
-type Props = { def: DefinicionPais; anio: string; claveTurnstile?: string; rutaLanding: string; paisMed: string };
+type Props = { def: DefinicionPais; anio: string; claveTurnstile?: string; rutaLanding: string; paisMed: string; etapa: string };
 type Pantalla = "formulario" | "ok" | "duplicado" | "cerradas";
 type PasoVista = { id: string; titulo: TextoTrato; corto: TextoTrato; descripcion?: TextoTrato; campos: string[] };
 
@@ -57,7 +57,7 @@ const EXCLUYENTES = ["ninguna", "prefiero_no"];
 const AUTOCOMPLETAR: Record<string, string> = { nombres: "given-name", apellidos: "family-name", direccion: "street-address", ciudad: "address-level2", ciudadOtra: "address-level2", correo: "email", whatsapp: "tel-national" };
 const MAXIMO: Record<string, number> = { direccion: 160, nombres: 80, apellidos: 80, institucion: 120, anioEgreso: 4, promedio: 5, lenguajes: 120, embajador: 120 };
 
-export default function Formulario({ def, anio, claveTurnstile, rutaLanding, paisMed }: Props) {
+export default function Formulario({ def, anio, claveTurnstile, rutaLanding, paisMed, etapa }: Props) {
   const { config: cfg, pais } = def;
   const tr = cfg.trato;
   const t = useCallback((x: TextoTrato) => txt(x, tr), [tr]);
@@ -332,7 +332,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
               <a className="btn btn-sec btn-lg" href={rutaLanding}>{IU.volver}</a>
             </section>
           ) : (
-            <Cerradas def={def} anio={anio} rutaLanding={rutaLanding} />
+            <Cerradas def={def} anio={anio} rutaLanding={rutaLanding} etapa={etapa} />
           )}
         </main>
       </div>
@@ -507,13 +507,13 @@ function Fecha({ id, etiqueta, valor, error, hoy, nota, alCambiar }: { id: strin
 }
 
 /** Estado "inscripciones cerradas" (también lo usa la página cuando el país ya cerró). */
-export function Cerradas({ def, anio, rutaLanding }: { def: DefinicionPais; anio: string; rutaLanding: string }) {
+export function Cerradas({ def, anio, rutaLanding, etapa }: { def: DefinicionPais; anio: string; rutaLanding: string; etapa: string }) {
   const tr = def.config.trato;
   return (
     <section className="fcard centro" style={{ alignItems: "flex-start", textAlign: "left" }} aria-labelledby="t-cer">
       <span style={{ width: 64, height: 64, borderRadius: "50%", background: "hsl(231.9 22.2% 92.9%)", color: "hsl(231.9 77.1% 20.6%)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icono nombre="candado" tam={30} /></span>
-      <h1 id="t-cer" className="ft">{plantilla(IU.cerradas.titulo, { pais: def.config.nombre })}</h1>
-      <p className="fs" style={{ margin: 0 }}>{plantilla(IU.cerradas.cuerpo, { anio })}</p>
+      <h1 id="t-cer" className="ft">{plantilla(IU.cerradas.titulo, { pais: def.config.nombre, etapa })}</h1>
+      <p className="fs" style={{ margin: 0 }}>{plantilla(IU.cerradas.cuerpo, { anio, etapa })}</p>
       <p style={{ fontSize: 16, lineHeight: 1.5 }}>{txt(IU.cerradas.dudas, tr)} <a href={`mailto:${CONTACTO.correo}`}>{CONTACTO.correo}</a> {txt(IU.cerradas.dudas2, tr)}</p>
       <a className="btn btn-sec btn-lg" href={rutaLanding}>{IU.volver}</a>
     </section>

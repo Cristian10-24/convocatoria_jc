@@ -294,3 +294,5 @@
   /* Decisión de la fase 1: en celular un botón largo puede partirse en dos líneas, centrado y con su alto mínimo. */
   .jcm .btn { white-space: normal; text-align: center; line-height: 1.2; padding-top: 8px; padding-bottom: 8px; }
 }
+/* Las fotos llevan width y height (para reservar su espacio): el alto real lo deciden su ancho y su aspect-ratio. */
+.jcm img { height: auto; }

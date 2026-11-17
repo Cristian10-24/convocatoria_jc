@@ -357,12 +357,12 @@ export function PieSitio({ pais, cta }: { pais: PaisSlug | null; cta?: ReactNode
   <footer className="pie osc">
     <div className="wrap">
       <div className="g pie-g" style={{ alignItems: "start" }}>
-        <div style={{ gridColumn: "1 / 6", display: "flex", flexDirection: "column", gap: 28, alignItems: "flex-start" }}>
+        <div className="pie-cta" style={{ display: "flex", flexDirection: "column", gap: 28, alignItems: "flex-start" }}>
           {cta}
         </div>
-        <nav className="pie-c" aria-label="Pie de página" style={{ gridColumn: "7 / 9" }}><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
-        <nav className="pie-c" aria-label="Legal" style={{ gridColumn: "9 / 11" }}><b>Legal</b><a href="/terminos">Términos</a><a href={pais ? `/privacidad?pais=${PAISES[pais].ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
-        <div id="redes" className="pie-c" style={{ gridColumn: "11 / 13" }}><b>Redes</b>
+        <nav className="pie-c pie-c1" aria-label="Pie de página"><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
+        <nav className="pie-c pie-c2" aria-label="Legal"><b>Legal</b><a href="/terminos">Términos</a><a href={pais ? `/privacidad?pais=${PAISES[pais].ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
+        <div id="redes" className="pie-c pie-c3"><b>Redes</b>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {REDES.map((r) => (
               <a key={r.nombre} className="rb rb-o" href={r.url ?? "#redes"} aria-label={r.url ? `${r.nombre} de la Fundación ROFÉ (se abre en una pestaña nueva)` : `${r.nombre} (enlace pendiente)`} {...(r.url ? { target: "_blank", rel: "noopener" } : {})}>

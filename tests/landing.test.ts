@@ -43,8 +43,11 @@ describe("landing principal", () => {
       "Beneficios de ser Joven creaTIvo", "¿Qué necesitas para aplicar?", "Así se vive el programa", "Acerca del programa", "Testimonios", "Preguntas frecuentes",
     ];
     for (const t of secciones) expect(texto, t).toContain(t);
-    expect(html).toContain('href="/inscripcion?origen=landing_principal&amp;ubicacion=hero_slide_1"');
-    for (const ruta of ["/colombia", "/ecuador", "/panama", "/uruguay"]) expect(html).toContain(`href="${ruta}"`);
+    // "Inscribirme" en la principal baja a la franja de países (misma página); ahí cada país abierto va a su formulario.
+    expect(html).toContain('href="#paises"');
+    expect(html).not.toContain('target="_blank" rel="noopener" data-track="cta_inscribirme"');
+    for (const ruta of ["/colombia", "/ecuador", "/panama"]) expect(html).toContain(`href="${ruta}"`);
+    expect(html).toContain('href="/inscripcion/uruguay?origen=landing_principal&amp;ubicacion=franja_paises"');
     expect(html).toContain('data-ubicacion="franja_paises"');
     expect(html).toContain('data-pais="sin_definir"');
     expect(html.match(/<h1/g)).toHaveLength(1);
@@ -83,13 +86,13 @@ describe("landing de Uruguay", () => {
     }
   });
 
-  it("abierta: los botones llevan al formulario propio en pestaña nueva, con país y ubicación, y sale el cierre", () => {
+  it("abierta: los botones llevan al formulario propio en la misma pestaña, con país y ubicación, y sale el cierre", () => {
     const { html, texto } = landing("uy", PRODUCCION);
     const ubicaciones = ["nav", "hero_slide_1", "rutas", "requisitos", "sticky_movil", "footer"];
     for (const u of ubicaciones) expect(html, u).toContain(`href="/inscripcion/uruguay?origen=landing_pais&amp;ubicacion=${u}"`);
     expect(html.match(/data-track="cta_inscribirme"/g)?.length).toBe(ubicaciones.length);
     expect(html).toContain('data-pais="uy"');
-    expect(html).toContain('target="_blank" rel="noopener"');
+    expect(html).not.toMatch(/target="_blank"[^>]*data-track="cta_inscribirme"/);
     expect(texto).toContain("Las preinscripciones en Uruguay cierran el 18 de diciembre de 2026");
     expect(html).toContain('aria-label="Tiempo para el cierre de las preinscripciones"');
     expect(texto).not.toContain("[CONFIRMAR FECHAS POR PAÍS]"); // la fecha viene confirmada en la configuración

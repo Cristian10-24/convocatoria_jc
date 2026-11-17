@@ -90,9 +90,12 @@ export function leerConfigEntorno(texto = process.env.CONVOCATORIA_CONFIG): Part
  * Fin del día de cierre. Se toma la hora de Bogotá/Panamá/Quito (UTC-5), la más tardía de los 4 países,
  * igual que la cuenta regresiva de la landing.
  */
-export function finDelCierre(cierra: string): number {
-  return new Date(`${cierra}T23:59:59-05:00`).getTime();
+export function finDelCierre(cierra: string, desfase = "-05:00"): number {
+  return new Date(`${cierra}T23:59:59${desfase}`).getTime();
 }
+
+/** Desfase horario de cada país (ninguno tiene horario de verano). Para mostrar el cierre a las 23:59 de su hora. */
+export const DESFASE_PAIS: Record<PaisSlug, string> = { col: "-05:00", ecu: "-05:00", pan: "-05:00", uy: "-03:00" };
 
 /**
  * Estado efectivo de un país: entorno → configuración del país → "proxima".

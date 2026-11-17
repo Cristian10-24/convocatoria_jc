@@ -18,6 +18,12 @@ export const CIERRE_PRIMERA_ETAPA = "2026-12-18";
  */
 export const MOSTRAR_PENDIENTES = false;
 
+/**
+ * Landing de Uruguay: `true` = diseño 2027 entregado en HTML (uy2027/LandingUy2027.tsx); `false` = la landing anterior
+ * (la plantilla común de components/Landing.tsx, que sigue intacta). Para volver atrás basta con poner `false`.
+ */
+export const LANDING_URUGUAY_2027 = true;
+
 export const fechaLarga = (iso: string) =>
   new Intl.DateTimeFormat("es", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));
 

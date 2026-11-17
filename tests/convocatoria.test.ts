@@ -174,15 +174,15 @@ describe("CONVOCATORIA_CONFIG", () => {
 });
 
 describe("botones de inscripción", () => {
-  it("llevan al formulario del país (o al paso 0) en pestaña nueva, con origen y ubicación", () => {
+  it("en una landing de país van directo a su formulario, en la misma pestaña, con origen y ubicación; en la principal bajan a la franja de países", () => {
     expect(rutaFormulario("uy")).toBe("/inscripcion/uruguay");
     expect(rutaFormulario(null)).toBe("/inscripcion");
-    expect(destinoInscripcion("uy", "hero_slide_1")).toEqual({ href: "/inscripcion/uruguay?origen=landing_pais&ubicacion=hero_slide_1", nuevaPestana: true });
-    expect(destinoInscripcion(null, "nav").href).toBe("/inscripcion?origen=landing_principal&ubicacion=nav");
+    expect(destinoInscripcion("uy", "hero_slide_1")).toEqual({ href: "/inscripcion/uruguay?origen=landing_pais&ubicacion=hero_slide_1", nuevaPestana: false });
+    expect(destinoInscripcion(null, "nav")).toEqual({ href: "#paises", nuevaPestana: false });
   });
 
   it("CONVOCATORIA_CONFIG puede cambiar el destino de un país con acciones.postular", () => {
-    expect(destinoInscripcion("col", "nav", { acciones: { postular: { tipo: "enlace", url: "https://forms.gle/abc" } } })).toEqual({ href: "https://forms.gle/abc", nuevaPestana: true });
+    expect(destinoInscripcion("col", "nav", { acciones: { postular: { tipo: "enlace", url: "https://forms.gle/abc" } } })).toEqual({ href: "https://forms.gle/abc", nuevaPestana: false });
     expect(destinoInscripcion("col", "nav", { acciones: { postular: { tipo: "ruta", ruta: "/otra" } } }).href).toBe("/otra?origen=landing_pais&ubicacion=nav");
   });
 

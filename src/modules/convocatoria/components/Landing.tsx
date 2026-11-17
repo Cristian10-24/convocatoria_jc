@@ -10,7 +10,8 @@ import Bandera from "@/shared/ui/Bandera";
 import Icono from "@/shared/ui/Icono";
 import ProveedorMovimiento from "@/shared/ui/ProveedorMovimiento";
 import PantallaSistema from "@/shared/ui/PantallaSistema";
-import { destinoInscripcion } from "../content/acciones";
+import { destinoInscripcion, rutaFormulario } from "../content/acciones";
+import ConservarUtm from "./ConservarUtm";
 import {
   ACERCA, ALIADOS_PENDIENTES, BENEFICIOS, MOSTRAR_ALIADOS, CIERRE_PRIMERA_ETAPA, COHORTE, IMPACTO, INCLUYE, MOSTRAR_PENDIENTES, ORDEN_PAISES, PAISES, REDES, preguntas,
   comoFunciona, diapositivas, fechaLarga, galeria, noIncluye, requisitos, rutas, testimoniosPara,
@@ -110,6 +111,7 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
     <ProveedorMovimiento>
       {/* Sin JavaScript no hay animación de entrada: todo queda visible. */}
       <noscript><style>{".jcm .rv{opacity:1!important;transform:none!important}"}</style></noscript>
+      <ConservarUtm />
       <div className="jc jcm">
         <Nav subtitulo={pais?.nombre} cta={cta("nav")} paisMed={paisMed} />
 
@@ -121,12 +123,17 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
               <div className="wrap g">
                 <Revelar como="h2" id="t-paises" className="h3 pp-t">Inscríbete <span className="ac">desde tu país</span></Revelar>
                 <Revelar className="pp-l" d={1}>
-                  {ORDEN_PAISES.map((k) => (
-                    <a key={k} className="pb foco" href={PAISES[k].ruta} data-track="cta_pais" data-ubicacion="franja_paises" data-pais={CODIGO_MEDICION[k]}>
-                      <span className="bd"><Bandera pais={k} /></span>{PAISES[k].nombre}
-                      <small>Ver convocatoria<Icono nombre="flecha" /></small>
-                    </a>
-                  ))}
+                  {ORDEN_PAISES.map((k) => {
+                    // País abierto: directo a su formulario (con el origen); si no, a su landing (muy pronto o cerrada).
+                    const abiertoK = estadoConvocatoria(k, { entorno: configEntorno }).estado === "abierta";
+                    const href = abiertoK ? `${rutaFormulario(k)}?origen=landing_principal&ubicacion=franja_paises` : PAISES[k].ruta;
+                    return (
+                      <a key={k} className="pb foco" href={href} data-track={abiertoK ? "cta_inscribirme" : "cta_pais"} data-ubicacion="franja_paises" data-pais={CODIGO_MEDICION[k]}>
+                        <span className="bd"><Bandera pais={k} /></span>{PAISES[k].nombre}
+                        <small>{abiertoK ? "Inscribirme" : "Ver convocatoria"}<Icono nombre="flecha" /></small>
+                      </a>
+                    );
+                  })}
                 </Revelar>
               </div>
             </section>
@@ -338,29 +345,36 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
 
         <div className="fijo-m">{enlaceCta("sticky_movil", "btn btn-pri")}</div>
 
-        <footer className="pie osc">
-          <div className="wrap">
-            <div className="g pie-g" style={{ alignItems: "start" }}>
-              <div style={{ gridColumn: "1 / 6", display: "flex", flexDirection: "column", gap: 28, alignItems: "flex-start" }}>
-                {enlaceCta("footer", "btn btn-pri")}
-              </div>
-              <nav className="pie-c" aria-label="Pie de página" style={{ gridColumn: "7 / 9" }}><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
-              <nav className="pie-c" aria-label="Legal" style={{ gridColumn: "9 / 11" }}><b>Legal</b><a href="/terminos">Términos</a><a href={pais ? `/privacidad?pais=${pais.ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
-              <div id="redes" className="pie-c" style={{ gridColumn: "11 / 13" }}><b>Redes</b>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                  {REDES.map((r) => (
-                    <a key={r.nombre} className="rb rb-o" href={r.url ?? "#redes"} aria-label={r.url ? `${r.nombre} de la Fundación ROFÉ (se abre en una pestaña nueva)` : `${r.nombre} (enlace pendiente)`} {...(r.url ? { target: "_blank", rel: "noopener" } : {})}>
-                      <svg className="i" viewBox="0 0 24 24" aria-hidden="true">{ICONO_RED[r.nombre]}</svg>
-                    </a>
-                  ))}
-                </div>
-                {MOSTRAR_PENDIENTES && REDES.some((r) => !r.url) ? <span className="falta" style={{ alignSelf: "flex-start", marginTop: 10, fontSize: 13 }}>[ENLACES DE REDES]</span> : null}
-              </div>
-            </div>
-            <div className="pie-b"><span>Copyright © {new Date().getFullYear()} Fundación ROFÉ · Toca una Vida · Todos los derechos reservados</span><a href="/admin/login">Acceso administradores</a></div>
-          </div>
-        </footer>
+        <PieSitio pais={slug} cta={enlaceCta("footer", "btn btn-pri")} />
       </div>
     </ProveedorMovimiento>
+  );
+}
+
+/** Pie del sitio (redes, legales, acceso al panel). Lo comparten todas las landings, también la de Uruguay 2027. */
+export function PieSitio({ pais, cta }: { pais: PaisSlug | null; cta?: ReactNode }) {
+  return (
+  <footer className="pie osc">
+    <div className="wrap">
+      <div className="g pie-g" style={{ alignItems: "start" }}>
+        <div style={{ gridColumn: "1 / 6", display: "flex", flexDirection: "column", gap: 28, alignItems: "flex-start" }}>
+          {cta}
+        </div>
+        <nav className="pie-c" aria-label="Pie de página" style={{ gridColumn: "7 / 9" }}><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
+        <nav className="pie-c" aria-label="Legal" style={{ gridColumn: "9 / 11" }}><b>Legal</b><a href="/terminos">Términos</a><a href={pais ? `/privacidad?pais=${PAISES[pais].ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
+        <div id="redes" className="pie-c" style={{ gridColumn: "11 / 13" }}><b>Redes</b>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {REDES.map((r) => (
+              <a key={r.nombre} className="rb rb-o" href={r.url ?? "#redes"} aria-label={r.url ? `${r.nombre} de la Fundación ROFÉ (se abre en una pestaña nueva)` : `${r.nombre} (enlace pendiente)`} {...(r.url ? { target: "_blank", rel: "noopener" } : {})}>
+                <svg className="i" viewBox="0 0 24 24" aria-hidden="true">{ICONO_RED[r.nombre]}</svg>
+              </a>
+            ))}
+          </div>
+          {MOSTRAR_PENDIENTES && REDES.some((r) => !r.url) ? <span className="falta" style={{ alignSelf: "flex-start", marginTop: 10, fontSize: 13 }}>[ENLACES DE REDES]</span> : null}
+        </div>
+      </div>
+      <div className="pie-b"><span>Copyright © {new Date().getFullYear()} Fundación ROFÉ · Toca una Vida · Todos los derechos reservados</span><a href="/admin/login">Acceso administradores</a></div>
+    </div>
+  </footer>
   );
 }

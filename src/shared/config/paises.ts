@@ -1,5 +1,5 @@
 // Países de la convocatoria: códigos internos, segmentos de URL y datos telefónicos.
-// Es el ÚNICO lugar donde se relacionan el código interno (col/pan/ecu/uy) y la URL pública (/col, /panama, ...).
+// Es el ÚNICO lugar donde se relacionan el código interno (col/pan/ecu/uy) y la URL pública (/colombia, /panama, ...).
 // Funciones puras: se usan en el servidor y en el navegador.
 
 export const PAISES = ["col", "pan", "ecu", "uy"] as const;
@@ -7,8 +7,14 @@ export type PaisSlug = (typeof PAISES)[number];
 
 export const esPais = (v: unknown): v is PaisSlug => typeof v === "string" && (PAISES as readonly string[]).includes(v);
 
-/** Segmento de URL pública de cada landing (como en WordPress). */
-export const SEGMENTO_URL: Record<PaisSlug, string> = { col: "col", pan: "panama", ecu: "ecu", uy: "uy" };
+/** Segmento de URL pública de cada país: /colombia y /inscripcion/colombia (rediseño 2027). */
+export const SEGMENTO_URL: Record<PaisSlug, string> = { col: "colombia", pan: "panama", ecu: "ecuador", uy: "uruguay" };
+
+/** Segmentos anteriores (ya compartidos en redes y WhatsApp): next.config.ts los redirige a los nuevos. */
+export const SEGMENTO_ANTERIOR: Partial<Record<PaisSlug, string>> = { col: "col", ecu: "ecu", uy: "uy" };
+
+/** Código del país en el plan de medición (dataLayer y data-pais): co, ec, pa, uy. */
+export const CODIGO_MEDICION: Record<PaisSlug, string> = { col: "co", pan: "pa", ecu: "ec", uy: "uy" };
 
 export function paisDeSegmento(segmento: string): PaisSlug | undefined {
   return PAISES.find((p) => SEGMENTO_URL[p] === segmento.toLowerCase());

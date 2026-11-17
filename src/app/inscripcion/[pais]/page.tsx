@@ -1,4 +1,4 @@
-// Formulario de inscripción por país: /inscripcion/col, /inscripcion/panama, /inscripcion/ecu, /inscripcion/uy.
+// Formulario de inscripción por país: /inscripcion/colombia, /inscripcion/ecuador, /inscripcion/panama, /inscripcion/uruguay.
 // Las 4 páginas se generan estáticas en el build; cualquier otro segmento da 404.
 import { notFound } from "next/navigation";
 import PaginaInscripcion, { metadataInscripcion } from "@/modules/inscripcion/components/PaginaInscripcion";

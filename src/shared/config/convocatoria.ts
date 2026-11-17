@@ -1,9 +1,10 @@
 // Configuración de la convocatoria por país que se cambia SIN tocar código: variable CONVOCATORIA_CONFIG (JSON).
 // La usan dos módulos: las landings (estado, fecha de cierre y botones) y la inscripción (¿se aceptan envíos?).
-// Por eso vive en shared/. Si el JSON está mal escrito se ignora ENTERO (y queda en el log): así un error de tipeo
-// no publica un botón roto ni abre un país por accidente.
+// Por eso vive en shared/. Se valida PAÍS POR PAÍS: si la entrada de un país está mal, solo ese país queda en
+// "próxima" (muy pronto) y se registra en el log; los demás siguen con su configuración. Así un error de tipeo en
+// un país no publica un botón roto, no abre ese país por accidente y no apaga a los otros.
 import { z } from "zod";
-import { PAISES, type PaisSlug } from "./paises";
+import { PAISES, esPais, type PaisSlug } from "./paises";
 
 /** Lo que pasa al tocar un botón de la landing. */
 export const Accion = z.discriminatedUnion("tipo", [
@@ -24,7 +25,8 @@ export type Accion = z.infer<typeof Accion>;
 export const BOTONES = ["postular", "postular-hero", "postular-requisitos", "postular-cierre", "postular-barra", "ver-ruta", "contacto"] as const;
 export type IdBoton = (typeof BOTONES)[number];
 
-export const EstadoConvocatoria = z.enum(["proxima", "abierta", "cerrada"]);
+/** "mantenimiento" apaga un país desde Vercel sin tocar código: la landing y el formulario muestran el aviso. */
+export const EstadoConvocatoria = z.enum(["proxima", "abierta", "cerrada", "mantenimiento"]);
 export type EstadoConvocatoria = z.infer<typeof EstadoConvocatoria>;
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -39,17 +41,39 @@ export const ConfigPais = z.object({
 export type ConfigPais = z.infer<typeof ConfigPais>;
 export const ConfigEntorno = z.partialRecord(z.enum(PAISES), ConfigPais);
 
-/** Lee CONVOCATORIA_CONFIG. Si el JSON está mal, se ignora entero (y se avisa en el log). */
+/**
+ * Lee CONVOCATORIA_CONFIG y valida cada país por separado. Un país con la entrada inválida queda en "proxima";
+ * una clave que no es un país se ignora. Si el texto ni siquiera es JSON no hay forma de separar países: se
+ * ignora entero y cada país usa su configuración por defecto. Todo queda en el log, nunca lanza.
+ */
 export function leerConfigEntorno(texto = process.env.CONVOCATORIA_CONFIG): Partial<Record<PaisSlug, ConfigPais>> {
   if (!texto?.trim()) return {};
+  let crudo: unknown;
   try {
-    const r = ConfigEntorno.safeParse(JSON.parse(texto));
-    if (r.success) return r.data;
-    console.error("[convocatoria] CONVOCATORIA_CONFIG no es válida; se ignora:", r.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "));
+    crudo = JSON.parse(texto);
   } catch {
     console.error("[convocatoria] CONVOCATORIA_CONFIG no es JSON; se ignora.");
+    return {};
   }
-  return {};
+  if (typeof crudo !== "object" || crudo === null || Array.isArray(crudo)) {
+    console.error("[convocatoria] CONVOCATORIA_CONFIG debe ser un objeto con los países como claves; se ignora.");
+    return {};
+  }
+  const config: Partial<Record<PaisSlug, ConfigPais>> = {};
+  for (const [clave, valor] of Object.entries(crudo)) {
+    if (!esPais(clave)) {
+      console.error(`[convocatoria] CONVOCATORIA_CONFIG: "${clave}" no es un país (${PAISES.join(", ")}); se ignora.`);
+      continue;
+    }
+    const r = ConfigPais.safeParse(valor);
+    if (r.success) config[clave] = r.data;
+    else {
+      const detalle = r.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+      console.error(`[convocatoria] CONVOCATORIA_CONFIG: la entrada de "${clave}" no es válida; ese país queda en "muy pronto". ${detalle}`);
+      config[clave] = { estado: "proxima" };
+    }
+  }
+  return config;
 }
 
 /**

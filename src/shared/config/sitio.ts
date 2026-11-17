@@ -13,3 +13,6 @@ export function urlSitio(): string {
     return URL_POR_DEFECTO;
   }
 }
+
+/** Canal único de contacto de todo el sitio (dudas y derechos sobre los datos): pie, legales, confirmación y errores. */
+export const CONTACTO = { correo: "jovenescreativos@tocaunavida.org" } as const;

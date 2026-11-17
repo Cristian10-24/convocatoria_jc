@@ -1,4 +1,4 @@
-// sitemap.xml con las 5 páginas públicas indexables.
+// sitemap.xml con las 5 páginas públicas indexables: la landing principal y las 4 de país.
 import type { MetadataRoute } from "next";
 import { PAISES } from "@/modules/convocatoria/content/contenido";
 import { urlSitio } from "@/shared/config/sitio";

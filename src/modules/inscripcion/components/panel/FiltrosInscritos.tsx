@@ -39,7 +39,7 @@ export default function FiltrosInscritos({ paises, sedes, ciudades, alertas, val
         <label className="lbl" htmlFor="i-q">Buscar</label>
         <span className="i-buscar-caja">
           <Icono nombre="buscar" />
-          <input id="i-q" name="q" type="search" className="input input-sm" placeholder="Nombre, documento, correo o radicado" defaultValue={v.q ?? ""}
+          <input id="i-q" name="q" type="search" className="input input-sm" placeholder="Nombre, documento, correo o número de inscripción" defaultValue={v.q ?? ""}
             maxLength={80} autoComplete="off" enterKeyHint="search" onBlur={alSalir("q")} />
         </span>
       </div>

@@ -213,7 +213,7 @@ Rama `feature/rediseno-2027`. Nada de esto se hace antes: son pasos del cierre, 
 
 - [x] **Datos pendientes ocultos** (`MOSTRAR_PENDIENTES = false`; testimonios sin cita, aliados ocultos con `MOSTRAR_ALIADOS`). Cuando la Fundación entregue lo que falta, completar ([CITA] y fotos de testimonios, logos de aliados, enlaces de redes, rango de edad 2027) y poner `MOSTRAR_PENDIENTES = false` en `src/modules/convocatoria/content/contenido.ts` para ocultar todo lo que siga sin dato.
 - [x] **Quitar `/sistema`:** borrar `src/app/sistema/` y `src/shared/ui/sistema/Muestra.tsx` (página de trabajo del sistema de diseño) y su línea en `robots.ts`.
-- [ ] **Textos legales:** siguen marcados `[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]` hasta que la Fundación entregue los definitivos.
+- [x] **Textos legales:** /privacidad, el aviso y las casillas del formulario siguen la política oficial DE-010-D v1 (una sola para los 4 países; versiones `politica-`, `datos-` y `acudiente-DE-010-D-v1`). /terminos redirige (307) a /privacidad hasta que haya términos oficiales: al tenerlos, quitar la redirección en `next.config.ts` y volver a crear la página.
 - [ ] **Correos de los usuarios del panel** (login por correo): asignar el correo a cada usuario existente en la pantalla de usuarios (mientras no lo tenga, entra con su usuario anterior).
 - [ ] **Variables de entorno en Vercel** (Production y Preview). Nuevas en esta rama:
   - `RESEND_API_KEY`: clave de la API de Resend para enviar el enlace de "Olvidé mi contraseña". Sin ella no se envía ningún correo (el resto funciona igual). Marcarla como secreta.

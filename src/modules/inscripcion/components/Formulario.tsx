@@ -8,10 +8,10 @@
 import { AnimatePresence, m } from "framer-motion";
 import { useMovimientoReducido } from "@/shared/ui/usarMovimientoReducido";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { SEGMENTO_URL, TELEFONOS } from "@/shared/config/paises";
+import { TELEFONOS } from "@/shared/config/paises";
 import { CONTACTO } from "@/shared/config/sitio";
 import { CAMPO_TRAMPA } from "@/shared/security/antibots";
-import { MOSTRAR_MARCAS_LEGALES, POLITICA_OFICIAL, avisoProvisional } from "@/shared/config/legal";
+import { POLITICA_OFICIAL } from "@/shared/config/legal";
 import Bandera from "@/shared/ui/Bandera";
 import { CampoTelefono, CampoTexto, CasillaAcepta, GrupoOpciones, MensajeError } from "@/shared/ui/Campos";
 import Icono from "@/shared/ui/Icono";
@@ -311,9 +311,11 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
               <div className="rad">
                 <span style={{ fontSize: 14, fontWeight: 600, color: "hsl(33.2 86.2% 74.5%)" }}>{IU.ok.radicado}</span>
                 <span style={{ fontSize: "clamp(26px, 5vw, 34px)", fontWeight: 700, letterSpacing: ".04em", fontVariantNumeric: "tabular-nums" }}>{exito.radicado}</span>
-                <button className="btn btn-ter-b btn-sm" type="button" onClick={() => copiar(exito.radicado, "radicado")}><span aria-live="polite">{copiado === "radicado" ? IU.ok.copiado : IU.ok.copiar}</span></button>
+                <button className="btn btn-ter-b btn-sm" type="button" onClick={() => copiar(exito.radicado, "radicado")} aria-label={copiado === "radicado" ? IU.ok.copiado : `${IU.ok.copiar} el número de inscripción`}><span aria-live="polite">{copiado === "radicado" ? IU.ok.copiado : IU.ok.copiar}</span></button>
               </div>
-              <p style={{ fontSize: 15, lineHeight: 1.5, color: "hsl(231.9 20.2% 41.8%)" }}>{t(IU.ok.guardar)}</p>
+              <p style={{ fontSize: 15, lineHeight: 1.5, color: "hsl(231.9 20.2% 41.8%)" }}>
+                {t(IU.ok.guardar).split("{correo}")[0]}<a href={`mailto:${CONTACTO.correo}`}>{CONTACTO.correo}</a>{t(IU.ok.guardar).split("{correo}")[1]}
+              </p>
               <ol className="sigue">{IU.ok.pasos.map((p) => <li key={p.titulo}><span><strong>{p.titulo}</strong>{p.texto}</span></li>)}</ol>
               <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
                 <span style={{ fontSize: 17, fontWeight: 700 }}>{t(IU.ok.compartir)}</span>
@@ -367,7 +369,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                 {paso.descripcion ? <p className="fs">{t(paso.descripcion)}</p> : null}
 
                 {paso.id === "sociodemograficos" ? (
-                  <div className="aviso priv"><Icono nombre="escudo" /><span><strong>{IU.privacidadTitulo}</strong> {t(IU.privacidad)} <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">{IU.privacidadEnlace}</a></span></div>
+                  <div className="aviso priv"><Icono nombre="escudo" /><span><strong>{IU.privacidadTitulo}</strong> {t(IU.privacidad)} <a href="/privacidad" target="_blank" rel="noopener">{IU.privacidadEnlace}</a></span></div>
                 ) : null}
                 {nErrores > 0 ? (
                   <div className="aviso mal" role="alert"><Icono nombre="alerta" /><span><strong>{nErrores === 1 ? IU.falta1 : plantilla(IU.faltan, { n: nErrores })}</strong> {aviso ?? IU.marcamos}</span></div>
@@ -396,9 +398,9 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                     <details className="leg" open>
                       <summary>{def.legal.titulo}<Icono nombre="abajo" /></summary>
                       <div>
-                        {def.legal.provisional ? (MOSTRAR_MARCAS_LEGALES ? <p><span className="falta">{IU.autorizacion.provisional}</span></p> : <p><strong>{avisoProvisional(IU.autorizacion.provisional)}.</strong></p>) : null}
                         {def.legal.parrafos.map((p) => <p key={p}>{p}</p>)}
-                        <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener" style={{ fontWeight: 600 }}>{IU.autorizacion.politica}</a>
+                        <a href="/privacidad" target="_blank" rel="noopener" style={{ fontWeight: 600 }}>{IU.autorizacion.politica}</a>{" · "}
+                        <a href={POLITICA_OFICIAL.url} target="_blank" rel="noopener" style={{ fontWeight: 600 }}>{POLITICA_OFICIAL.corto}</a>
                       </div>
                     </details>
                     {def.legal.consentimientos.filter((c) => casillas.includes(CASILLA[c.clave])).map((c) => {
@@ -406,11 +408,11 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                       return (
                         <div key={id} data-campo={id} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                           <CasillaAcepta id={id} marcada={(datos as Record<string, unknown>)[id] === true} error={errores[id]} alCambiar={(v) => cambiar(id, v)}>
-                            {c.clave === "privacidad" ? <>Leí y acepto la <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">Política de privacidad</a></>
+                            {c.clave === "privacidad" ? <>Leí y acepto la <a href="/privacidad" target="_blank" rel="noopener">Política de Tratamiento de Datos</a> de la Fundación ROFÉ</>
                               : c.clave === "datos" ? (
                                 <>
-                                  {c.texto} (ver la <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">Política de privacidad</a> y la{" "}
-                                  <a href={POLITICA_OFICIAL.url} target="_blank" rel="noopener">{POLITICA_OFICIAL.corto}</a>)
+                                  {c.texto} (ver la <a href="/privacidad" target="_blank" rel="noopener">Política de Tratamiento de Datos</a> y el{" "}
+                                  <a href={POLITICA_OFICIAL.url} target="_blank" rel="noopener">documento oficial (PDF)</a>)
                                 </>
                               ) : c.texto}
                           </CasillaAcepta>

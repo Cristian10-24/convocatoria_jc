@@ -33,3 +33,11 @@
 @media (max-width: 760px) {
   .lg .lg-cuerpo { padding-top: 32px; padding-bottom: 72px; }
 }
+
+/* Resumen en lenguaje sencillo y listas del documento (política oficial DE-010-D). */
+.lg .lg-resumen { padding: 20px 22px; border-radius: 16px; background: hsl(31.8 86.2% 94.3%); border: 1px solid hsl(33.2 86.2% 74.5%); }
+.lg .lg-resumen ul, .lg .lg-lista { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; font-size: 17px; line-height: 1.6; }
+.lg .lg-resumen-nota { font-size: 14px !important; color: hsl(231.9 20.2% 41.8%); }
+.lg .lg-lista li::marker { color: hsl(31.8 81.7% 50.6%); }
+.lg .lg-sec p, .lg .lg-lista li, .lg .lg-resumen li { overflow-wrap: anywhere; }
+.lg .lg-lista.lg-letras { list-style: none; padding-left: 0; }

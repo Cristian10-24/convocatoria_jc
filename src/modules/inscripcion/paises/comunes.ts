@@ -1,9 +1,8 @@
 // Piezas que comparten las definiciones de los 4 países: reglas de documentos, pasos del formulario según el modo
 // de ubicación y el texto legal en lenguaje sencillo. Son solo datos y funciones puras: importar este archivo nunca
 // lanza errores, y cada país (uy.ts, col.ts, ecu.ts, pan.ts) arma con esto su propia definición.
-import { LEY_DATOS, VERSION_PRIVACIDAD } from "@/shared/config/legal";
+import { LEY_DATOS, RESPONSABLE, VERSION_ACUDIENTE, VERSION_DATOS, VERSION_PRIVACIDAD } from "@/shared/config/legal";
 import type { PaisSlug } from "@/shared/config/paises";
-import { CONTACTO } from "@/shared/config/sitio";
 import { PREFIERO_NO } from "../config/preguntas";
 import type { DefinicionPais, LegalPais, Opcion, PasoDef, TipoDocumento, Trato } from "../config/tipos";
 
@@ -71,43 +70,43 @@ export const ETIQUETAS_DISENO: NonNullable<DefinicionPais["etiquetas"]> = {
 };
 
 /**
- * [TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA] Autorización de datos en lenguaje sencillo, igual en los 4 países
- * salvo la ley y la autoridad. La Fundación ROFÉ debe revisarla y reemplazarla: se edita SOLO aquí (o en el país).
- * Cada consentimiento guarda su `version`: al cambiar un texto hay que cambiar su versión.
+ * Autorización de datos, tomada de la política oficial de la Fundación ROFÉ (DE-010-D v1, ver shared/config/legal.ts).
+ * Igual en los 4 países (solo cambia el trato tú / vos del aviso). Regla: cada frase está respaldada por ese documento.
+ * Cada consentimiento guarda su `version`: al cambiar un texto hay que cambiar su versión en shared/config/legal.ts.
  */
 export function legalDe(entrada: { pais: PaisSlug; trato: Trato; versionAnterior: string }): LegalPais {
-  // La ley y la autoridad de cada país son las mismas que muestra /privacidad (shared/config/legal.ts).
-  const datos = { ...entrada, ...LEY_DATOS[entrada.pais] };
-  const vos = datos.trato === "vos";
+  const ley = LEY_DATOS[entrada.pais];
+  const vos = entrada.trato === "vos";
   const t = (tu: string, v: string) => (vos ? v : tu);
+  const r = RESPONSABLE;
   return {
-    provisional: true,
-    ley: datos.ley,
-    autoridad: datos.autoridad,
-    versionAnterior: datos.versionAnterior,
+    provisional: false,
+    ley: ley.ley,
+    autoridad: ley.autoridad,
+    versionAnterior: entrada.versionAnterior,
     versionAcudienteAnterior: "acudiente-2027-provisional-1",
     titulo: "Cómo usamos tus datos",
     parrafos: [
-      "El responsable de tus datos es la Fundación ROFÉ.",
+      `El responsable de tus datos es la ${r.nombre} (NIT ${r.nit}), ${r.direccion}.`,
+      "La Fundación usa tus datos para el desarrollo de sus programas, lo que puede incluir información sobre tu núcleo familiar y tus condiciones socioeconómicas, y para enviarte información sobre sus programas por SMS, correo electrónico o llamada, solo de lunes a viernes de 7:00 a. m. a 7:00 p. m. y los sábados de 8:00 a. m. a 3:00 p. m.",
       t(
-        "Los usamos para gestionar tu inscripción y el proceso de selección, contactarte sobre el proceso y el programa, y elaborar estadísticas del programa en las que nadie se identifica.",
-        "Los usamos para gestionar tu inscripción y el proceso de selección, contactarte sobre el proceso y el programa, y elaborar estadísticas del programa en las que nadie se identifica.",
+        "Los datos sensibles solo se tratan con tu autorización expresa: la Fundación se compromete a usarlos únicamente para esos fines y a cuidar su confidencialidad. En esas preguntas puedes elegir «Prefiero no responder».",
+        "Los datos sensibles solo se tratan con tu autorización expresa: la Fundación se compromete a usarlos únicamente para esos fines y a cuidar su confidencialidad. En esas preguntas podés elegir «Prefiero no responder».",
       ),
       t(
-        "Los datos sensibles (género, poblaciones e ingresos) son voluntarios: puedes dejarlos en «Prefiero no responder». Solo se usan sumados, para estadísticas e informes del programa.",
-        "Los datos sensibles (género, poblaciones e ingresos) son voluntarios: podés dejarlos en «Prefiero no responder». Solo se usan sumados, para estadísticas e informes del programa.",
+        "Si eres menor de edad, la autorización la da tu representante legal o acudiente.",
+        "Si sos menor de edad, la autorización la da tu representante legal o acudiente.",
       ),
-      "No vendemos tus datos ni los compartimos con terceros, salvo lo necesario para operar el programa.",
+      "La Fundación puede entregar la información a terceros que actúen como Encargados, para cumplir esas finalidades. Pasados 10 años desde la afiliación al programa, elimina la información, salvo que la ley la obligue a conservarla.",
       t(
-        `Tienes derecho a conocer, actualizar, rectificar y suprimir tus datos, y a revocar esta autorización, según la ${datos.ley}. También puedes reclamar ante ${datos.autoridad}.`,
-        `Tenés derecho a conocer, actualizar, rectificar y suprimir tus datos, y a revocar esta autorización, según la ${datos.ley}. También podés reclamar ante ${datos.autoridad}.`,
+        `Tienes derecho a conocer, actualizar, rectificar y suprimir tus datos, a pedir prueba de esta autorización y a revocarla, según la ${ley.ley}. Para hacerlo, escribe a ${r.correo} con una copia de tu documento. Si no te responden a tiempo o no estás conforme con la respuesta, puedes presentar una queja ante ${ley.autoridad}.`,
+        `Tenés derecho a conocer, actualizar, rectificar y suprimir tus datos, a pedir prueba de esta autorización y a revocarla, según la ${ley.ley}. Para hacerlo, escribí a ${r.correo} con una copia de tu documento. Si no te responden a tiempo o no estás conforme con la respuesta, podés presentar una queja ante ${ley.autoridad}.`,
       ),
-      t(`Para dudas o para ejercer tus derechos, escribe a ${CONTACTO.correo}.`, `Para dudas o para ejercer tus derechos, escribí a ${CONTACTO.correo}.`),
     ],
     consentimientos: [
-      { clave: "privacidad", version: VERSION_PRIVACIDAD, texto: "Leí y acepto la Política de privacidad" },
-      { clave: "datos", version: `datos-${datos.pais}-2027-provisional-1`, texto: `Autorizo el tratamiento de mis datos personales, según la ${datos.ley}` },
-      { clave: "acudiente", version: "acudiente-2027-provisional-2", texto: "Como madre, padre o adulto responsable, autorizo la inscripción y el tratamiento de los datos" },
+      { clave: "privacidad", version: VERSION_PRIVACIDAD, texto: `Leí y acepto la Política de Tratamiento de Datos de la ${r.nombre}` },
+      { clave: "datos", version: VERSION_DATOS, texto: `Autorizo a la ${r.nombre} el tratamiento de mis datos personales, incluidos los datos sensibles que entregue, para las finalidades de su Política de Tratamiento de Datos` },
+      { clave: "acudiente", version: VERSION_ACUDIENTE, texto: `Como representante legal o acudiente, autorizo la inscripción de la persona menor de edad y el tratamiento de sus datos personales, según la Política de Tratamiento de Datos de la ${r.nombre}` },
     ],
   };
 }

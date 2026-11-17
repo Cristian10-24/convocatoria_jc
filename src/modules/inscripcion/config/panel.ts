@@ -37,7 +37,7 @@ export const TEXTOS_PANEL = {
   sinDatos: "Todavía no hay inscripciones con estos filtros.",
   filtrar: "Filtrar",
   limpiar: "Limpiar filtros",
-  buscar: "Buscar por nombre, documento, correo o radicado",
+  buscar: "Buscar por nombre, documento, correo o número de inscripción",
   exportarExcel: "Exportar a Excel",
   exportarCsv: "Exportar CSV",
   anterior: "Anterior",

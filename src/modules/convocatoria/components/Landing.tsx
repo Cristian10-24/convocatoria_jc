@@ -361,7 +361,7 @@ export function PieSitio({ pais, cta }: { pais: PaisSlug | null; cta?: ReactNode
           {cta}
         </div>
         <nav className="pie-c pie-c1" aria-label="Pie de página"><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
-        <nav className="pie-c pie-c2" aria-label="Legal"><b>Legal</b><a href="/terminos">Términos</a><a href={pais ? `/privacidad?pais=${PAISES[pais].ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
+        <nav className="pie-c pie-c2" aria-label="Legal"><b>Legal</b><a href={pais ? `/privacidad?pais=${PAISES[pais].ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
         <div id="redes" className="pie-c pie-c3"><b>Redes</b>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {REDES.map((r) => (

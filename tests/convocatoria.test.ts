@@ -205,11 +205,12 @@ describe("rutas y SEO", () => {
       "/conv_col": "/colombia", "/conv_pan": "/panama", "/conv_ecu": "/ecuador", "/conv_uy": "/uruguay", "/convocatoria": "/",
       "/inscripcion/uy": "/inscripcion/uruguay", "/inscripcion/col": "/inscripcion/colombia", "/inscripcion/ecu": "/inscripcion/ecuador",
     });
-    expect(redirecciones.every((r) => "permanent" in r && r.permanent)).toBe(true);
+    // Todas permanentes, salvo /terminos → /privacidad (temporal hasta que haya términos oficiales).
+    expect(redirecciones.filter((r) => r.source !== "/terminos").every((r) => "permanent" in r && r.permanent)).toBe(true);
     // Sin cadenas: ningún destino es, a su vez, origen de otra redirección.
     for (const r of redirecciones) expect(mapa[r.destination], r.destination).toBeUndefined();
     // Todos los destinos son rutas vigentes.
-    const vigentes = new Set(["/", ...SLUGS.flatMap((s) => [`/${SEGMENTO_URL[s]}`, `/inscripcion/${SEGMENTO_URL[s]}`])]);
+    const vigentes = new Set(["/", "/privacidad", ...SLUGS.flatMap((s) => [`/${SEGMENTO_URL[s]}`, `/inscripcion/${SEGMENTO_URL[s]}`])]);
     for (const r of redirecciones) expect(vigentes.has(r.destination), r.destination).toBe(true);
   });
 

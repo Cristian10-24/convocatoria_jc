@@ -68,10 +68,11 @@ describe("un envío válido y completo por cada país", () => {
     expect(consentimientos.map((c) => c.clave)).toEqual(["privacidad", "datos"]);
     for (const c of consentimientos) {
       expect(c.respuesta).toBe(true);
-      expect(c.version).toMatch(/provisional/);
+      expect(c.version).toMatch(/DE-010-D-v1$/);
       expect(c.fecha).toBeInstanceOf(Date);
     }
-    expect(consentimientos[1]!.version).toContain(pais);
+    // Una sola política para los 4 países (DE-010-D v1): misma versión de la autorización de datos.
+    expect(consentimientos[1]!.version).toBe("datos-DE-010-D-v1");
   });
 
   it("cada país guarda sus propias preguntas y no las de otro", async () => {
@@ -128,7 +129,7 @@ describe("Uruguay: formato anterior y nuevo", () => {
     expect(con.status).toBe(201);
     const doc = await (await coleccion()).findOne({ radicado: con.cuerpo.radicado as string });
     expect((doc!.consentimientos as Array<{ clave: string }>).map((c) => c.clave)).toEqual(["privacidad", "datos", "acudiente"]);
-    expect(doc!.versionAutorizacionAcudiente).toBe("acudiente-2027-provisional-2");
+    expect(doc!.versionAutorizacionAcudiente).toBe("acudiente-DE-010-D-v1");
   });
 
   it("Uruguay conserva sus preguntas: población múltiple, tallas XS–XXL, DNI argentino y ciudades argentinas", async () => {

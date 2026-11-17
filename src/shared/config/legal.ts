@@ -1,59 +1,52 @@
-// Datos legales comunes: la ley de protección de datos de cada país, la autoridad ante la que se reclama y las
-// versiones vigentes de los textos. Viven en shared/ porque los usan dos módulos: el formulario (autorizaciones que
-// acepta la persona, con su versión) y las páginas legales (/privacidad y /terminos).
-// [TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]: al cambiar un texto aprobado, cambia también su versión.
+// Datos legales comunes, tomados de la política oficial de la Fundación ROFÉ: "Política de Tratamiento de Datos y
+// Aviso de Privacidad de sus Datos Personales" (DE-010-D, versión 1, 20/11/2023). Una sola política para los 4 países.
+// Viven en shared/ porque los usan dos módulos: el formulario (autorizaciones, con su versión) y /privacidad.
+// Si la Fundación publica otra versión del documento, se actualiza aquí y se sube la versión de las autorizaciones:
+// las inscripciones nuevas quedan con la nueva y las ya guardadas conservan la suya.
 import type { PaisSlug } from "./paises";
 
-export const RESPONSABLE = "Fundación ROFÉ";
+/** Responsable del tratamiento (sección 3 del documento). */
+export const RESPONSABLE = {
+  nombre: "Fundación ROFÉ",
+  nit: "901.144.889-7",
+  direccion: "Carrera 6 # 109-07, Bogotá D.C., Colombia",
+  web: "https://tocaunavida.org/",
+  correo: "admin@tocaunavida.org",
+} as const;
 
-/** Política de Tratamiento de Datos oficial de la Fundación ROFÉ, publicada en su sitio (PDF). */
+/** El documento oficial (PDF) y su identificación. */
 export const POLITICA_OFICIAL = {
   url: "https://tocaunavida.org/wp-content/uploads/2024/01/2.-DE-010-D-Politica-de-Tratamiento-de-datos.pdf",
+  titulo: "Política de Tratamiento de Datos y Aviso de Privacidad de sus Datos Personales",
+  codigo: "DE-010-D",
+  version: 1,
+  /** Vigencia: "rigen a partir del día 20 del mes de noviembre de 2023". */
+  vigente: "2023-11-20",
   texto: "Consulta la Política de Tratamiento de Datos oficial de la Fundación ROFÉ (PDF)",
   corto: "Política de Tratamiento de Datos de la Fundación ROFÉ (PDF)",
 } as const;
 
-/**
- * Marcas de lo pendiente en los textos legales ("[POR CONFIRMAR]", "[TEXTO LEGAL PROVISIONAL…]"). En `false` (sitio
- * publicado) no se muestran: los textos no cambian, solo cómo se ven (ver `sinMarcas`).
- */
-export const MOSTRAR_MARCAS_LEGALES = false;
+export type LeyDatos = { ley: string; marco: string; autoridad: string; autoridadWeb: string; autoridadCorreo: string };
 
-const MARCA = /\[[^\]]+\]/;
-
-/**
- * Texto sin marcas pendientes, para mostrarlo. Una oración que es solo "Rótulo: [MARCA]." (rótulo corto) se quita
- * entera; en una oración más larga solo se quita ": [MARCA]" y queda la oración. Sin marcas, el texto queda igual.
- */
-export function sinMarcas(texto: string): string {
-  if (!MARCA.test(texto)) return texto;
-  const oraciones = texto.match(/[^.]+(?:\.|$)/g) ?? [texto];
-  return oraciones
-    .map((o) => {
-      if (!MARCA.test(o)) return o;
-      const antes = o.split(/:?\s*\[/)[0]!.trim();
-      if (antes.split(/\s+/).length <= 8) return "";
-      return o.replace(/:?\s*\[[^\]]+\]/g, "");
-    })
-    .join("")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-}
-
-/** La marca de texto provisional sin corchetes: el aviso se mantiene, pero no como dato pendiente. */
-export const avisoProvisional = (marca: string): string => marca.replace(/^\[|\]$/g, "");
-
-export type LeyDatos = { ley: string; autoridad: string };
-
-export const LEY_DATOS: Record<PaisSlug, LeyDatos> = {
-  uy: { ley: "Ley 18.331 de Protección de Datos Personales", autoridad: "la Unidad Reguladora y de Control de Datos Personales (URCDP)" },
-  col: { ley: "Ley 1581 de 2012", autoridad: "la Superintendencia de Industria y Comercio" },
-  ecu: { ley: "Ley Orgánica de Protección de Datos Personales (LOPDP) de 2021", autoridad: "la Superintendencia de Protección de Datos Personales" },
-  pan: { ley: "Ley 81 de 2019", autoridad: "la Autoridad Nacional de Transparencia y Acceso a la Información (ANTAI)" },
+/** Marco legal del documento (Colombia) y autoridad ante la que se presenta la queja. */
+const LEY: LeyDatos = {
+  ley: "Ley Estatutaria 1581 de 2012",
+  marco: "el artículo 15 de la Constitución Política, la Ley Estatutaria 1581 de 2012 y el Decreto Reglamentario 1377 de 2013",
+  autoridad: "la Superintendencia de Industria y Comercio (SIC)",
+  autoridadWeb: "https://www.sic.gov.co",
+  autoridadCorreo: "contactenos@sic.gov.co",
 };
 
-/** Versiones vigentes de las páginas legales. La de privacidad es la misma que acepta la persona en el formulario. */
-export const VERSION_PRIVACIDAD = "privacidad-2027-provisional-1";
-export const VERSION_TERMINOS = "terminos-2027-provisional-1";
-/** Fecha desde la que rigen los textos provisionales (AAAA-MM-DD). */
-export const VIGENTE_DESDE = "2026-11-17";
+/** La misma política rige en los 4 países (la de la Fundación, en Colombia). */
+export const LEY_DATOS: Record<PaisSlug, LeyDatos> = { col: LEY, ecu: LEY, pan: LEY, uy: LEY };
+
+/**
+ * Versiones de lo que acepta la persona en el formulario. Cambian cuando cambia el texto aceptado: las inscripciones
+ * guardadas conservan la versión con la que se hicieron (antes: privacidad-2027-provisional-1, datos-<país>-2027-
+ * provisional-1 y acudiente-2027-provisional-2).
+ */
+export const VERSION_PRIVACIDAD = "politica-DE-010-D-v1";
+export const VERSION_DATOS = "datos-DE-010-D-v1";
+export const VERSION_ACUDIENTE = "acudiente-DE-010-D-v1";
+/** Desde cuándo rige el texto que muestra /privacidad (la vigencia del documento oficial). */
+export const VIGENTE_DESDE = POLITICA_OFICIAL.vigente;

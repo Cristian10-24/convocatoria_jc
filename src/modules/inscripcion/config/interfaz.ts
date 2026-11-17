@@ -36,15 +36,15 @@ export const IU = {
   faltan: "Faltan {n} datos.",
   marcamos: "Te marcamos en rojo lo que falta.",
   privacidadTitulo: "Tu privacidad.",
-  privacidad: { tu: "Son confidenciales y se usan solo sumados, para estadísticas del programa. Puedes dejarlos en «Prefiero no responder».", vos: "Son confidenciales y se usan solo sumados, para estadísticas del programa. Podés dejarlos en «Prefiero no responder»." },
+  // Respaldado por la política oficial (DE-010-D): datos sensibles, autorización expresa y confidencialidad.
+  privacidad: { tu: "Son datos sensibles: solo se tratan con tu autorización expresa y la Fundación se compromete a cuidar su confidencialidad. Puedes elegir «Prefiero no responder».", vos: "Son datos sensibles: solo se tratan con tu autorización expresa y la Fundación se compromete a cuidar su confidencialidad. Podés elegir «Prefiero no responder»." },
   privacidadEnlace: "Cómo usamos tus datos",
   lateral: { gratis: "100 % gratuito.", gratisTexto: "Nunca te pediremos pagos.", confidencial: "Tus datos son confidenciales.", dudas: "¿Dudas?" },
   resumen: { titulo: { tu: "Revisa tus respuestas", vos: "Revisá tus respuestas" }, corto: "Resumen", descripcion: { tu: "Si algo no está bien, toca «Editar».", vos: "Si algo no está bien, tocá «Editar»." } },
   autorizacion: {
     titulo: "Autorización de datos", corto: "Autorización de datos",
     descripcion: { tu: "Antes de enviar, revisa y acepta cómo vamos a usar tus datos.", vos: "Antes de enviar, revisá y aceptá cómo vamos a usar tus datos." },
-    provisional: "[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]",
-    politica: "Leer la política de privacidad completa",
+    politica: "Leer la Política de Tratamiento de Datos completa",
     verificacion: "Verificación de seguridad",
   },
   errores: {
@@ -58,9 +58,11 @@ export const IU = {
   ok: {
     titulo: "Inscripción recibida",
     cuerpo: "Gracias, {nombre}. Tu inscripción a Jóvenes creaTIvos {anio} en {pais} quedó registrada.",
-    radicado: "Número de radicado",
-    copiar: "Copiar número", copiado: "Copiado",
-    guardar: { tu: "Guarda este número: te lo pediremos si necesitas consultar tu inscripción.", vos: "Guardá este número: te lo vamos a pedir si necesitás consultar tu inscripción." },
+    // Lo que ve la persona es "número de inscripción"; internamente el campo sigue siendo `radicado`.
+    radicado: "Número de inscripción",
+    copiar: "Copiar", copiado: "Copiado",
+    /** {correo}: el contacto del programa (CONTACTO.correo), que se muestra como enlace. */
+    guardar: { tu: "Guárdalo: para cualquier consulta sobre tu inscripción puedes usar este número o tu número de documento, escribiendo a {correo}.", vos: "Guardalo: para cualquier consulta sobre tu inscripción podés usar este número o tu número de documento, escribiendo a {correo}." },
     pasos: [
       { titulo: "Revisamos tu inscripción", texto: "Validamos que cumplas los requisitos." },
       { titulo: "Te contactamos", texto: "Por WhatsApp o correo, con los siguientes pasos." },

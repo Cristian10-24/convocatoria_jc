@@ -29,6 +29,8 @@ const config: NextConfig = {
       { source: "/conv_ecu", destination: landing.ecu, permanent: true },
       { source: "/conv_uy", destination: landing.uy, permanent: true },
       { source: "/convocatoria", destination: "/", permanent: true },
+      // Sin términos oficiales todavía: redirección temporal (307) hasta que la Fundación los entregue.
+      { source: "/terminos", destination: "/privacidad", permanent: false },
       // Formularios con el segmento corto.
       { source: "/inscripcion/col", destination: "/inscripcion/colombia", permanent: true },
       { source: "/inscripcion/ecu", destination: "/inscripcion/ecuador", permanent: true },

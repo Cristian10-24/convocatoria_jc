@@ -199,7 +199,7 @@ describe("tablero", () => {
       { clave: "datos", respuesta: true, version: "datos-uy-v1", fecha },
     ] }));
     expect(nuevo.map((c) => [c.clave, c.estado, c.version])).toEqual([["privacidad", "acepto", "privacidad-v1"], ["datos", "acepto", "datos-uy-v1"], ["acudiente", "no_aplica", undefined]]);
-    expect(nuevo[1]!.etiqueta).toContain("Ley 18.331");
+    expect(nuevo[1]!.etiqueta).toContain("Ley Estatutaria 1581 de 2012");
     const anterior = filasConsentimiento(doc({ versionAutorizacion: "uy-2027-provisional-1", consentimientos: undefined }));
     expect(anterior.map((c) => c.estado)).toEqual(["no_pedido", "acepto", "no_aplica"]);
     expect(anterior[1]!.version).toBe("uy-2027-provisional-1");

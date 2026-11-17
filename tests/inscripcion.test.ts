@@ -220,11 +220,11 @@ describe("configuración por país", () => {
     expect(uy.sedes[1]!.ciudades).toContain("Ombúes de Lavalle");
   });
 
-  it("los textos legales son provisionales, marcados y con versión única", () => {
+  it("los textos legales son los de la política oficial (DE-010-D v1), iguales en los 4 países", () => {
     const versiones = PAISES.map((p) => DEFINICIONES[p].legal.consentimientos.find((c) => c.clave === "datos")!.version);
-    expect(new Set(versiones).size).toBe(PAISES.length);
-    expect(PAISES.every((p) => DEFINICIONES[p].legal.provisional)).toBe(true);
-    expect(DEFINICIONES.uy.legal.parrafos.join(" ")).toContain("18.331");
+    expect(new Set(versiones)).toEqual(new Set(["datos-DE-010-D-v1"]));
+    expect(PAISES.every((p) => !DEFINICIONES[p].legal.provisional)).toBe(true);
+    expect(DEFINICIONES.uy.legal.parrafos.join(" ")).toContain("Ley Estatutaria 1581 de 2012");
     expect(DEFINICIONES.uy.legal.versionAnterior).toBe("uy-2027-provisional-1"); // la que ya tienen las inscripciones de producción
   });
 

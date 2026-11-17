@@ -130,7 +130,7 @@ const pregunta = (campo: IdCampo, ancho = 22): Columna => ({ titulo: etiquetaPre
 /** Columnas de la exportación. Sin permiso para datos sensibles, esas columnas no existen (no van vacías). */
 export function columnasExportacion(verSensibles: boolean): Columna[] {
   const columnas: Columna[] = [
-    { titulo: "Radicado", ancho: 18, valor: (d) => d.radicado },
+    { titulo: "Número de inscripción", ancho: 22, valor: (d) => d.radicado },
     { titulo: "Fecha de inscripción", ancho: 20, valor: (d) => d.creadoEn },
     { titulo: "País", ancho: 12, valor: (d) => NOMBRE_PAIS[d.pais] ?? d.pais },
     pregunta("sede", 16),

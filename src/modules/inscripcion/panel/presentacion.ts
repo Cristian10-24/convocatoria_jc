@@ -1,6 +1,7 @@
 // Cómo se muestra una inscripción guardada en el panel y en la exportación. Funciones puras.
 // Reutiliza las etiquetas del formulario (config/preguntas.ts y config/paises.ts): los ids guardados se traducen
 // al mismo texto que vio la persona al inscribirse.
+import { LEY_DATOS } from "@/shared/config/legal";
 import { NOMBRE_PAIS, type PaisSlug } from "@/shared/config/paises";
 import { ALERTAS, type CodigoAlerta } from "../config/alertas";
 import { CAMPOS_SENSIBLES, TEXTOS_PANEL } from "../config/panel";
@@ -60,6 +61,9 @@ export type SeccionDetalle = { titulo: string; filas: FilaDetalle[] };
 // Campos de "Cierre" que no aportan en el detalle (siempre son "Sí": sin aceptarlos no hay inscripción).
 const OMITIR_DETALLE = new Set<IdCampo>(["aceptaDatos", "autorizaAcudiente", "ciudadOtra"]);
 
+/** Títulos del detalle en el panel (en tercera persona; los del formulario le hablan a quien se inscribe). */
+const TITULOS_DETALLE: Record<string, string> = { ubicacion: "Dónde vive", perfil: "Sobre la persona", cierre: "Difusión" };
+
 /** Detalle agrupado por los pasos del formulario. Sin permiso, los datos sensibles se reemplazan por un aviso. */
 export function seccionesDetalle(doc: Inscripcion, verSensibles: boolean): SeccionDetalle[] {
   const b = aBorrador(doc);
@@ -79,9 +83,41 @@ export function seccionesDetalle(doc: Inscripcion, verSensibles: boolean): Secci
       if (valor) filas.push({ etiqueta: etiquetaPregunta(campo), valor });
     }
     if (paso.id === "personales") filas.push({ etiqueta: "Edad al inscribirse", valor: `${doc.edad} años` });
-    if (filas.length) secciones.push({ titulo: txt(paso.titulo, "tu"), filas });
+    if (filas.length) secciones.push({ titulo: TITULOS_DETALLE[paso.id] ?? txt(paso.titulo, "tu"), filas });
   }
   return secciones;
+}
+
+// ---------- Consentimientos ----------
+
+export type EstadoConsentimiento = "acepto" | "no_acepto" | "no_aplica" | "no_pedido";
+export type FilaConsentimiento = { clave: string; etiqueta: string; estado: EstadoConsentimiento; version?: string; fecha?: Date };
+
+/**
+ * Qué aceptó la persona, con versión del texto y fecha (registro inalterable). Las inscripciones anteriores al
+ * formulario 2027 no traen `consentimientos`: se arman con versionAutorizacion y la fecha de la inscripción, y la
+ * política de privacidad figura como "no se pedía".
+ */
+export function filasConsentimiento(doc: Inscripcion): FilaConsentimiento[] {
+  const etiquetas: Record<string, string> = {
+    privacidad: "Política de privacidad",
+    datos: `Tratamiento de datos personales (${LEY_DATOS[doc.pais]?.ley ?? "ley de datos"})`,
+    acudiente: "Autorización de adulto responsable",
+  };
+  const guardados = doc.consentimientos;
+  return (["privacidad", "datos", "acudiente"] as const).map((clave) => {
+    const etiqueta = etiquetas[clave]!;
+    const c = guardados?.find((x) => x.clave === clave);
+    if (c) return { clave, etiqueta, estado: c.respuesta ? "acepto" : "no_acepto", version: c.version, fecha: c.fecha };
+    if (clave === "acudiente" && !doc.acudiente) return { clave, etiqueta, estado: "no_aplica", fecha: doc.creadoEn };
+    if (guardados?.length && clave === "privacidad") return { clave, etiqueta, estado: "no_pedido" };
+    if (!guardados?.length) {
+      if (clave === "privacidad") return { clave, etiqueta, estado: "no_pedido" };
+      const version = clave === "datos" ? doc.versionAutorizacion : doc.versionAutorizacionAcudiente;
+      return version ? { clave, etiqueta, estado: "acepto", version, fecha: doc.creadoEn } : { clave, etiqueta, estado: "no_pedido" };
+    }
+    return { clave, etiqueta, estado: "no_pedido" };
+  });
 }
 
 // ---------- Exportación ----------

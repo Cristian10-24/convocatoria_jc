@@ -22,6 +22,8 @@ export const FiltrosPanel = z.object({
   desde: opcional(z.string().regex(FECHA)),
   hasta: opcional(z.string().regex(FECHA)),
   menor: opcional(z.enum(["si", "no"])),
+  /** Vive en una ciudad sede o en otra ciudad. */
+  vive: opcional(z.enum(["sede", "otra"])),
   alerta: opcional(z.enum(FILTROS_ALERTA)),
   q: opcional(z.string().trim().max(80)),
   orden: z.preprocess(vacioAIndefinido, z.enum(ORDENES).default("recientes")).catch("recientes"),

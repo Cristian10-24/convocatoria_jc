@@ -46,6 +46,15 @@ function filtroBusqueda(q: string): Filter<Inscripcion> {
   return { $and: palabras.map((p) => ({ $or: [{ nombres: regexSinTildes(p) }, { apellidos: regexSinTildes(p) }] })) };
 }
 
+/**
+ * Ciudades sede de todos los países. Las inscripciones anteriores al formulario 2027 no guardan `viveEnSede`: para
+ * ellas se deduce de la ciudad.
+ */
+const CIUDADES_SEDE = [...new Set(Object.values(DEFINICIONES).flatMap((def) => sedesReales(def).map((s) => ciudadSede(def, s))))];
+/** ¿Vive en una ciudad sede? Para documentos ya leídos (misma regla que VIVE_EN_SEDE). */
+export const viveEnSede = (d: Pick<Inscripcion, "viveEnSede" | "ciudad">): boolean => (typeof d.viveEnSede === "boolean" ? d.viveEnSede : CIUDADES_SEDE.includes(d.ciudad));
+const VIVE_EN_SEDE = { $cond: [{ $eq: [{ $type: "$viveEnSede" }, "bool"] }, "$viveEnSede", { $in: ["$ciudad", CIUDADES_SEDE] }] };
+
 /** Filtro de Mongo con el alcance aplicado. Siempre fija convocatoria y país (`$in`, nunca "todos" implícito). */
 export function filtroBase(alcance: AlcancePanel, f: Filtros): Filter<Inscripcion> {
   const paises = paisesConsultados(alcance, f);
@@ -61,10 +70,15 @@ export function filtroBase(alcance: AlcancePanel, f: Filtros): Filter<Inscripcio
   }
   if (f.menor === "si") filtro.acudiente = { $exists: true };
   if (f.menor === "no") filtro.acudiente = { $exists: false };
+  if (f.vive) {
+    const enSede = { $or: [{ viveEnSede: true }, { viveEnSede: { $exists: false }, ciudad: { $in: CIUDADES_SEDE } }] };
+    const otra = { $or: [{ viveEnSede: false }, { viveEnSede: { $exists: false }, ciudad: { $nin: CIUDADES_SEDE } }] };
+    filtro.$and = [...((filtro.$and as object[]) ?? []), f.vive === "sede" ? enSede : otra] as Filter<Inscripcion>[];
+  }
   if (f.alerta === "con") filtro["alertas.0"] = { $exists: true };
   else if (f.alerta === "sin") filtro["alertas.0"] = { $exists: false };
   else if (f.alerta) filtro["alertas.codigo"] = f.alerta;
-  if (f.q?.trim()) filtro.$and = [filtroBusqueda(f.q)];
+  if (f.q?.trim()) filtro.$and = [...((filtro.$and as object[]) ?? []), filtroBusqueda(f.q)] as Filter<Inscripcion>[];
   return filtro;
 }
 
@@ -84,6 +98,7 @@ export type FilaInscrito = {
   ciudadOtra?: string;
   edad: number;
   menor: boolean;
+  enSede: boolean;
   alertas: string[];
 };
 
@@ -105,7 +120,7 @@ export async function listarInscritos(
   const pagina = Math.min(f.pagina, paginas);
   const docs = await col
     .find(filtro, {
-      projection: { radicado: 1, creadoEn: 1, nombres: 1, apellidos: 1, tipoDocumento: 1, documento: 1, pais: 1, sede: 1, ciudad: 1, ciudadOtra: 1, edad: 1, acudiente: 1, alertas: 1 },
+      projection: { radicado: 1, creadoEn: 1, nombres: 1, apellidos: 1, tipoDocumento: 1, documento: 1, pais: 1, sede: 1, ciudad: 1, ciudadOtra: 1, viveEnSede: 1, edad: 1, acudiente: 1, alertas: 1 },
     })
     .sort(ORDEN[f.orden])
     .skip((pagina - 1) * tam)
@@ -125,6 +140,7 @@ export async function listarInscritos(
     ...(d.ciudadOtra ? { ciudadOtra: d.ciudadOtra } : {}),
     edad: d.edad,
     menor: !!d.acudiente,
+    enSede: viveEnSede(d),
     alertas: (d.alertas ?? []).map((a) => a.codigo),
   }));
   return { filas, total, pagina, paginas };
@@ -185,13 +201,6 @@ export type Estadisticas = {
   alertas: Conteo[];
   zona: string;
 };
-
-/**
- * Ciudades sede de todos los países. Las inscripciones anteriores al formulario 2027 no guardan `viveEnSede`: para
- * ellas se deduce de la ciudad.
- */
-const CIUDADES_SEDE = [...new Set(Object.values(DEFINICIONES).flatMap((def) => sedesReales(def).map((s) => ciudadSede(def, s))))];
-const VIVE_EN_SEDE = { $cond: [{ $eq: [{ $type: "$viveEnSede" }, "bool"] }, "$viveEnSede", { $in: ["$ciudad", CIUDADES_SEDE] }] };
 
 const contar = (campo: unknown, extra: object[] = []) => [
   ...extra,

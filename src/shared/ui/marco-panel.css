@@ -15,6 +15,17 @@
 .marco-usuario b { font-size: 14px; font-weight: 600; }
 .marco-contenido { padding-top: 32px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 24px; }
 
+/* Estados del panel (loading.tsx y error.tsx; diseño AdminEstados) */
+.ad .carga .sk { display: block; }
+.ad .carga { display: flex; flex-direction: column; gap: 16px; }
+.ad .carga .sk.alto { height: 88px; border-radius: 16px; }
+.ad .carga .sk.grafica { height: 160px; border-radius: 16px; }
+.ad .carga-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px; }
+.ad .estado-icono-error { width: 56px; height: 56px; border-radius: 50%; background: var(--error-fondo); display: flex; align-items: center; justify-content: center; }
+.ad .estado-icono-error svg.i { color: var(--error); }
+.ad .estado .t-vacio { margin: 0; font-size: 15px; color: var(--texto-suave); max-width: 46ch; }
+.ad .estado h1, .ad .estado h2 { margin: 0; }
+
 @media (max-width: 760px) {
   .marco-barra { position: static; }
   .marco-izq { gap: 10px; }

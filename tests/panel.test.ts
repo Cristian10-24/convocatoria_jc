@@ -15,7 +15,7 @@ import { crearUsuario, editarUsuario, listarUsuarios, restablecerClave, verifica
 import { buscarInscripcion, estadisticas, listarInscritos } from "@/modules/inscripcion/panel/consultas";
 import { generarCsv } from "@/modules/inscripcion/panel/exportacion";
 import { aQuery, leerFiltros } from "@/modules/inscripcion/panel/filtros";
-import { seccionesDetalle } from "@/modules/inscripcion/panel/presentacion";
+import { filasConsentimiento, seccionesDetalle } from "@/modules/inscripcion/panel/presentacion";
 import { seriesTablero, serieDiaria } from "@/modules/inscripcion/panel/tablero";
 import { COLECCION, type Inscripcion } from "@/modules/inscripcion/repository";
 import { ObjectId } from "mongodb";
@@ -179,6 +179,30 @@ describe("tablero", () => {
     // Uruguay: Salto, Salto y Carmelo no son ciudades sede. Colombia: Bogotá D.C. sí lo es.
     expect(e.sedeVsOtra).toEqual(expect.arrayContaining([{ pais: "uy", sede: 0, otra: 3 }, { pais: "col", sede: 1, otra: 0 }]));
     expect(e.semanaAnterior).toBe(0);
+  });
+
+  it("filtro «sede u otra ciudad» y marca por fila, también en inscripciones sin viveEnSede", async () => {
+    const otra = await listarInscritos(ADMIN, filtros({ vive: "otra" }));
+    const sede = await listarInscritos(ADMIN, filtros({ vive: "sede" }));
+    expect(otra.total).toBe(3);
+    expect(sede.filas.map((f) => f.ciudad)).toEqual(["Bogotá D.C."]);
+    expect(sede.filas[0]!.enSede).toBe(true);
+    expect(otra.filas.every((f) => !f.enSede)).toBe(true);
+    // Un coordinador de Uruguay no ve la de Bogotá aunque pida "sede".
+    expect((await listarInscritos(COORD_UY, filtros({ vive: "sede" }))).total).toBe(0);
+  });
+
+  it("consentimientos: los guardados con versión y fecha; los anteriores se deducen de versionAutorizacion", () => {
+    const fecha = new Date("2027-01-10T15:00:00Z");
+    const nuevo = filasConsentimiento(doc({ consentimientos: [
+      { clave: "privacidad", respuesta: true, version: "privacidad-v1", fecha },
+      { clave: "datos", respuesta: true, version: "datos-uy-v1", fecha },
+    ] }));
+    expect(nuevo.map((c) => [c.clave, c.estado, c.version])).toEqual([["privacidad", "acepto", "privacidad-v1"], ["datos", "acepto", "datos-uy-v1"], ["acudiente", "no_aplica", undefined]]);
+    expect(nuevo[1]!.etiqueta).toContain("Ley 18.331");
+    const anterior = filasConsentimiento(doc({ versionAutorizacion: "uy-2027-provisional-1", consentimientos: undefined }));
+    expect(anterior.map((c) => c.estado)).toEqual(["no_pedido", "acepto", "no_aplica"]);
+    expect(anterior[1]!.version).toBe("uy-2027-provisional-1");
   });
 
   it("la serie diaria rellena los días sin inscripciones y acumula", () => {

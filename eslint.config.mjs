@@ -13,5 +13,11 @@ export default defineConfig([
     // Material de referencia (solo lectura) y vista previa temporal del diseño.
     "_design-ref/**",
     "_preview-vista/**",
+    // Material de diseño sin versionar (HTML exportado con scripts enormes): si se revisa, el lint agota la memoria.
+    "Diseno-convocatoria/**",
+    "Reforma-entrega-convocatoria-jc/**",
+    "entrega-convocatoria-jc/**",
+    "JovenesCreaTIvos_2027_Diseno/**",
+    "capturas/**",
   ]),
 ]);

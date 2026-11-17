@@ -5,7 +5,6 @@
 // el formulario llama a `reiniciar()` para pedir uno nuevo.
 // Docs: https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import s from "./Inscripcion.module.css";
 
 type Api = {
   render: (el: HTMLElement, opciones: Record<string, unknown>) => string;
@@ -78,7 +77,7 @@ const Turnstile = forwardRef<ControlTurnstile, Props>(function Turnstile({ clave
     };
   }, [claveSitio]);
 
-  return <div ref={contenedor} className={s.turnstile} aria-label={etiqueta} />;
+  return <div ref={contenedor} className="verif" aria-label={etiqueta} />;
 });
 
 export default Turnstile;

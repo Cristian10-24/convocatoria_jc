@@ -3,7 +3,7 @@
 // lanza errores, y cada país (uy.ts, col.ts, ecu.ts, pan.ts) arma con esto su propia definición.
 import { CONTACTO } from "@/shared/config/sitio";
 import { PREFIERO_NO } from "../config/preguntas";
-import type { LegalPais, Opcion, PasoDef, TipoDocumento, Trato } from "../config/tipos";
+import type { DefinicionPais, LegalPais, Opcion, PasoDef, TipoDocumento, Trato } from "../config/tipos";
 
 export const MAYORIA_DE_EDAD = 18;
 export const EDAD_MINIMA = 14;
@@ -48,6 +48,25 @@ export function pasosLibre(extras: { perfil?: string[]; sociodemograficos?: stri
     { id: "cierre", titulo: "Información adicional", corto: "Información adicional", descripcion: "Ya casi terminamos.", campos: extras.cierre },
   ];
 }
+
+/** Redacción del diseño 2027 para las preguntas comunes (Uruguay conserva la suya, la del formulario en producción). */
+export const ETIQUETAS_DISENO: NonNullable<DefinicionPais["etiquetas"]> = {
+  sede: { etiqueta: "Ciudad", ayuda: "Elige la ciudad desde la que aplicas o a la que puedes trasladarte para algunas actividades presenciales." },
+  ciudad: { etiqueta: "Ciudad o población de residencia" },
+  direccion: { etiqueta: "Dirección" },
+  telefonoAlterno: { ayuda: "De un familiar o persona cercana." },
+  documento: { ayuda: "Solo dígitos, sin puntos ni comas." },
+  grado: { etiqueta: "Grado que cursas" },
+  anioEgreso: { etiqueta: "Año en que terminaste" },
+  internet: { etiqueta: "¿Tienes acceso a internet?" },
+  autonomia: { etiqueta: "¿Te sientes cómodo/a aprendiendo de manera autónoma y usando plataformas en línea?" },
+  horas: { etiqueta: "¿Cuántas horas semanales puedes dedicar de manera exclusiva al programa?", ayuda: "El programa pide mínimo 8 horas a la semana." },
+  poblaciones: { etiqueta: "Población con la que te identificas", ayuda: "" },
+  ingresos: { etiqueta: "Ingresos totales de tu hogar" },
+  canal: { etiqueta: "¿Cómo te enteraste de la convocatoria?" },
+  embajador: { etiqueta: "Nombre o código del embajador", ayuda: "Si no lo recuerdas, cuéntanos algo para identificarlo, como su ciudad o teléfono." },
+  aplicoAntes: { etiqueta: "¿Has aplicado antes a Jóvenes creaTIvos?" },
+};
 
 /**
  * [TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA] Autorización de datos en lenguaje sencillo, igual en los 4 países

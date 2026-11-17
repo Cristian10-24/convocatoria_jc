@@ -4,7 +4,7 @@
 import { NOMBRE_PAIS, type PaisSlug } from "@/shared/config/paises";
 import { ALERTAS, type CodigoAlerta } from "../config/alertas";
 import { CAMPOS_SENSIBLES, TEXTOS_PANEL } from "../config/panel";
-import { CIUDAD_OTRA, CONFIG_PAISES } from "../config/paises";
+import { CIUDAD_OTRA, CONFIG_PAISES, DEFINICIONES } from "../config/paises";
 import { PASOS, PREGUNTAS, type IdCampo } from "../config/preguntas";
 import { txt } from "../config/textos";
 import { textoRespuesta } from "../mostrar";
@@ -48,7 +48,7 @@ function aBorrador(doc: Inscripcion): Borrador {
 
 /** Texto de una respuesta guardada ("" si no respondió). */
 export function valorCampo(doc: Inscripcion, campo: IdCampo, b = aBorrador(doc)): string {
-  const cfg = CONFIG_PAISES[doc.pais];
+  const cfg = DEFINICIONES[doc.pais];
   if (!cfg) return "";
   if (campo === "sede") return nombreSede(doc.pais, doc.sede);
   return textoRespuesta(cfg, campo, b);
@@ -146,7 +146,7 @@ export function columnasExportacion(verSensibles: boolean): Columna[] {
 
 /** Etiqueta de una opción de una pregunta (para las gráficas). `pais` hace falta para sedes y grados. */
 export function etiquetaOpcion(campo: IdCampo, id: string, pais: PaisSlug = "col"): string {
-  const cfg = CONFIG_PAISES[pais];
+  const cfg = DEFINICIONES[pais];
   if (campo === "sede") return nombreSede(pais, id);
   const valor = ["internet", "aplicoAntes", "seleccionadoAntes"].includes(campo) ? id === "true" : id;
   const texto = textoRespuesta(cfg, campo, { [campo]: valor } as Borrador);

@@ -2,12 +2,11 @@
 // no pierde lo escrito. Se borra al confirmar la inscripción. Todo va en try/catch: en modo privado o con el
 // almacenamiento bloqueado, el formulario funciona igual (solo sin borrador).
 import type { PaisSlug } from "@/shared/config/paises";
-import type { IdPaso } from "./config/tipos";
 import { Entrada, type Borrador } from "./schema";
 
 const clave = (pais: PaisSlug) => `convocatoria:inscripcion:${pais}`;
 
-export type EstadoGuardado = { datos: Borrador; paso: IdPaso };
+export type EstadoGuardado = { datos: Borrador; paso?: string };
 
 export function leerBorrador(pais: PaisSlug): EstadoGuardado | null {
   try {
@@ -17,7 +16,7 @@ export function leerBorrador(pais: PaisSlug): EstadoGuardado | null {
     // Se valida la forma: un borrador viejo o manipulado no rompe el formulario.
     const forma = Entrada.partial().safeParse(json.datos);
     if (!forma.success) return null;
-    return { datos: forma.data as Borrador, paso: (typeof json.paso === "string" ? json.paso : "ubicacion") as IdPaso };
+    return { datos: forma.data as Borrador, paso: typeof json.paso === "string" ? json.paso : undefined };
   } catch {
     return null;
   }

@@ -147,9 +147,9 @@ describe("validación del formulario de Uruguay", () => {
 
   it("texto legible para el resumen", () => {
     const d = inscripcionUy({ ciudad: "__otra__", ciudadOtra: "Bella Unión" });
-    expect(textoRespuesta(uy, "horas", d)).toBe("Entre 10 y 15 horas");
-    expect(textoRespuesta(uy, "ciudad", d)).toBe("Bella Unión");
-    expect(textoRespuesta(uy, "grado", d)).toBe("6.° de liceo");
+    expect(textoRespuesta(uyDef, "horas", d)).toBe("Entre 10 y 15 horas");
+    expect(textoRespuesta(uyDef, "ciudad", d)).toBe("Bella Unión");
+    expect(textoRespuesta(uyDef, "grado", d)).toBe("6.° de liceo");
   });
 });
 

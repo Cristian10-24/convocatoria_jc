@@ -1,16 +1,18 @@
 "use client";
 
-// Carga el formulario solo en el navegador: así puede leer el borrador de sessionStorage desde el primer render.
+// Carga el formulario solo en el navegador: así puede leer el avance de sessionStorage desde el primer dibujo.
 // Mientras carga (unos milisegundos tras el HTML estático) se ve un esqueleto del mismo tamaño.
 import dynamic from "next/dynamic";
-import { UI } from "../config/textos";
-import s from "./Inscripcion.module.css";
+import { IU } from "../config/interfaz";
 
-const Formulario = dynamic(() => import("./FormularioInscripcion"), {
+const Formulario = dynamic(() => import("./Formulario"), {
   ssr: false,
   loading: () => (
-    <div className={s.esqueleto} role="status" aria-label={UI.cargando}>
-      <i /><i /><i /><i />
+    <div className="jc fpg">
+      <div className="fh"><div className="wrap fw" /></div>
+      <div className="wrap fw fcol">
+        <div className="fcard fesq" role="status" aria-label={IU.cargando}><i /><i /><i /><i /></div>
+      </div>
     </div>
   ),
 });

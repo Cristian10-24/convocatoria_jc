@@ -1,7 +1,7 @@
 // Ecuador · definición del formulario (preguntas del formulario oficial 2026, con el diseño 2027).
 // Como Colombia, pero sin estrato y con las opciones de la FLOM en "¿Cómo te enteraste?".
 import type { DefinicionPais } from "../config/tipos";
-import { EDAD_MINIMA, MAYORIA_DE_EDAD, PASAPORTE, conPrefieroNo, legalDe, opciones, opcionesComputadora, pasosLibre } from "./comunes";
+import { EDAD_MINIMA, MAYORIA_DE_EDAD, ETIQUETAS_DISENO, PASAPORTE, conPrefieroNo, legalDe, opciones, opcionesComputadora, pasosLibre } from "./comunes";
 
 export const definicion: DefinicionPais = {
   pais: "ecu",
@@ -57,6 +57,7 @@ export const definicion: DefinicionPais = {
     cierre: ["conocimiento", "lenguajes", "ingles", "talla", "canal", "embajador", "canalOtro", "aplicoAntes", "seleccionadoAntes"],
   }),
   etiquetas: {
+    ...ETIQUETAS_DISENO,
     institucion: { etiqueta: "Institución educativa en la que estudias o estudiaste" },
     computadora: { etiqueta: "¿Tienes acceso a una computadora para estudiar y practicar durante el programa?" },
     talla: { etiqueta: "Talla de camisa", ayuda: "" },

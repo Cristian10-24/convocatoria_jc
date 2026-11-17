@@ -2,7 +2,7 @@
 // Tiene lo que no tiene Uruguay: condiciones laborales, vivienda, estrato, núcleo familiar, elementos y servicios del
 // hogar, nivel de software, lenguajes e inglés. Pendiente de confirmar con el equipo del país: rango de edad 2027.
 import type { DefinicionPais } from "../config/tipos";
-import { EDAD_MINIMA, MAYORIA_DE_EDAD, PASAPORTE, conPrefieroNo, legalDe, opciones, opcionesComputadora, pasosLibre } from "./comunes";
+import { EDAD_MINIMA, MAYORIA_DE_EDAD, ETIQUETAS_DISENO, PASAPORTE, conPrefieroNo, legalDe, opciones, opcionesComputadora, pasosLibre } from "./comunes";
 
 export const definicion: DefinicionPais = {
   pais: "col",
@@ -64,6 +64,7 @@ export const definicion: DefinicionPais = {
     cierre: ["conocimiento", "lenguajes", "ingles", "talla", "canal", "embajador", "canalOtro", "aplicoAntes", "seleccionadoAntes"],
   }),
   etiquetas: {
+    ...ETIQUETAS_DISENO,
     institucion: { etiqueta: "Institución educativa en la que estudias o estudiaste" },
     computadora: { etiqueta: "¿Tienes acceso a un computador para estudiar y practicar durante el programa?" },
     talla: { etiqueta: "Talla de camisa", ayuda: "" },

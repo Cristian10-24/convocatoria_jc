@@ -2,7 +2,7 @@
 // una sola sede, ingresos en dólares y sin las preguntas del hogar ni las de participación anterior.
 // La cédula panameña conserva sus guiones y prefijos (8-123-4567, PE-1-234, E-8-12345): regla "cedula_pa".
 import type { DefinicionPais } from "../config/tipos";
-import { EDAD_MINIMA, MAYORIA_DE_EDAD, OTRO_DOCUMENTO, PASAPORTE, conPrefieroNo, legalDe, opciones, opcionesComputadora, pasosLibre } from "./comunes";
+import { EDAD_MINIMA, MAYORIA_DE_EDAD, OTRO_DOCUMENTO, ETIQUETAS_DISENO, PASAPORTE, conPrefieroNo, legalDe, opciones, opcionesComputadora, pasosLibre } from "./comunes";
 
 export const definicion: DefinicionPais = {
   pais: "pan",
@@ -54,6 +54,8 @@ export const definicion: DefinicionPais = {
   },
   pasos: pasosLibre({ cierre: ["ingles", "talla", "canal", "canalOtro"] }),
   etiquetas: {
+    ...ETIQUETAS_DISENO,
+    documento: { ayuda: "" },
     institucion: { etiqueta: "Colegio en el que estudias o estudiaste" },
     computadora: { etiqueta: "¿Tienes acceso a una computadora para estudiar y practicar durante el programa?" },
     talla: { etiqueta: "Talla de camisa", ayuda: "" },

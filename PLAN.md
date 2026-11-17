@@ -204,3 +204,16 @@ Confirmación en pantalla con nombre, país, sede y **radicado**; sin correo (es
 | **3. Autenticación** | Usuarios, login/logout, permisos, `admin:crear` | pruebas de login, bloqueo, revocación, alcance |
 | **4. Panel** | Tablero, tabla, detalle, exportación, semilla de demo | pruebas de agregaciones y exportación (incluye sanitización); revisión con miles de registros falsos |
 | **5. Producción** | README (instalación, Atlas misma región que Vercel y ≥ M10, Vercel, dominio propio/DNS, Turnstile), prueba de carga contra un **preview de Vercel** con una base de pruebas en Atlas, robots/sitemap | checklist de despliegue |
+
+---
+
+## 7. Rediseño 2027 · checklist de cierre (antes del merge a `main`)
+
+Rama `feature/rediseno-2027`. Nada de esto se hace antes: son pasos del cierre, no de cada fase.
+
+- [ ] **Datos pendientes:** completar lo que entregue la Fundación ([CITA] y fotos de testimonios, logos de aliados, enlaces de redes, rango de edad 2027) y poner `MOSTRAR_PENDIENTES = false` en `src/modules/convocatoria/content/contenido.ts` para ocultar todo lo que siga sin dato.
+- [ ] **Quitar `/sistema`:** borrar `src/app/sistema/` y `src/shared/ui/sistema/Muestra.tsx` (página de trabajo del sistema de diseño) y su línea en `robots.ts`.
+- [ ] **Textos legales:** siguen marcados `[TEXTO LEGAL PROVISIONAL – REVISIÓN JURÍDICA]` hasta que la Fundación entregue los definitivos.
+- [ ] **Correos de los usuarios del panel** (login por correo) y variables nuevas documentadas en `.env.example`.
+- [ ] **Producción:** `CONVOCATORIA_CONFIG` sigue siendo `{"uy":{"estado":"abierta","cierra":"2026-12-18"}}`; comprobar en un preview que `/uy` y `/inscripcion/uy` redirigen y que una inscripción de prueba de Uruguay llega al panel.
+- [ ] typecheck, lint, pruebas y build en verde; sin push ni merge hasta la confirmación.

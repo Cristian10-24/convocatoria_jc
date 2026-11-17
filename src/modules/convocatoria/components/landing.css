@@ -289,6 +289,7 @@
 /* Reloj y aviso: lo que aparece después de cargar no debe mover la página. */
 .jcm .reloj b { display: inline-block; min-width: 1.3em; text-align: right; }
 .jcm .aviso-nota { font-size: 14px; line-height: 1.45; max-width: 560px; color: hsl(231.9 33.3% 87.6%); }
+.jcm .aviso-nota a, .jcm .aviso-nota a:hover { color: hsl(0 0% 100%); }
 @media (max-width: 760px) {
   .jcm .hero-pausa { right: 20px; bottom: 12px; }
   /* Decisión de la fase 1: en celular un botón largo puede partirse en dos líneas, centrado y con su alto mínimo. */

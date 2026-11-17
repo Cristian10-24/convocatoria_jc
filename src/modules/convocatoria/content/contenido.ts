@@ -66,11 +66,13 @@ export type PaisLanding = {
   pre: "col" | "ecu" | "pan" | "uy";
   ruta: string;
   voz: Voz;
-  lugar: string;
-  ciudades: string;
+  /**
+   * Requisito de ubicación: las ciudades sede y las cercanas, sin priorizar ninguna. Deben ser las mismas de la
+   * definición del formulario del país (src/modules/inscripcion/paises/<pais>.ts); una prueba lo comprueba.
+   */
+  ubicacion: string;
   grado: string;
   gradoCorto: string;
-  edad: string;
   equipo: "computador" | "computadora";
   /** Pie de la foto de la actividad fuera del aula y la foto que la ilustra. */
   visita: string;
@@ -81,25 +83,25 @@ const p = (slug: PaisSlug, datos: Omit<PaisLanding, "slug" | "ruta">): PaisLandi
 
 export const PAISES: Record<PaisSlug, PaisLanding> = {
   col: p("col", {
-    nombre: "Colombia", pre: "col", voz: TU, lugar: "Vivir en Colombia",
-    ciudades: "Se priorizan Barranquilla, Bogotá D.C., Cali, Cartagena de Indias, Medellín y el Valle de Aburrá.",
-    grado: "Estar en 10.° u 11.°, o ser bachiller.", gradoCorto: "10.° y 11.°, o bachiller", edad: "En 2026 fue de 14 a 25 años.",
+    nombre: "Colombia", pre: "col", voz: TU,
+    ubicacion: "Vivir en Barranquilla, Bogotá D.C., Cali, Cartagena de Indias, Medellín (incluido el Valle de Aburrá) o ciudades cercanas.",
+    grado: "Estar en 10.° u 11.°, o ser bachiller.", gradoCorto: "10.° y 11.°, o bachiller",
     equipo: "computador", visita: "Visita a Sofka", fotoVisita: "col-visita",
   }),
   ecu: p("ecu", {
-    nombre: "Ecuador", pre: "ecu", voz: TU, lugar: "Vivir en Ecuador", ciudades: "Se priorizan Quito, Guayaquil y poblaciones cercanas.",
-    grado: "Estar en 2.° o 3.° de bachillerato, o ser bachiller.", gradoCorto: "2.° y 3.° de bachillerato, o bachiller", edad: "En 2026 fue de 14 a 25 años.",
+    nombre: "Ecuador", pre: "ecu", voz: TU, ubicacion: "Vivir en Quito, Guayaquil o ciudades cercanas.",
+    grado: "Estar en 2.° o 3.° de bachillerato, o ser bachiller.", gradoCorto: "2.° y 3.° de bachillerato, o bachiller",
     equipo: "computadora", visita: "Visita a Sofka", fotoVisita: "ecu-visita",
   }),
   pan: p("pan", {
-    nombre: "Panamá", pre: "pan", voz: TU, lugar: "Vivir en Panamá", ciudades: "Se prioriza Ciudad de Panamá y alrededores (Provincia de Panamá).",
-    grado: "Estar en 11.° o 12.°, o ser bachiller (egresado reciente).", gradoCorto: "11.° y 12.°, o bachiller", edad: "En 2026 fue de 14 a 30 años.",
+    nombre: "Panamá", pre: "pan", voz: TU, ubicacion: "Vivir en Ciudad de Panamá o ciudades cercanas de la provincia de Panamá.",
+    grado: "Estar en 11.° o 12.°, o ser bachiller (egresado reciente).", gradoCorto: "11.° y 12.°, o bachiller",
     // El diseño pide "pan-visita", que no existe en el paquete: se usa pan-reto (decisión de la fase 0).
     equipo: "computadora", visita: "Reto en equipo", fotoVisita: "pan-reto",
   }),
   uy: p("uy", {
-    nombre: "Uruguay", pre: "uy", voz: VOS, lugar: "Vivir en Uruguay", ciudades: "Se priorizan Colonia y Paysandú.",
-    grado: "Estar en 5.° o 6.° de liceo, o ser bachiller.", gradoCorto: "5.° y 6.° de liceo, o bachiller", edad: "En 2026 fue de 14 a 30 años.",
+    nombre: "Uruguay", pre: "uy", voz: VOS, ubicacion: "Vivir en Colonia, Paysandú o ciudades cercanas, o en Colón y Concepción del Uruguay (Argentina).",
+    grado: "Estar en 5.° o 6.° de liceo, o ser bachiller.", gradoCorto: "5.° y 6.° de liceo, o bachiller",
     equipo: "computadora", visita: "Visita pedagógica", fotoVisita: "uy-visita",
   }),
 };
@@ -170,20 +172,20 @@ export const BENEFICIOS = {
   otros: [
     { clase: "bt-a bt-tinte", icono: "certificado", titulo: "Certificado", texto: "Recibe una certificación oficial que respalda tus nuevos conocimientos técnicos." },
     { clase: "bt-b", icono: "personas", titulo: "Comunidad", texto: "Únete a la red exclusiva de Jóvenes creaTIvos en toda Latinoamérica." },
-    { clase: "bt-c", icono: "corazon", titulo: "Apoyo en salud mental", texto: "Acompañamiento integral para potenciar tu bienestar durante el programa." },
+    { clase: "bt-c", icono: "corazon", titulo: "Apoyo y acompañamiento", texto: "Acompañamiento integral para potenciar tu bienestar durante el programa." },
     { clase: "bt-d bt-tinte", icono: "charla", titulo: "Asesorías de emprendimiento", texto: "Mentoría experta para llevar tus ideas de negocio al siguiente nivel." },
   ],
 } as const;
 
 // ---------- Requisitos ----------
+// La edad no es un requisito de la landing (la alerta de edad del formulario sigue igual).
 export type Requisito = { clave: string; texto: string; icono: IconoLanding; pendiente?: string };
 export function requisitos(pais: PaisLanding | null): Requisito[] {
-  const equipo = pais?.equipo ?? "computador";
+  const equipo = pais?.equipo ?? "computadora";
   return [
-    { clave: "Ubicación", icono: "ubicacion", texto: pais ? `${pais.lugar}. ${pais.ciudades}` : "Vivir en Colombia, Ecuador, Panamá o Uruguay. Se priorizan las ciudades principales, pero cualquier persona del país puede inscribirse." },
+    { clave: "Ubicación", icono: "ubicacion", texto: pais ? pais.ubicacion : "Vivir en Colombia, Ecuador, Panamá o Uruguay. Se priorizan las ciudades principales, pero cualquier persona del país puede inscribirse." },
     { clave: "Nivel educativo", icono: "birrete", texto: pais ? pais.grado : "Estar en los últimos años del colegio o ser egresado reciente." },
-    { clave: "Edad", icono: "calendario", texto: pais ? pais.edad : "En 2026 fue de 14 a 25 años en Colombia y Ecuador, y de 14 a 30 en Panamá y Uruguay.", pendiente: "[RANGO 2027 POR CONFIRMAR]" },
-    { clave: "Herramientas", icono: "portatil", texto: `${equipo === "computador" ? "Computador" : "Computadora"} e internet estable.` },
+    { clave: "Herramientas", icono: "portatil", texto: `Acceso a ${equipo === "computador" ? "un computador" : "una computadora"} e internet.` },
     { clave: "Compromiso", icono: "reloj", texto: "Mínimo 8 horas semanales." },
   ];
 }
@@ -193,7 +195,7 @@ export const INCLUYE = [
   "Visitas pedagógicas a empresas tecnológicas.",
   "Certificación oficial.",
   "Comunidad de Jóvenes creaTIvos en toda Latinoamérica.",
-  "Apoyo en salud mental.",
+  "Apoyo y acompañamiento.",
   "Asesorías de emprendimiento.",
 ];
 export function noIncluye(pais: PaisLanding): string[] {

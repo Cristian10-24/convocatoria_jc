@@ -73,6 +73,8 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
   const voz = pais?.voz ?? PAISES.col.voz;
   const paisMed = slug ? CODIGO_MEDICION[slug] : "sin_definir";
   const cierra = config.cierra ?? CIERRE_PRIMERA_ETAPA;
+  // Landing principal: la fecha clave es la de las preinscripciones de Uruguay (la única confirmada).
+  const cierreUy = slug ? undefined : (leerConfigEntorno().uy?.cierra ?? CIERRE_PRIMERA_ETAPA);
   const fechaPendiente = MOSTRAR_PENDIENTES && !config.cierra;
 
   /** Botón principal según el estado: inscribirse, dejar el correo o ir a las redes. */
@@ -195,7 +197,11 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
               items={comoFunciona(pais).map((c) => ({ titulo: c.titulo, texto: c.texto, icono: TRAZO[c.icono], foto: c.foto }))}
             >
               <Revelar className="cf-h">
-                <div><span>Primera etapa de inscripciones</span><b>Hasta el {fechaLarga(cierra)}</b>{fechaPendiente ? <span className="falta" style={{ alignSelf: "flex-start" }}>[CONFIRMAR]</span> : null}</div>
+                {cierreUy ? (
+                  <div><span>Preinscripciones en Uruguay</span><b>Hasta el {fechaLarga(cierreUy)}</b></div>
+                ) : (
+                  <div><span>Primera etapa de inscripciones</span><b>Hasta el {fechaLarga(cierra)}</b>{fechaPendiente ? <span className="falta" style={{ alignSelf: "flex-start" }}>[CONFIRMAR]</span> : null}</div>
+                )}
                 <div><span>Inicio del programa</span><b>{COHORTE.inicio}</b></div>
                 <div><span>Cierre y graduación</span><b>{COHORTE.fin}</b></div>
               </Revelar>

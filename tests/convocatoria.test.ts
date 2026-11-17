@@ -4,7 +4,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { conUtm, destinoInscripcion, rutaFormulario } from "@/modules/convocatoria/content/acciones";
-import { ACERCA, BENEFICIOS, COHORTE, IMPACTO, ORDEN_PAISES, PAISES, comoFunciona, diapositivas, galeria, requisitos, rutas, testimoniosPara } from "@/modules/convocatoria/content/contenido";
+import { DEFINICIONES } from "@/modules/inscripcion/config/paises";
+import { ACERCA, BENEFICIOS, COHORTE, IMPACTO, INCLUYE, ORDEN_PAISES, PAISES, PREGUNTAS, comoFunciona, diapositivas, galeria, requisitos, rutas, testimoniosPara } from "@/modules/convocatoria/content/contenido";
 import { estadoConvocatoria, leerConfigEntorno } from "@/shared/config/convocatoria";
 import { PAISES as SLUGS, SEGMENTO_URL } from "@/shared/config/paises";
 
@@ -15,7 +16,7 @@ describe("contenido por país", () => {
       const p = PAISES[slug];
       expect(p.slug).toBe(slug);
       expect(p.ruta).toBe(`/${SEGMENTO_URL[slug]}`);
-      expect(requisitos(p)).toHaveLength(5);
+      expect(requisitos(p)).toHaveLength(4);
       expect(galeria(p)).toHaveLength(7);
       expect(diapositivas(p, "abierta")).toHaveLength(2);
     }
@@ -52,6 +53,34 @@ describe("contenido por país", () => {
     expect(testimoniosPara(PAISES.ecu).every((t) => t.pais === "ecu")).toBe(true);
     expect(testimoniosPara(null)).toHaveLength(8);
     expect(testimoniosPara(PAISES.pan)).toHaveLength(1);
+  });
+
+  it("requisitos: sin edad; herramientas con «computadora» (Colombia: «computador»)", () => {
+    for (const p of [null, ...SLUGS.map((s) => PAISES[s])]) {
+      const r = requisitos(p);
+      expect(r.map((x) => x.clave)).toEqual(["Ubicación", "Nivel educativo", "Herramientas", "Compromiso"]);
+      expect(r.some((x) => /RANGO|POR CONFIRMAR/.test(`${x.texto} ${x.pendiente ?? ""}`))).toBe(false);
+    }
+    expect(requisitos(null)[2]!.texto).toBe("Acceso a una computadora e internet.");
+    expect(requisitos(PAISES.col)[2]!.texto).toBe("Acceso a un computador e internet.");
+    for (const s of ["ecu", "pan", "uy"] as const) expect(requisitos(PAISES[s])[2]!.texto).toBe("Acceso a una computadora e internet.");
+  });
+
+  it("ubicación: nombra las ciudades sede del formulario de cada país, sin priorizar ninguna", () => {
+    for (const s of SLUGS) {
+      const texto = requisitos(PAISES[s])[0]!.texto;
+      expect(texto).not.toMatch(/prioriz/i);
+      for (const sede of DEFINICIONES[s].config.sedes) expect(texto, `${s}: ${sede.nombre}`).toContain(sede.nombre);
+    }
+    expect(requisitos(PAISES.uy)[0]!.texto).toBe("Vivir en Colonia, Paysandú o ciudades cercanas, o en Colón y Concepción del Uruguay (Argentina).");
+    // Las ciudades argentinas que nombra Uruguay son las del formulario.
+    const ciudadesUy = DEFINICIONES.uy.config.sedes.flatMap((x) => x.ciudades).join(" ");
+    for (const c of ["Colón", "Concepción del Uruguay"]) expect(ciudadesUy).toContain(c);
+  });
+
+  it("«Apoyo en salud mental» ya no aparece: es «Apoyo y acompañamiento»", () => {
+    expect(INCLUYE).toContain("Apoyo y acompañamiento.");
+    expect(JSON.stringify([INCLUYE, BENEFICIOS, PREGUNTAS, SLUGS.map((s) => comoFunciona(PAISES[s]))])).not.toMatch(/salud mental/i);
   });
 
   it("Panamá usa pan-reto en lugar de la foto pan-visita, que no existe", () => {

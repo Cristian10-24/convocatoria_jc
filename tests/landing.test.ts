@@ -41,6 +41,21 @@ describe("landing principal", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
   });
 
+  it("fechas clave: «Preinscripciones en Uruguay», hasta el 18 de diciembre de 2026, sin [CONFIRMAR]", () => {
+    const { texto } = landing(null, PRODUCCION);
+    expect(texto).toContain("Preinscripciones en Uruguay Hasta el 18 de diciembre de 2026");
+    expect(texto).not.toContain("[CONFIRMAR]");
+    expect(texto).not.toMatch(/primera etapa de inscripciones/i);
+  });
+
+  it("requisitos: 4, sin edad, y en ninguna landing aparece «salud mental»", () => {
+    const { texto } = landing(null, PRODUCCION);
+    expect(texto).toContain("0 de 4 requisitos");
+    expect(texto).not.toContain("RANGO 2027");
+    for (const p of [null, "uy", "col", "ecu", "pan"] as const) expect(landing(p, PRODUCCION).texto).not.toMatch(/salud mental/i);
+    expect(landing("uy", PRODUCCION).texto).toContain("Apoyo y acompañamiento.");
+  });
+
   it("no depende del estado de ningún país: se ve igual con una configuración rota", () => {
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     env.CONVOCATORIA_CONFIG = "{roto";

@@ -1,0 +1,24 @@
+/* Marco del panel (diseño 2027): barra blanca fija arriba con la marca, las pestañas y quién está conectado. */
+.ad.marco { min-height: 100vh; min-height: 100dvh; }
+.marco-barra { background: var(--blanco); border-bottom: 1px solid var(--borde-tenue); position: sticky; top: 0; z-index: 20; }
+.marco-barra-i { min-height: 68px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; padding-top: 10px; padding-bottom: 10px; }
+.marco-izq { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; }
+.marco-marca, .marco-marca:hover { color: var(--azul); }
+.marco-marca { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.marco-marca img { display: block; width: 44px; height: 39px; object-fit: contain; }
+.marco-marca span, .marco-usuario > span { display: flex; flex-direction: column; line-height: 1.15; }
+.marco-marca b { font-size: 15px; font-weight: 600; }
+.marco-marca small, .marco-usuario small { font-size: 12px; color: var(--texto-suave); }
+.marco-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+.marco-usuario { display: flex; align-items: center; gap: 14px; }
+.marco-usuario > span { align-items: flex-end; line-height: 1.2; }
+.marco-usuario b { font-size: 14px; font-weight: 600; }
+.marco-contenido { padding-top: 32px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 24px; }
+
+@media (max-width: 760px) {
+  .marco-barra { position: static; }
+  .marco-izq { gap: 10px; }
+  .marco-usuario { width: 100%; justify-content: space-between; }
+  .marco-usuario > span { align-items: flex-start; }
+  .marco-contenido { padding-top: 20px; }
+}

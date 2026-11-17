@@ -174,6 +174,13 @@ describe("tablero", () => {
     expect(g.porSede.map((b) => b.etiqueta)).toContain("Paysandú · Uruguay");
   });
 
+  it("sede vs. otra ciudad: usa viveEnSede y, en inscripciones anteriores sin ese dato, lo deduce de la ciudad", async () => {
+    const e = await estadisticas(ADMIN, filtros());
+    // Uruguay: Salto, Salto y Carmelo no son ciudades sede. Colombia: Bogotá D.C. sí lo es.
+    expect(e.sedeVsOtra).toEqual(expect.arrayContaining([{ pais: "uy", sede: 0, otra: 3 }, { pais: "col", sede: 1, otra: 0 }]));
+    expect(e.semanaAnterior).toBe(0);
+  });
+
   it("la serie diaria rellena los días sin inscripciones y acumula", () => {
     expect(serieDiaria([{ id: "2027-01-01", n: 2 }, { id: "2027-01-03", n: 1 }])).toEqual([
       { dia: "2027-01-01", n: 2, acumulado: 2 },

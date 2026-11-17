@@ -6,6 +6,8 @@ import { ObjectId, type Filter } from "mongodb";
 import { entorno } from "@/shared/config/env";
 import { esPais, type PaisSlug } from "@/shared/config/paises";
 import { MAX_EXPORTACION, TAM_PAGINA, ZONA_VARIOS_PAISES, ZONAS } from "../config/panel";
+import { DEFINICIONES } from "../config/paises";
+import { ciudadSede, sedesReales } from "../schema";
 import { coleccion, type Inscripcion } from "../repository";
 import type { AlcancePanel, Filtros } from "./filtros";
 
@@ -156,12 +158,16 @@ export type Estadisticas = {
   total: number;
   hoy: number;
   semana: number;
+  /** Los 7 días anteriores a `semana`, para comparar. */
+  semanaAnterior: number;
   menores: number;
   conAlertas: number;
   porDia: Conteo[];
   porPais: Conteo[];
   porSede: ConteoPais[];
   porCiudad: (ConteoPais & { sede: string })[];
+  /** Por país: cuántos viven en una ciudad sede y cuántos en otra ciudad. */
+  sedeVsOtra: { pais: PaisSlug; sede: number; otra: number }[];
   porHora: { dia: number; hora: number; n: number }[];
   edad: Conteo[];
   genero: Conteo[];
@@ -180,6 +186,13 @@ export type Estadisticas = {
   zona: string;
 };
 
+/**
+ * Ciudades sede de todos los países. Las inscripciones anteriores al formulario 2027 no guardan `viveEnSede`: para
+ * ellas se deduce de la ciudad.
+ */
+const CIUDADES_SEDE = [...new Set(Object.values(DEFINICIONES).flatMap((def) => sedesReales(def).map((s) => ciudadSede(def, s))))];
+const VIVE_EN_SEDE = { $cond: [{ $eq: [{ $type: "$viveEnSede" }, "bool"] }, "$viveEnSede", { $in: ["$ciudad", CIUDADES_SEDE] }] };
+
 const contar = (campo: unknown, extra: object[] = []) => [
   ...extra,
   { $group: { _id: campo, n: { $sum: 1 } } },
@@ -193,6 +206,7 @@ export async function estadisticas(alcance: AlcancePanel, f: Filtros, ahora = ne
   const hoyLocal = new Intl.DateTimeFormat("en-CA", { timeZone: zona.iana, year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
   const inicioHoy = new Date(`${hoyLocal}T00:00:00${zona.desfase}`);
   const hace7 = new Date(inicioHoy.getTime() - 6 * 864e5);
+  const hace14 = new Date(inicioHoy.getTime() - 13 * 864e5);
   const tz = zona.iana;
 
   const [r] = await (await coleccion())
@@ -203,12 +217,14 @@ export async function estadisticas(alcance: AlcancePanel, f: Filtros, ahora = ne
           total: [{ $count: "n" }],
           hoy: [{ $match: { creadoEn: { $gte: inicioHoy } } }, { $count: "n" }],
           semana: [{ $match: { creadoEn: { $gte: hace7 } } }, { $count: "n" }],
+          semanaAnterior: [{ $match: { creadoEn: { $gte: hace14, $lt: hace7 } } }, { $count: "n" }],
+          sedeVsOtra: [{ $group: { _id: { pais: "$pais", enSede: VIVE_EN_SEDE }, n: { $sum: 1 } } }],
           menores: [{ $match: { acudiente: { $exists: true } } }, { $count: "n" }],
           conAlertas: [{ $match: { "alertas.0": { $exists: true } } }, { $count: "n" }],
           porDia: [{ $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$creadoEn", timezone: tz } }, n: { $sum: 1 } } }, { $sort: { _id: 1 } }],
           porPais: contar("$pais"),
           porSede: contar({ pais: "$pais", id: "$sede" }),
-          porCiudad: [...contar({ pais: "$pais", sede: "$sede", id: { $cond: [{ $eq: ["$ciudad", "__otra__"] }, { $concat: [{ $ifNull: ["$ciudadOtra", "Otra"] }, " (otra)"] }, "$ciudad"] } }), { $limit: 20 }],
+          porCiudad: [...contar({ pais: "$pais", sede: "$sede", id: { $cond: [{ $eq: ["$ciudad", "__otra__"] }, { $concat: [{ $ifNull: ["$ciudadOtra", "Otra"] }, " (otra)"] }, "$ciudad"] } }), { $limit: 10 }],
           porHora: [{ $group: { _id: { dia: { $isoDayOfWeek: { date: "$creadoEn", timezone: tz } }, hora: { $hour: { date: "$creadoEn", timezone: tz } } }, n: { $sum: 1 } } }],
           edad: [...contar("$edad"), { $sort: { _id: 1 } }],
           genero: contar("$genero"),
@@ -245,6 +261,7 @@ export async function estadisticas(alcance: AlcancePanel, f: Filtros, ahora = ne
     total: cifra("total"),
     hoy: cifra("hoy"),
     semana: cifra("semana"),
+    semanaAnterior: cifra("semanaAnterior"),
     menores: cifra("menores"),
     conAlertas: cifra("conAlertas"),
     porDia: simple("porDia"),
@@ -254,6 +271,15 @@ export async function estadisticas(alcance: AlcancePanel, f: Filtros, ahora = ne
       const id = x._id as { pais: PaisSlug; sede: string; id: string };
       return { pais: id.pais, sede: id.sede, id: id.id, n: x.n };
     }),
+    sedeVsOtra: Object.values(
+      (r?.sedeVsOtra ?? []).reduce<Record<string, { pais: PaisSlug; sede: number; otra: number }>>((acc, x) => {
+        const id = x._id as { pais: PaisSlug; enSede: boolean };
+        const fila = (acc[id.pais] ??= { pais: id.pais, sede: 0, otra: 0 });
+        if (id.enSede) fila.sede += x.n;
+        else fila.otra += x.n;
+        return acc;
+      }, {}),
+    ).sort((a, b) => b.sede + b.otra - (a.sede + a.otra)),
     porHora: (r?.porHora ?? []).map((x) => ({ ...(x._id as { dia: number; hora: number }), n: x.n })),
     edad: simple("edad"),
     genero: simple("genero"),

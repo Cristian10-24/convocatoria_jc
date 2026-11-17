@@ -1,5 +1,5 @@
 // Convierte las cifras crudas del tablero (ids de la base) en series con etiquetas legibles. Función pura.
-import { NOMBRE_PAIS, type PaisSlug } from "@/shared/config/paises";
+import { NOMBRE_PAIS, PAISES, type PaisSlug } from "@/shared/config/paises";
 import type { IdCampo } from "../config/preguntas";
 import type { Conteo, ConteoPais, Estadisticas } from "./consultas";
 import { etiquetaOpcion, nombreSede, textoAlerta } from "./presentacion";
@@ -29,7 +29,16 @@ export type SeriesTablero = {
   alertas: Barra[];
 };
 
-const opcion = (campo: IdCampo, datos: Conteo[]): Barra[] => datos.map((d) => ({ etiqueta: etiquetaOpcion(campo, d.id), n: d.n }));
+/** Algunas opciones cambian de id según el país (ocupación, poblaciones...): se busca en el que la tenga. */
+function etiquetaEnAlgunPais(campo: IdCampo, id: string): string {
+  for (const p of PAISES) {
+    const t = etiquetaOpcion(campo, id, p);
+    if (t !== id) return t;
+  }
+  return id;
+}
+
+const opcion = (campo: IdCampo, datos: Conteo[]): Barra[] => datos.map((d) => ({ etiqueta: etiquetaEnAlgunPais(campo, d.id), n: d.n }));
 
 /** Si se mira más de un país, la etiqueta lleva el país para no confundir sedes o grados con el mismo nombre. */
 function conPais(datos: ConteoPais[], etiqueta: (d: ConteoPais) => string): Barra[] {
@@ -58,10 +67,10 @@ export function seriesTablero(e: Estadisticas): SeriesTablero {
   return {
     porDia: serieDiaria(e.porDia),
     porPais: e.porPais.map((d) => ({ etiqueta: NOMBRE_PAIS[d.id as PaisSlug] ?? d.id, n: d.n })),
-    porSede: conPais(e.porSede, (d) => nombreSede(d.pais, d.id)),
+    porSede: conPais(e.porSede, (d) => (d.id ? nombreSede(d.pais, d.id) : "Sin sede (otra ciudad)")),
     porCiudad: e.porCiudad.map((d) => ({ etiqueta: `${d.id} (${nombreSede(d.pais, d.sede)})`, n: d.n })),
     porHora: e.porHora,
-    edad: e.edad.map((d) => ({ etiqueta: `${d.id} años`, n: d.n })),
+    edad: e.edad.map((d) => ({ etiqueta: d.id, n: d.n })),
     genero: opcion("genero", e.genero),
     grado: conPais(e.grado, (d) => etiquetaOpcion("grado", d.id, d.pais)),
     horas: opcion("horas", e.horas),

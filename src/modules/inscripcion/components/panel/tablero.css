@@ -1,0 +1,93 @@
+/* Tablero del panel (diseño 2027: Admin, AdminTableroMovil, AdminCoordTablero). Usa el sistema `.ad`.
+   Las gráficas son HTML y SVG sin librerías: listas con barras finas, barras apiladas, mapa de calor y la serie diaria. */
+.ad .t-cab { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.ad .t-cab > div { display: flex; flex-direction: column; gap: 6px; }
+.ad .t-cab h1 { margin: 0; font-size: 36px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.ad .t-cab p { margin: 0; font-size: 15px; color: var(--texto-suave); }
+.ad .t-filtros { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.ad .t-filtros .f-pais { flex: 1 1 340px; }
+.ad .t-filtros .f-corto { flex: 1 1 160px; }
+.ad .t-filtros .f-fecha { flex: 1 1 150px; }
+.ad .t-filtros fieldset.campo { border: 0; padding: 0; margin: 0; min-width: 0; }
+.ad .t-filtros fieldset.campo > legend { padding: 0; margin-bottom: 10px; }
+.ad .t-filtros .seg-grupo { display: flex; flex-wrap: wrap; gap: 6px; border: 0; padding: 0; margin: 0; }
+.ad .t-filtros .op.seg { min-height: 46px; padding: 8px 14px; font-size: 15px; }
+.ad .t-filtros .op.seg.is-sel { padding: 7px 13px; }
+.ad .t-filtros .t-limpiar { align-self: center; font-size: 15px; }
+.ad .t-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 16px; }
+.ad .kpi b { font-size: 14px; font-weight: 600; }
+.ad .kpi strong { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+.ad .kpi small { font-size: 13px; opacity: .8; }
+.ad .t-seccion { display: flex; flex-direction: column; gap: 14px; }
+.ad .t-seccion > h2 { margin: 12px 0 0; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.ad .t-rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 16px; align-items: start; }
+.ad .t-caja { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.ad .t-caja.ancha { gap: 16px; }
+.ad .t-caja-cab { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.ad .t-nota-sensible { display: flex; gap: 10px; align-items: center; font-size: 14px; color: var(--texto-suave); }
+.ad .t-nota-sensible svg.i { width: 18px; height: 18px; }
+.ad .t-vacio { margin: 0; font-size: 14px; color: var(--texto-suave); }
+
+/* Lista con barras: etiqueta, cifra y porcentaje; la barra es relativa al valor más alto. */
+.ad .barras { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ad .barras li { display: flex; flex-direction: column; gap: 4px; }
+.ad .barras .b-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.ad .barras .b-fila > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.ad .barras .b-cifra { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.ad .barras .b-cifra small { font-weight: 400; font-size: 14px; color: var(--texto-suave); }
+.ad .b-pista { height: 8px; border-radius: 999px; background: var(--neutro); overflow: hidden; }
+.ad .b-pista > span { display: block; height: 100%; border-radius: 999px; background: var(--b-color, var(--azul)); }
+.ad .tono-azul { --b-color: var(--azul); }
+.ad .tono-naranja { --b-color: var(--naranja); }
+.ad .tono-alerta { --b-color: var(--naranja-hover); }
+.ad .tono-durazno { --b-color: var(--durazno); }
+.ad .tono-info { --b-color: var(--info); }
+
+/* Leyendas */
+.ad .leyenda { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--texto-suave); }
+.ad .leyenda > span { display: flex; align-items: center; gap: 6px; }
+.ad .leyenda i { width: 12px; height: 12px; border-radius: 3px; background: var(--naranja); }
+.ad .leyenda i.linea { width: 16px; height: 2px; border-radius: 0; background: var(--azul); }
+.ad .leyenda i.azul { background: var(--azul); }
+.ad .leyenda i.durazno { background: var(--durazno-medio); }
+
+/* Serie diaria (SVG) */
+.ad .t-dias { width: 100%; height: auto; display: block; }
+.ad .t-dias text { font: 11px var(--fuente); fill: var(--texto-suave); }
+
+/* Sede vs. otra ciudad: barras apiladas */
+.ad .apiladas { display: flex; flex-direction: column; gap: 12px; }
+.ad .apiladas > div { display: flex; flex-direction: column; gap: 4px; }
+.ad .apiladas .b-fila { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 14px; }
+.ad .apiladas .b-fila small { font-size: 14px; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+.ad .apilada { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--neutro); }
+.ad .apilada .s1 { background: var(--azul); }
+.ad .apilada .s2 { background: var(--durazno-medio); }
+
+/* Mapa de calor */
+.ad .calor-marco { overflow-x: auto; }
+.ad .calor { min-width: 380px; display: flex; flex-direction: column; gap: 3px; }
+.ad .calor-fila { display: grid; grid-template-columns: 34px repeat(24, minmax(0, 1fr)); gap: 3px; }
+.ad .calor-fila.horas { font-size: 11px; color: var(--texto-suave); }
+.ad .calor-fila.horas span { text-align: center; }
+.ad .calor-fila > b { font-size: 12px; font-weight: 400; color: var(--texto-suave); display: flex; align-items: center; }
+.ad .calor-fila > i { height: 20px; border-radius: 4px; background: var(--neutro); }
+.ad .calor-fila > i.n1, .ad .calor-ley i.n1 { background: var(--durazno-tinte); }
+.ad .calor-fila > i.n2, .ad .calor-ley i.n2 { background: var(--durazno-anillo); }
+.ad .calor-fila > i.n3, .ad .calor-ley i.n3 { background: var(--durazno); }
+.ad .calor-fila > i.n4, .ad .calor-ley i.n4 { background: var(--naranja); }
+.ad .calor-fila > i.n5, .ad .calor-ley i.n5 { background: var(--azul); }
+.ad .calor-ley { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--texto-suave); margin-top: 8px; }
+.ad .calor-ley i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+/* Ranking */
+.ad .ranking { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ad .ranking li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--borde-tenue); font-size: 14px; }
+.ad .ranking li > span:first-child { font-weight: 600; }
+.ad .ranking li > span:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+.ad .ranking li > span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 760px) {
+  .ad .t-cab h1 { font-size: 30px; }
+  .ad .kpi strong { font-size: 34px; }
+}

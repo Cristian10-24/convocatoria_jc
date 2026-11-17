@@ -2,7 +2,6 @@
 // Cierra la sesión con POST (nunca con un enlace GET) y vuelve al login.
 import { useState } from "react";
 import { TEXTOS_AUTH as T } from "../config/textos";
-import s from "./Auth.module.css";
 
 export default function BotonSalir() {
   const [saliendo, setSaliendo] = useState(false);
@@ -22,7 +21,7 @@ export default function BotonSalir() {
   }
 
   return (
-    <button type="button" className={s.botonSecundario} onClick={salir} disabled={saliendo}>
+    <button type="button" className="btn btn-borde btn-sm" onClick={salir} disabled={saliendo}>
       {saliendo ? T.saliendo : T.salir}
     </button>
   );

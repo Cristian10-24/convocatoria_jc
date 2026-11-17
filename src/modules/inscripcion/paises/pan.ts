@@ -61,8 +61,5 @@ export const definicion: DefinicionPais = {
     computadora: { etiqueta: "¿Tienes acceso a una computadora para estudiar y practicar durante el programa?" },
     talla: { etiqueta: "Talla de camisa", ayuda: "" },
   },
-  legal: legalDe({
-    pais: "pan", trato: "tu", versionAnterior: "pan-2027-provisional-1",
-    ley: "Ley 81 de 2019", autoridad: "la Autoridad Nacional de Transparencia y Acceso a la Información (ANTAI)",
-  }),
+  legal: legalDe({ pais: "pan", trato: "tu", versionAnterior: "pan-2027-provisional-1" }),
 };

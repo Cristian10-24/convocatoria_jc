@@ -70,5 +70,5 @@ export const definicion: DefinicionPais = {
     talla: { etiqueta: "Talla de camisa", ayuda: "" },
     seleccionadoAntes: { etiqueta: "¿Fuiste beneficiario/a de Jóvenes creaTIvos en años anteriores?" },
   },
-  legal: legalDe({ pais: "col", trato: "tu", versionAnterior: "col-2027-provisional-1", ley: "Ley 1581 de 2012", autoridad: "la Superintendencia de Industria y Comercio" }),
+  legal: legalDe({ pais: "col", trato: "tu", versionAnterior: "col-2027-provisional-1" }),
 };

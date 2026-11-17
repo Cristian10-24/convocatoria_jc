@@ -1,0 +1,31 @@
+/* Páginas legales 2027. Medidas del lienzo (LegalTerminos.dc.html / LegalPrivacidad.dc.html). */
+.lg .lg-ancho { max-width: 1120px; }
+.lg .lg-cab { border-bottom: 1px solid hsl(231.9 22.4% 90.4%); }
+.lg .lg-cab-in { height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.lg .lg-cuerpo { padding-top: 56px; padding-bottom: 120px; display: flex; flex-wrap: wrap; gap: 56px; align-items: flex-start; }
+.lg .lg-lado { flex: 1 1 240px; max-width: 280px; position: sticky; top: 24px; display: flex; flex-direction: column; gap: 20px; }
+.lg .lg-paises { display: flex; flex-direction: column; gap: 8px; }
+.lg .lg-paises-ops { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.lg .seg { min-height: 48px; padding: 0 12px; border: 1.5px solid hsl(231.9 18.7% 82.2%); border-radius: 12px; background: hsl(0 0% 100%); font: 600 15px/1.2 var(--fuente); color: hsl(231.9 77.1% 20.6%); cursor: pointer; transition: border-color .2s, background-color .2s; }
+.lg .seg:hover { border-color: hsl(231.9 77.1% 20.6%); }
+.lg .seg.is-sel { border: 2px solid hsl(231.9 77.1% 20.6%); background: hsl(31.8 86.2% 94.3%); }
+.lg .lg-toc { display: flex; flex-direction: column; gap: 2px; border-left: 2px solid hsl(231.9 22.4% 90.4%); }
+.lg .lg-toc a { padding: 8px 14px; font-size: 15px; color: hsl(231.9 39.7% 28.6%); text-decoration: none; }
+.lg .lg-toc a:hover { color: hsl(231.9 77.1% 20.6%); text-decoration: underline; text-underline-offset: 4px; }
+.lg .lg-toc a:focus-visible { outline: 3px solid hsl(231.9 77.1% 20.6%); outline-offset: 2px; }
+.lg .lg-doc { flex: 999 1 560px; min-width: 0; max-width: 760px; display: flex; flex-direction: column; gap: 32px; }
+.lg .lg-titulo { font-size: clamp(36px, 4.4vw, 60px); line-height: 1.04; font-weight: 700; letter-spacing: -0.025em; }
+.lg .lg-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 15px; color: hsl(231.9 20.2% 41.8%); }
+.lg .lg-nota { display: flex; gap: 12px; padding: 16px 18px; border-radius: 14px; background: hsl(31.8 86.2% 94.3%); border: 1px solid hsl(33.2 86.2% 74.5%); font-size: 15px; line-height: 1.5; }
+.lg .lg-sec { display: flex; flex-direction: column; gap: 12px; padding-top: 28px; border-top: 1px solid hsl(231.9 22.4% 90.4%); scroll-margin-top: 24px; }
+.lg .lg-sec h2 { font-size: 24px; line-height: 1.2; font-weight: 700; }
+.lg .lg-sec p { font-size: 17px; line-height: 1.7; font-weight: 300; color: hsl(231.9 39.7% 28.6%); }
+.lg .lg-pie { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 24px; border-radius: 14px; background: hsl(240 23.1% 97.5%); }
+.lg .lg-solo-movil { display: none; }
+@media (max-width: 900px) {
+  .lg .lg-lado { display: none; }
+  .lg .lg-solo-movil { display: block; }
+}
+@media (max-width: 760px) {
+  .lg .lg-cuerpo { padding-top: 32px; padding-bottom: 72px; }
+}

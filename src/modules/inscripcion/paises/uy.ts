@@ -57,8 +57,5 @@ export const definicion: DefinicionPais = {
     { id: "sociodemograficos", titulo: "Datos sociodemográficos", corto: "Datos sociodemográficos", campos: ["genero", "poblaciones", "poblacionOtra", "ingresos", "talla"] },
     { id: "cierre", titulo: "Información adicional", corto: "Información adicional", descripcion: "Ya casi terminamos.", campos: ["canal", "canalOtro", "embajador"] },
   ],
-  legal: legalDe({
-    pais: "uy", trato: "vos", versionAnterior: "uy-2027-provisional-1",
-    ley: "Ley 18.331 de Protección de Datos Personales", autoridad: "la Unidad Reguladora y de Control de Datos Personales (URCDP)",
-  }),
+  legal: legalDe({ pais: "uy", trato: "vos", versionAnterior: "uy-2027-provisional-1" }),
 };

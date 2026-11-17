@@ -347,7 +347,7 @@ export default function Landing({ pais: slug }: { pais: PaisSlug | null }) {
                 {enlaceCta("footer", "btn btn-pri")}
               </div>
               <nav className="pie-c" aria-label="Pie de página" style={{ gridColumn: "7 / 9" }}><b>Programa</b><a href="#inicio">Inicio</a><a href="#acerca">Acerca de</a><a href="#testimonios">Testimonios</a><a href="#preguntas">Preguntas frecuentes</a></nav>
-              <nav className="pie-c" aria-label="Legal" style={{ gridColumn: "9 / 11" }}><b>Legal</b><a href="/terminos">Términos</a><a href="/privacidad">Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
+              <nav className="pie-c" aria-label="Legal" style={{ gridColumn: "9 / 11" }}><b>Legal</b><a href="/terminos">Términos</a><a href={pais ? `/privacidad?pais=${pais.ruta.slice(1)}` : "/privacidad"}>Política de privacidad</a><a href={`mailto:${CONTACTO.correo}`}>Contacto</a></nav>
               <div id="redes" className="pie-c" style={{ gridColumn: "11 / 13" }}><b>Redes</b>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                   {REDES.map((r) => (

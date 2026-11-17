@@ -7,7 +7,7 @@
 // escrito y ofrece reintentar. Se dibuja solo en el navegador (FormularioCliente.tsx) para leer el avance al iniciar.
 import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { TELEFONOS } from "@/shared/config/paises";
+import { SEGMENTO_URL, TELEFONOS } from "@/shared/config/paises";
 import { CONTACTO } from "@/shared/config/sitio";
 import { CAMPO_TRAMPA } from "@/shared/security/antibots";
 import Bandera from "@/shared/ui/Bandera";
@@ -365,7 +365,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                 {paso.descripcion ? <p className="fs">{t(paso.descripcion)}</p> : null}
 
                 {paso.id === "sociodemograficos" ? (
-                  <div className="aviso priv"><Icono nombre="escudo" /><span><strong>{IU.privacidadTitulo}</strong> {t(IU.privacidad)} <a href="/privacidad" target="_blank" rel="noopener">{IU.privacidadEnlace}</a></span></div>
+                  <div className="aviso priv"><Icono nombre="escudo" /><span><strong>{IU.privacidadTitulo}</strong> {t(IU.privacidad)} <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">{IU.privacidadEnlace}</a></span></div>
                 ) : null}
                 {nErrores > 0 ? (
                   <div className="aviso mal" role="alert"><Icono nombre="alerta" /><span><strong>{nErrores === 1 ? IU.falta1 : plantilla(IU.faltan, { n: nErrores })}</strong> {aviso ?? IU.marcamos}</span></div>
@@ -396,7 +396,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                       <div>
                         {def.legal.provisional ? <p><span className="falta">{IU.autorizacion.provisional}</span></p> : null}
                         {def.legal.parrafos.map((p) => <p key={p}>{p}</p>)}
-                        <a href="/privacidad" target="_blank" rel="noopener" style={{ fontWeight: 600 }}>{IU.autorizacion.politica}</a>
+                        <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener" style={{ fontWeight: 600 }}>{IU.autorizacion.politica}</a>
                       </div>
                     </details>
                     {def.legal.consentimientos.filter((c) => casillas.includes(CASILLA[c.clave])).map((c) => {
@@ -404,7 +404,7 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                       return (
                         <div key={id} data-campo={id} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                           <CasillaAcepta id={id} marcada={(datos as Record<string, unknown>)[id] === true} error={errores[id]} alCambiar={(v) => cambiar(id, v)}>
-                            {c.clave === "privacidad" ? <>Leí y acepto la <a href="/privacidad" target="_blank" rel="noopener">Política de privacidad</a></> : c.texto}
+                            {c.clave === "privacidad" ? <>Leí y acepto la <a href={`/privacidad?pais=${SEGMENTO_URL[pais]}`} target="_blank" rel="noopener">Política de privacidad</a></> : c.texto}
                           </CasillaAcepta>
                         </div>
                       );

@@ -8,6 +8,7 @@ import Fade from "embla-carousel-fade";
 import useEmblaCarousel from "embla-carousel-react";
 import { AnimatePresence, animate, m, useInView, useReducedMotion, type Variants } from "framer-motion";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
+import { SEGMENTO_URL } from "@/shared/config/paises";
 import Icono from "@/shared/ui/Icono";
 import { DURACION, HERO_AVANCE_MS, curva, opcionesVista } from "@/shared/ui/movimiento";
 
@@ -229,7 +230,7 @@ export function AvisoApertura({ pais, paisMed, avisame }: { pais: string; paisMe
         <button className="btn btn-pri btn-lg" type="submit" disabled={estado === "enviando"} data-track="cta_avisame" data-ubicacion="hero" data-pais={paisMed}>{avisame}</button>
       </div>
       {error ? <p id="aviso-error" role="alert" style={{ fontSize: 15, fontWeight: 600 }}>{error}</p> : null}
-      <p id="aviso-nota" className="aviso-nota">Solo usamos tu correo para avisarte de la apertura. <a href="/privacidad">Política de privacidad</a></p>
+      <p id="aviso-nota" className="aviso-nota">Solo usamos tu correo para avisarte de la apertura. <a href={`/privacidad?pais=${SEGMENTO_URL[pais as keyof typeof SEGMENTO_URL] ?? ""}`}>Política de privacidad</a></p>
     </form>
   );
 }

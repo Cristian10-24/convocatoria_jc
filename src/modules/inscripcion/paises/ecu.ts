@@ -64,8 +64,5 @@ export const definicion: DefinicionPais = {
     talla: { etiqueta: "Talla de camisa", ayuda: "" },
     seleccionadoAntes: { etiqueta: "¿Fuiste beneficiario/a de Jóvenes creaTIvos en años anteriores?" },
   },
-  legal: legalDe({
-    pais: "ecu", trato: "tu", versionAnterior: "ecu-2027-provisional-1",
-    ley: "Ley Orgánica de Protección de Datos Personales (LOPDP) de 2021", autoridad: "la Superintendencia de Protección de Datos Personales",
-  }),
+  legal: legalDe({ pais: "ecu", trato: "tu", versionAnterior: "ecu-2027-provisional-1" }),
 };

@@ -27,7 +27,7 @@ export default function PantallaSistema({ tipo, pais, inicio = "/", detalle, acc
   const titulo = pais && tipo === "mantenimiento" ? `Estamos haciendo mejoras en ${pais}.` : pais && tipo === "error" ? `No pudimos mostrar la página de ${pais}.` : t.titulo;
   return (
     <div className="jc ps">
-      <header className="ps-cab"><div className="wrap ps-ancho"><a href={inicio} className="foco" aria-label="Ir a la convocatoria"><img src="/logo-jc-horizontal.webp" alt="Jóvenes creaTIvos" width={111} height={44} /></a></div></header>
+      <header className="ps-cab"><div className="wrap ps-ancho"><a href={inicio} className="foco" aria-label="Ir a la convocatoria"><img src="/logo-jc-redondo.webp" alt="Jóvenes creaTIvos" width={50} height={44} /></a></div></header>
       <main className="wrap ps-ancho ps-cuerpo entra">
         <div className="ps-texto">
           <span className={`chip ${t.clase}`}>{t.chip}</span>

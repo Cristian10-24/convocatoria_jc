@@ -1,6 +1,8 @@
 // Piezas que comparten las definiciones de los 4 países: reglas de documentos, pasos del formulario según el modo
 // de ubicación y el texto legal en lenguaje sencillo. Son solo datos y funciones puras: importar este archivo nunca
 // lanza errores, y cada país (uy.ts, col.ts, ecu.ts, pan.ts) arma con esto su propia definición.
+import { LEY_DATOS, VERSION_PRIVACIDAD } from "@/shared/config/legal";
+import type { PaisSlug } from "@/shared/config/paises";
 import { CONTACTO } from "@/shared/config/sitio";
 import { PREFIERO_NO } from "../config/preguntas";
 import type { DefinicionPais, LegalPais, Opcion, PasoDef, TipoDocumento, Trato } from "../config/tipos";
@@ -73,7 +75,9 @@ export const ETIQUETAS_DISENO: NonNullable<DefinicionPais["etiquetas"]> = {
  * salvo la ley y la autoridad. La Fundación ROFÉ debe revisarla y reemplazarla: se edita SOLO aquí (o en el país).
  * Cada consentimiento guarda su `version`: al cambiar un texto hay que cambiar su versión.
  */
-export function legalDe(datos: { pais: string; ley: string; autoridad: string; trato: Trato; versionAnterior: string }): LegalPais {
+export function legalDe(entrada: { pais: PaisSlug; trato: Trato; versionAnterior: string }): LegalPais {
+  // La ley y la autoridad de cada país son las mismas que muestra /privacidad (shared/config/legal.ts).
+  const datos = { ...entrada, ...LEY_DATOS[entrada.pais] };
   const vos = datos.trato === "vos";
   const t = (tu: string, v: string) => (vos ? v : tu);
   return {
@@ -101,7 +105,7 @@ export function legalDe(datos: { pais: string; ley: string; autoridad: string; t
       t(`Para dudas o para ejercer tus derechos, escribe a ${CONTACTO.correo}.`, `Para dudas o para ejercer tus derechos, escribí a ${CONTACTO.correo}.`),
     ],
     consentimientos: [
-      { clave: "privacidad", version: "privacidad-2027-provisional-1", texto: "Leí y acepto la Política de privacidad" },
+      { clave: "privacidad", version: VERSION_PRIVACIDAD, texto: "Leí y acepto la Política de privacidad" },
       { clave: "datos", version: `datos-${datos.pais}-2027-provisional-1`, texto: `Autorizo el tratamiento de mis datos personales, según la ${datos.ley}` },
       { clave: "acudiente", version: "acudiente-2027-provisional-2", texto: "Como madre, padre o adulto responsable, autorizo la inscripción y el tratamiento de los datos" },
     ],

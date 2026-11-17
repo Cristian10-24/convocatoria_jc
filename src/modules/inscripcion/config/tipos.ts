@@ -20,8 +20,10 @@ export type ReglaDocumento = { formato: "numerico" | "alfanumerico" | "cedula_pa
 export type TipoDocumento = { id: string; etiqueta: string; regla: ReglaDocumento; ayuda?: string; /** pide escribir cuál */ conTexto?: boolean };
 
 /**
- * `ciudades`: lista de la que se elige la residencia (ubicación "lista"). `sede`: si esta opción es parte de otra
- * sede (Valle de Aburrá es de Medellín), el id de esa sede, que es el que se guarda.
+ * Sede de encuentros presenciales y sus ciudades.
+ * - Ubicación "lista" (Uruguay): `ciudades[0]` es la ciudad sede; las demás son las cercanas que asisten a ella.
+ * - Ubicación "libre" (los demás): `ciudades` son solo las cercanas (la ciudad sede es la sede misma).
+ * Las cercanas se muestran en el paso Ciudad, debajo de las sedes. `sede`: si la opción es parte de otra sede, su id.
  */
 export type Sede = { id: string; nombre: string; ciudades: string[]; sede?: string };
 

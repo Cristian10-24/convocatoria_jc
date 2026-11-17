@@ -17,6 +17,12 @@ export const IU = {
   editar: "Editar",
   opcional: " (opcional)",
   otraCiudad: "Otra ciudad",
+  ciudad: {
+    sedes: "Ciudades sede",
+    cercanas: "Otras ciudades de {pais}",
+    buscar: { tu: "Busca tu ciudad", vos: "Buscá tu ciudad" },
+    sinResultados: { tu: "No la encontramos en la lista. Elige «Otra ciudad» y escríbela.", vos: "No la encontramos en la lista. Elegí «Otra ciudad» y escribila." },
+  },
   otraCiudadDe: "Otra ciudad de {pais}",
   ciudadOtraLista: "Otra",
   dia: "Día", mes: "Mes", anio: "Año",
@@ -46,7 +52,7 @@ export const IU = {
     conexion: { tu: "Parece un problema de conexión o nuestro. Intenta de nuevo en unos minutos: tus respuestas siguen guardadas en este dispositivo.", vos: "Parece un problema de conexión o nuestro. Intentá de nuevo en unos minutos: tus respuestas siguen guardadas en este dispositivo." },
     reintentar: "Reintentar",
     limite: { tu: "Recibimos demasiados intentos desde tu conexión. Espera unos minutos e intenta otra vez.", vos: "Recibimos demasiados intentos desde tu conexión. Esperá unos minutos e intentá otra vez." },
-    verificacion: { tu: "No pudimos completar la verificación de seguridad. Espera a que termine e intenta otra vez.", vos: "No pudimos completar la verificación de seguridad. Esperá a que termine e intentá otra vez." },
+    verificacion: { tu: "No pudimos completar la verificación de seguridad. Revisa tu conexión y toca «Enviar inscripción» otra vez: tus respuestas siguen guardadas.", vos: "No pudimos completar la verificación de seguridad. Revisá tu conexión y tocá «Enviar inscripción» otra vez: tus respuestas siguen guardadas." },
     datos: { tu: "Hay datos por corregir. Te llevamos al paso correspondiente.", vos: "Hay datos por corregir. Te llevamos al paso correspondiente." },
   },
   ok: {

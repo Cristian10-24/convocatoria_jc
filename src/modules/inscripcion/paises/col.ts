@@ -13,13 +13,13 @@ export const definicion: DefinicionPais = {
     trato: "tu",
     telefono: "CO",
     sedes: [
-      { id: "barranquilla", nombre: "Barranquilla", ciudades: [] },
-      { id: "bogota", nombre: "Bogotá D.C.", ciudades: [] },
-      { id: "cali", nombre: "Cali", ciudades: [] },
-      { id: "cartagena", nombre: "Cartagena de Indias", ciudades: [] },
-      { id: "medellin", nombre: "Medellín", ciudades: [] },
-      // El Valle de Aburrá asiste a la sede de Medellín: se muestra aparte, pero se guarda como Medellín.
-      { id: "valle_aburra", nombre: "Valle de Aburrá (Bello, Itagüí, Envigado, Sabaneta, Copacabana…)", ciudades: [], sede: "medellin" },
+      // Ciudades cercanas: las del plan inicial, pendientes de confirmar con el equipo de Colombia. El Valle de Aburrá
+      // va como ciudades cercanas de Medellín.
+      { id: "barranquilla", nombre: "Barranquilla", ciudades: ["Soledad", "Malambo", "Puerto Colombia", "Galapa"] },
+      { id: "bogota", nombre: "Bogotá D.C.", ciudades: ["Soacha", "Chía", "Funza", "Mosquera", "Madrid", "Cota"] },
+      { id: "cali", nombre: "Cali", ciudades: ["Jamundí", "Palmira", "Yumbo", "Candelaria"] },
+      { id: "cartagena", nombre: "Cartagena de Indias", ciudades: ["Turbaco", "Arjona"] },
+      { id: "medellin", nombre: "Medellín", ciudades: ["Bello", "Itagüí", "Envigado", "Sabaneta", "La Estrella", "Caldas", "Copacabana", "Girardota", "Barbosa"] },
     ],
     tiposDocumento: [
       { id: "cc", etiqueta: "Cédula de Ciudadanía", regla: { formato: "numerico", min: 6, max: 10 } },

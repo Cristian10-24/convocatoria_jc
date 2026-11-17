@@ -35,22 +35,49 @@ function cargarScript(): Promise<void> {
   return cargando;
 }
 
-export type ControlTurnstile = { reiniciar: () => void };
+/**
+ * `obtenerToken(espera)`: el token actual o, si todavía no llega (el widget tarda unos segundos en resolver), espera
+ * a que llegue. Devuelve null si no llega en ese tiempo o si el widget falla. Cada token sirve una sola vez:
+ * `reiniciar()` lo descarta y pide uno nuevo (después de cualquier envío que lo haya gastado).
+ */
+export type ControlTurnstile = { reiniciar: () => void; obtenerToken: (esperaMs: number) => Promise<string | null> };
 
-type Props = { claveSitio: string; onToken: (token: string | null) => void; etiqueta: string };
+type Props = { claveSitio: string; etiqueta: string };
 
-const Turnstile = forwardRef<ControlTurnstile, Props>(function Turnstile({ claveSitio, onToken, etiqueta }, ref) {
+const Turnstile = forwardRef<ControlTurnstile, Props>(function Turnstile({ claveSitio, etiqueta }, ref) {
   const contenedor = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
-  const avisar = useRef(onToken);
-  useEffect(() => {
-    avisar.current = onToken;
-  }, [onToken]);
+  const token = useRef<string | null>(null);
+  // Quien espera un token (un envío en curso) se resuelve en cuanto llega uno nuevo o el widget falla.
+  const esperando = useRef<Array<(t: string | null) => void>>([]);
+  const fallo = useRef(false);
+  const entregar = (t: string | null) => {
+    token.current = t;
+    if (t === null && !fallo.current) return;
+    for (const r of esperando.current.splice(0)) r(t);
+  };
 
   useImperativeHandle(ref, () => ({
     reiniciar() {
-      avisar.current(null);
+      token.current = null;
+      fallo.current = false;
       if (widget.current) window.turnstile?.reset(widget.current);
+    },
+    obtenerToken(esperaMs) {
+      if (token.current) return Promise.resolve(token.current);
+      if (fallo.current && widget.current) {
+        // El widget había fallado (red, sitio no permitido...): se intenta de nuevo antes de esperar.
+        fallo.current = false;
+        window.turnstile?.reset(widget.current);
+      }
+      return new Promise((resolver) => {
+        const listo = (t: string | null) => { clearTimeout(reloj); resolver(t); };
+        const reloj = setTimeout(() => {
+          esperando.current = esperando.current.filter((r) => r !== listo);
+          resolver(token.current);
+        }, esperaMs);
+        esperando.current.push(listo);
+      });
     },
   }));
 
@@ -64,16 +91,20 @@ const Turnstile = forwardRef<ControlTurnstile, Props>(function Turnstile({ clave
           action: "inscripcion",
           language: "es",
           appearance: "interaction-only",
-          callback: (token: string) => avisar.current(token),
-          "expired-callback": () => avisar.current(null),
-          "error-callback": () => avisar.current(null),
+          // Un token vencido se renueva solo (sin que la persona haga nada).
+          "refresh-expired": "auto",
+          callback: (t: string) => { fallo.current = false; entregar(t); },
+          "expired-callback": () => { token.current = null; },
+          "error-callback": () => { fallo.current = true; entregar(null); },
+          "timeout-callback": () => { fallo.current = true; entregar(null); },
         });
       })
-      .catch(() => avisar.current(null));
+      .catch(() => { fallo.current = true; entregar(null); });
     return () => {
       vivo = false;
       if (widget.current) window.turnstile?.remove(widget.current);
       widget.current = null;
+      token.current = null;
     };
   }, [claveSitio]);
 

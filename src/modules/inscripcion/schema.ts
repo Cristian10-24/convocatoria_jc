@@ -86,6 +86,14 @@ export function esMenor(def: DefinicionPais, d: Borrador, hoy: string): boolean 
 /** Sedes de verdad (las que no son parte de otra): a una de ellas se asiste a los encuentros. */
 export const sedesReales = (def: DefinicionPais): Sede[] => def.config.sedes.filter((s) => !s.sede);
 
+/** Ciudad sede de una sede (la que se muestra como tarjeta): en "lista" es su primera ciudad; en "libre", la sede. */
+export const ciudadSede = (def: DefinicionPais, sede: Sede): string => (def.reglas.ubicacion === "lista" ? sede.ciudades[0] ?? sede.nombre : sede.nombre);
+
+/** Ciudades cercanas (no sede) del país, con la sede a la que asisten, en el orden de la definición. */
+export function ciudadesCercanas(def: DefinicionPais): Array<{ ciudad: string; sede: string }> {
+  return sedesReales(def).flatMap((s) => (def.reglas.ubicacion === "lista" ? s.ciudades.slice(1) : s.ciudades).map((ciudad) => ({ ciudad, sede: s.id })));
+}
+
 const CAMPOS_ACUDIENTE = ["acudienteNombres", "acudienteApellidos", "acudienteCorreo", "acudienteTelefono", "acudienteRelacion", "acudienteRelacionOtra"];
 
 /** Casillas de consentimiento que aplican: las del formato del envío y, si es menor, la del adulto responsable. */
@@ -105,6 +113,8 @@ export function camposVisibles(def: DefinicionPais, d: Borrador, hoy: string, fo
   } else {
     if (d.sede !== CIUDAD_OTRA) ocultos.add("ciudadOtra").add("sedeCercana");
     if (sedesReales(def).length <= 1) ocultos.add("sedeCercana");
+    // Quien eligió una ciudad que no es sede ya dijo dónde vive: no se le vuelve a preguntar la residencia.
+    if (d.sede === CIUDAD_OTRA) ocultos.add("ciudad");
   }
   if (!cfg.tiposDocumento.find((t) => t.id === d.tipoDocumento)?.conTexto) ocultos.add("tipoDocumentoOtro");
   if (d.acudienteRelacion !== "otro") ocultos.add("acudienteRelacionOtra");
@@ -235,8 +245,9 @@ export function revisar(def: DefinicionPais, d: EntradaInscripcion, hoy: string,
   if (reglas.ubicacion === "lista") {
     const sedeCfg = cfg.sedes.find((s) => s.id === (cfg.sedes.length === 1 ? cfg.sedes[0]!.id : d.sede));
     if (!sedeCfg) error("sede", m("elegir"));
+    // La ciudad puede ser de cualquier sede del país: quien vive en una ciudad cercana elige a qué sede asistiría.
     if (vacio(d.ciudad)) error("ciudad", m("elegir"));
-    else if (d.ciudad !== CIUDAD_OTRA && !sedeCfg?.ciudades.includes(d.ciudad)) error("ciudad", m("elegir"));
+    else if (d.ciudad !== CIUDAD_OTRA && !cfg.sedes.some((s) => s.ciudades.includes(d.ciudad))) error("ciudad", m("elegir"));
     if (d.ciudad === CIUDAD_OTRA) libre("ciudadOtra");
     sede = sedeCfg?.id;
     ciudad = d.ciudad;

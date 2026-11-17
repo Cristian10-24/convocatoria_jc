@@ -12,8 +12,9 @@ export const definicion: DefinicionPais = {
     trato: "tu",
     telefono: "EC",
     sedes: [
-      { id: "quito", nombre: "Quito o poblaciones cercanas", ciudades: [] },
-      { id: "guayaquil", nombre: "Guayaquil o poblaciones cercanas", ciudades: [] },
+      // Ciudades cercanas: las del plan inicial, pendientes de confirmar con el equipo de Ecuador.
+      { id: "quito", nombre: "Quito", ciudades: ["Sangolquí", "Cumbayá", "Tumbaco", "Calderón", "Conocoto"] },
+      { id: "guayaquil", nombre: "Guayaquil", ciudades: ["Durán", "Samborondón", "Daule", "Milagro"] },
     ],
     tiposDocumento: [
       { id: "cedula", etiqueta: "Cédula de Ciudadanía", regla: { formato: "numerico", min: 10, max: 10 } },

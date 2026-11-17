@@ -43,10 +43,10 @@ export const definicion: DefinicionPais = {
     ingresos: conPrefieroNo(INGRESOS), tallas: TALLAS, canales: CANALES,
   },
   pasos: [
-    { id: "ubicacion", titulo: "¿Desde qué ciudad aplicás?", corto: "Ciudad", descripcion: "Elegí la sede más cercana y tu ciudad.", campos: ["sede", "ciudad", "ciudadOtra", "direccion"] },
+    { id: "ubicacion", titulo: "¿Desde qué ciudad aplicás?", corto: "Ciudad", descripcion: "Elegí la ciudad donde vivís. En cada ciudad sede hay un encuentro presencial al mes.", campos: ["sede", "ciudad", "ciudadOtra"] },
     {
       id: "personales", titulo: "Datos personales", corto: "Datos personales", descripcion: "Tal como aparecen en tu documento.",
-      campos: ["nombres", "apellidos", "tipoDocumento", "tipoDocumentoOtro", "documento", "fechaNacimiento", "correo", "whatsapp", "telefonoAlterno"],
+      campos: ["nombres", "apellidos", "tipoDocumento", "tipoDocumentoOtro", "documento", "fechaNacimiento", "correo", "whatsapp", "telefonoAlterno", "direccion"],
     },
     {
       id: "acudiente", titulo: "Padre, madre, acudiente o tutor", corto: "Adulto responsable", descripcion: "Como sos menor de edad, necesitamos los datos de un adulto responsable.",

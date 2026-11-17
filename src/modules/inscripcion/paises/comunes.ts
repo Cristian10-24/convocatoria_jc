@@ -30,7 +30,7 @@ export function opcionesComputadora(equipo: "computador" | "computadora"): Opcio
  */
 export function pasosLibre(extras: { perfil?: string[]; sociodemograficos?: string[]; cierre: string[] }): PasoDef[] {
   return [
-    { id: "ubicacion", titulo: "¿Desde qué ciudad aplicas?", corto: "Ciudad", campos: ["sede", "ciudadOtra", "sedeCercana"] },
+    { id: "ubicacion", titulo: "¿Desde qué ciudad aplicas?", corto: "Ciudad", descripcion: "Elige la ciudad donde vives. En cada ciudad sede hay un encuentro presencial al mes.", campos: ["sede", "ciudadOtra", "sedeCercana"] },
     {
       id: "personales", titulo: "Datos personales", corto: "Datos personales", descripcion: "Tal como aparecen en tu documento.",
       campos: ["correo", "nombres", "apellidos", "whatsapp", "telefonoAlterno", "tipoDocumento", "tipoDocumentoOtro", "documento", "ciudad", "direccion", "fechaNacimiento"],
@@ -51,7 +51,7 @@ export function pasosLibre(extras: { perfil?: string[]; sociodemograficos?: stri
 
 /** Redacción del diseño 2027 para las preguntas comunes (Uruguay conserva la suya, la del formulario en producción). */
 export const ETIQUETAS_DISENO: NonNullable<DefinicionPais["etiquetas"]> = {
-  sede: { etiqueta: "Ciudad", ayuda: "Elige la ciudad desde la que aplicas o a la que puedes trasladarte para algunas actividades presenciales." },
+  sede: { etiqueta: "Ciudad" },
   ciudad: { etiqueta: "Ciudad o población de residencia" },
   direccion: { etiqueta: "Dirección" },
   telefonoAlterno: { ayuda: "De un familiar o persona cercana." },

@@ -75,8 +75,10 @@ describe("validación del formulario de Uruguay", () => {
     expect(documentoAlEscribir({ formato: "alfanumerico", min: 5, max: 15 }, "c-12 345.6")).toBe("C123456");
   });
 
-  it("la ciudad debe ser de la sede elegida, o «Otra» con texto", () => {
-    expect(revisarUy(inscripcionUy({ ciudad: "Carmelo" })).errores.ciudad).toBeDefined(); // Carmelo es de Colonia
+  it("la ciudad debe ser de alguna sede del país (se asiste a la sede elegida), o «Otra» con texto", () => {
+    // Carmelo es cercana a Colonia, pero quien vive ahí puede elegir asistir a Paysandú.
+    expect(revisarUy(inscripcionUy({ ciudad: "Carmelo" })).datos).toMatchObject({ ciudad: "Carmelo", sede: "paysandu", viveEnSede: false });
+    expect(revisarUy(inscripcionUy({ ciudad: "Montevideo" })).errores.ciudad).toBeDefined(); // no está en ninguna lista
     expect(revisarUy(inscripcionUy({ ciudad: "__otra__" })).errores.ciudadOtra).toBeDefined();
     expect(revisarUy(inscripcionUy({ ciudad: "__otra__", ciudadOtra: "Bella Unión" })).datos?.ciudadOtra).toBe("Bella Unión");
   });

@@ -23,9 +23,10 @@ import { plantilla, txt } from "../config/textos";
 import type { DefinicionPais, TextoTrato } from "../config/tipos";
 import { opcionesDe, preguntaDe, textoRespuesta } from "../mostrar";
 import {
-  CIUDAD_OTRA, camposVisibles, casillasConsentimiento, documentoAlEscribir, edadDe, erroresDelPaso, esMenor, pasosVisibles, primerPasoConErrores, revisarBorrador,
+  camposVisibles, casillasConsentimiento, documentoAlEscribir, edadDe, erroresDelPaso, esMenor, pasosVisibles, primerPasoConErrores, revisarBorrador,
   type Borrador, type Errores,
 } from "../schema";
+import PasoCiudad from "./PasoCiudad";
 import Turnstile, { type ControlTurnstile } from "./Turnstile";
 
 type Props = { def: DefinicionPais; anio: string; claveTurnstile?: string; rutaLanding: string; paisMed: string };
@@ -77,7 +78,6 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
   const [enviando, setEnviando] = useState(false);
   const [pantalla, setPantalla] = useState<Pantalla>("formulario");
   const [exito, setExito] = useState<RespuestaExito | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<"" | "radicado" | "enlace">("");
   const turnstile = useRef<ControlTurnstile>(null);
   const titulo = useRef<HTMLHeadingElement>(null);
@@ -123,16 +123,13 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
   }, [errores, paso, reducir]);
 
   const cambiar = (campo: string, valor: string | string[] | boolean, mas: Borrador = {}) => {
-    setDatos((d) => {
-      const nuevo = { ...d, [campo]: valor, ...mas } as Borrador;
-      // Al cambiar de sede se limpia la ciudad elegida de la lista de la sede anterior.
-      if (campo === "sede" && d.sede !== valor && def.reglas.ubicacion === "lista") nuevo.ciudad = "";
-      return nuevo;
-    });
+    setDatos((d) => ({ ...d, [campo]: valor, ...mas }) as Borrador);
+    // Se borra el error de cada dato que cambió (también los que cambian juntos, como sede y ciudad).
+    const tocados = [campo, ...Object.keys(mas)];
     setErrores((e) => {
-      if (!e[campo]) return e;
+      if (!tocados.some((k) => e[k])) return e;
       const resto = { ...e };
-      delete resto[campo];
+      for (const k of tocados) delete resto[k];
       return resto;
     });
   };
@@ -163,11 +160,16 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
       setPasoId(conError.id);
       return mostrarErrores(erroresDelPaso(r.errores, conError), null);
     }
-    if (claveTurnstile && !token) return setAviso(t(IU.errores.verificacion));
-
     setEnviando(true);
     setAviso(null);
     setFallo(false);
+    // La verificación tarda unos segundos en resolverse: si la persona envía antes, se espera al token (el botón
+    // dice "Enviando…") en lugar de rechazar el envío.
+    const token = claveTurnstile ? (await turnstile.current?.obtenerToken(20_000)) ?? null : null;
+    if (claveTurnstile && !token) {
+      setEnviando(false);
+      return setAviso(t(IU.errores.verificacion));
+    }
     const sobre: SobreEnvio = { pais, datos, [CAMPO_TRAMPA]: trampa, iniciadoEn, turnstile: token ?? undefined, idempotencia, origen };
     try {
       const res = await fetch(RUTA_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sobre), signal: AbortSignal.timeout(25_000) });
@@ -225,13 +227,6 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
     const telefono = () =>
       envolver(c, <CampoTelefono {...comun} name={c} prefijo={prefijo} value={valor(c)} onChange={(e) => cambiar(c, e.target.value)} placeholder={TELEFONOS[cfg.telefono].ejemplo} autoComplete={AUTOCOMPLETAR[c] ?? "off"} maxLength={24} />);
 
-    if (c === "sede") return envolver(c, <Sedes def={def} valor={valor("sede")} error={errores.sede} etiqueta={p.etiqueta} ayuda={p.ayuda} paisMed={paisMed} alElegir={(id) => cambiar("sede", id, id === CIUDAD_OTRA ? {} : { ciudadOtra: "", sedeCercana: "" })} />);
-    if (c === "ciudad" && def.reglas.ubicacion === "lista") {
-      const ciudades = cfg.sedes.find((s) => s.id === (cfg.sedes.length === 1 ? cfg.sedes[0]!.id : datos.sede))?.ciudades ?? [];
-      if (!ciudades.length) return null;
-      const opciones = [...ciudades.map((x) => ({ valor: x, etiqueta: x })), { valor: CIUDAD_OTRA, etiqueta: IU.ciudadOtraLista }];
-      return envolver(c, <GrupoOpciones {...comun} opciones={opciones} forma="rejilla" valor={valor(c)} alCambiar={(v) => cambiar(c, v)} />);
-    }
     if (c === "fechaNacimiento") return envolver(c, <Fecha {...comun} valor={valor(c)} hoy={hoy} alCambiar={(v) => cambiar(c, v)} nota={notaEdad()} />);
     if (c === "correo" || c === "acudienteCorreo") {
       const sugerida = c === "correo" ? sugerenciaCorreo(valor(c)) : null;
@@ -414,7 +409,6 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                         </div>
                       );
                     })}
-                    {claveTurnstile ? <Turnstile ref={turnstile} claveSitio={claveTurnstile} onToken={setToken} etiqueta={IU.autorizacion.verificacion} /> : null}
                     {fallo ? (
                       <div className="aviso mal" role="alert" style={{ marginTop: 0 }}>
                         <Icono nombre="alerta" />
@@ -426,10 +420,17 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
                     ) : null}
                   </div>
                 ) : (
-                  <div className="campos">{paso.campos.map(campo)}</div>
+                  paso.id === "ubicacion"
+                    ? <PasoCiudad def={def} datos={datos} errores={errores} paisMed={paisMed} cambiar={cambiar} />
+                    : <div className="campos">{paso.campos.map(campo)}</div>
                 )}
               </m.section>
             </AnimatePresence>
+
+            {/* Verificación de seguridad: se monta desde el resumen (fuera del paso animado, para no reiniciarse al
+                cambiar de paso) y así el token suele estar listo al llegar a "Enviar". Es invisible salvo que
+                Cloudflare pida una interacción. */}
+            {claveTurnstile && indice >= pasos.length - 2 ? <Turnstile ref={turnstile} claveSitio={claveTurnstile} etiqueta={IU.autorizacion.verificacion} /> : null}
 
             {/* Campo trampa: invisible para personas; los bots que llenan todo lo completan. */}
             <div className="trampa" aria-hidden="true">
@@ -472,27 +473,6 @@ export default function Formulario({ def, anio, claveTurnstile, rutaLanding, pai
 
 /** Casilla del formulario que corresponde a cada consentimiento. */
 const CASILLA = { privacidad: "aceptaPrivacidad", datos: "autorizaDatos", acudiente: "autorizaAcudiente" } as const;
-
-/** Paso de la ciudad: una opción grande por sede y, donde aplica, "Otra ciudad" (con borde punteado). */
-function Sedes({ def, valor, error, etiqueta, ayuda, paisMed, alElegir }: { def: DefinicionPais; valor: string; error?: string; etiqueta: string; ayuda?: string; paisMed: string; alElegir: (id: string) => void }) {
-  const libre = def.reglas.ubicacion === "libre";
-  const opciones = [...def.config.sedes.map((s) => ({ id: s.id, nombre: s.nombre })), ...(libre ? [{ id: CIUDAD_OTRA, nombre: IU.otraCiudad }] : [])];
-  return (
-    <fieldset className="campo" aria-describedby={[ayuda ? "f-sede-ayuda" : "", error ? "f-sede-error" : ""].filter(Boolean).join(" ") || undefined}>
-      <legend className="solo-lector">{etiqueta}</legend>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {opciones.map((s) => (
-          <label key={s.id} className={["ciu", s.id === CIUDAD_OTRA ? "otra" : "", valor === s.id ? "is-sel" : "", error ? "is-error" : ""].filter(Boolean).join(" ")}>
-            <input className="solo-lector" type="radio" name="sede" value={s.id} checked={valor === s.id} onChange={() => alElegir(s.id)} data-track="ciudad_seleccionada" data-otra={s.id === CIUDAD_OTRA} data-pais={paisMed} />
-            {s.nombre}
-          </label>
-        ))}
-      </div>
-      {ayuda ? <span id="f-sede-ayuda" className="ayuda" style={{ marginTop: 4 }}>{ayuda}</span> : null}
-      {error ? <MensajeError id="f-sede-error">{error}</MensajeError> : null}
-    </fieldset>
-  );
-}
 
 /** Fecha de nacimiento con tres listas (día, mes y año): más fácil que un calendario para elegir un año lejano. */
 function Fecha({ id, etiqueta, valor, error, hoy, nota, alCambiar }: { id: string; etiqueta: string; valor: string; error?: string; hoy: string; nota?: string; alCambiar: (iso: string) => void }) {

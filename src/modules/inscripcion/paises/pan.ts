@@ -12,7 +12,8 @@ export const definicion: DefinicionPais = {
     habilitado: true,
     trato: "tu",
     telefono: "PA",
-    sedes: [{ id: "panama", nombre: "Ciudad de Panamá y alrededores (Provincia de Panamá)", ciudades: [] }],
+    // Ciudades cercanas: las del plan inicial, pendientes de confirmar con el equipo de Panamá.
+    sedes: [{ id: "panama", nombre: "Ciudad de Panamá", ciudades: ["San Miguelito", "Arraiján", "La Chorrera", "Chepo", "Capira"] }],
     tiposDocumento: [
       { id: "cedula_juvenil", etiqueta: "Cédula juvenil", regla: { formato: "cedula_pa", min: 5, max: 15 }, ayuda: "Con sus guiones, como aparece en el documento (por ejemplo, 8-123-4567)." },
       { id: "cedula", etiqueta: "Cédula de Identidad", regla: { formato: "cedula_pa", min: 5, max: 15 }, ayuda: "Con sus guiones, como aparece en el documento (por ejemplo, 8-123-4567)." },

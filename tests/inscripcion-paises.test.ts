@@ -159,10 +159,21 @@ describe("ubicación: sede u otra ciudad", () => {
     expect(doc).not.toHaveProperty("ciudadOtra");
   });
 
-  it("el Valle de Aburrá se guarda en la sede de Medellín", async () => {
-    const r = await enviar("col", persona("col", { sede: "valle_aburra", ciudad: "Bello" }));
+  it("una ciudad cercana de la lista (Bello, del Valle de Aburrá) se guarda con la sede elegida", async () => {
+    const r = await enviar("col", persona("col", { sede: "__otra__", ciudadOtra: "Bello", sedeCercana: "medellin", ciudad: "" }));
     const doc = await (await coleccion()).findOne({ radicado: r.cuerpo.radicado as string });
-    expect(doc).toMatchObject({ sede: "medellin", ciudad: "Bello", viveEnSede: true });
+    expect(doc).toMatchObject({ sede: "medellin", ciudad: "Bello", viveEnSede: false });
+  });
+
+  it("Uruguay: una ciudad cercana con la sede a la que asistiría, en el formato nuevo y en el anterior", async () => {
+    const nuevo = await enviar("uy", nuevaUy({ documento: documentoDe("uy"), sede: "colonia", ciudad: "Carmelo" }));
+    expect(nuevo.status).toBe(201);
+    expect(await (await coleccion()).findOne({ radicado: nuevo.cuerpo.radicado as string })).toMatchObject({ sede: "colonia", ciudad: "Carmelo", viveEnSede: false });
+    // Formato anterior (pestañas abiertas antes del cambio): sede y una ciudad de su lista, como siempre.
+    const anterior = await enviar("uy", inscripcionUy({ documento: documentoDe("uy"), sede: "paysandu", ciudad: "Salto" }));
+    expect(anterior.status).toBe(201);
+    const ciudadSede = await enviar("uy", nuevaUy({ documento: documentoDe("uy"), sede: "colonia", ciudad: "Colonia del Sacramento" }));
+    expect(await (await coleccion()).findOne({ radicado: ciudadSede.cuerpo.radicado as string })).toMatchObject({ viveEnSede: true });
   });
 
   it("con una sola sede (Panamá) no se pregunta cuál: se asigna", async () => {
